@@ -5,7 +5,7 @@ public class ParkingLot
     public required int ID { get; set; }
     public required string Name { get; set; }
     public required string Location { get; set; }
-    public required string Adress { get; set; }
+    public required string Address { get; set; }
     public required int Capacity { get; set; }
     public required int Reserved { get; set; }
     public required float Tariff { get; set; }
