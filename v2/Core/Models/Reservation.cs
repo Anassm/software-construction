@@ -13,4 +13,8 @@ public class Reservation
     public required string Status { get; set; }
     public required DateTime CreatedAt { get; set; }
     public required float TotalPrice { get; set; }
+
+    public User? User { get; set; }
+    public ParkingLot? ParkingLot { get; set; }
+    public Vehicle? Vehicle { get; set; }
 }

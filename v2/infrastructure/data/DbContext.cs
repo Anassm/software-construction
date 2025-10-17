@@ -1,92 +1,113 @@
-// using Microsoft.EntityFrameworkCore;
-// using ChefServe.Core.Models;
+using Microsoft.EntityFrameworkCore;
+using v2.Core.Models;
 
-// namespace ChefServe.Infrastructure.Data
-// {
-//     public class ChefServeDbContext : DbContext
-//     {
-//         public ChefServeDbContext(DbContextOptions<ChefServeDbContext> options)
-//             : base(options)
-//         { }
+namespace ChefServe.Infrastructure.Data
+{
+    public class ApplicationDbContext : DbContext
+    {
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+            : base(options)
+        { }
 
-//         public DbSet<User> Users { get; set; }
-//         public DbSet<FileItem> FileItems { get; set; }
-//         public DbSet<SharedFileItem> SharedFileItems { get; set; }
-//         public DbSet<Session> Sessions { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<Vehicle> Vehicles { get; set; }
+        public DbSet<Session> Sessions { get; set; }
+        public DbSet<Reservation> Reservation { get; set; }
+        public DbSet<Payment> Payments { get; set; }
+        public DbSet<ParkingLot> ParkingLots { get; set; }
 
-//         protected override void OnModelCreating(ModelBuilder modelBuilder)
-//         {
-//             base.OnModelCreating(modelBuilder);
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
 
-//             modelBuilder.Entity<User>(entity =>
-//             {
-//                 entity.HasKey(u => u.ID);
-//                 entity.Property(u => u.Username).IsRequired().HasMaxLength(100);
-//                 entity.Property(u => u.Email).IsRequired().HasMaxLength(150);
-//                 entity.Property(u => u.CreatedAt)
-//                       .HasDefaultValueSql("CURRENT_TIMESTAMP");
-//             });
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.HasKey(u => u.ID);
+                entity.Property(u => u.Username).IsRequired().HasMaxLength(100);
+                entity.Property(u => u.PasswordHash).IsRequired();
+                entity.Property(u => u.Name).IsRequired().HasMaxLength(150);
+                entity.Property(u => u.Email).IsRequired().HasMaxLength(150);
+                entity.Property(u => u.PhoneNumber).IsRequired().HasMaxLength(20);
+                entity.Property(u => u.Role).IsRequired().HasMaxLength(50);
+                entity.Property(u => u.CreatedAt)
+                      .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(u => u.BirthDate).IsRequired();
+                entity.Property(u => u.IsActive).HasDefaultValueSql("1");
+            });
 
-//             modelBuilder.Entity<FileItem>(entity =>
-//             {
-//                 entity.HasKey(f => f.ID);
-//                 entity.Property(f => f.Name).IsRequired().HasMaxLength(255);
-//                 entity.Property(f => f.Path).IsRequired();
-//                 entity.Property(f => f.Extension).HasMaxLength(255);
-//                 entity.Property(f => f.ParentPath).IsRequired();
-//                 entity.Property(f => f.CreatedAt)
-//                       .HasDefaultValueSql("CURRENT_TIMESTAMP");
-//                 entity.Property(f => f.UpdatedAt)
-//                       .HasDefaultValueSql("CURRENT_TIMESTAMP");
-//                 entity.Property(f => f.IsFolder).HasDefaultValueSql("0");
-//                 entity.Property(f => f.HasContent).HasDefaultValueSql("0");
+            modelBuilder.Entity<Vehicle>(entity =>
+            {
+                entity.HasKey(v => v.ID);
+                entity.Property(v => v.LicensePlate)
+                      .IsRequired()
+                      .HasMaxLength(20);
+                entity.Property(v => v.Make)
+                      .IsRequired().HasMaxLength(50);
+                entity.Property(v => v.Model)
+                      .IsRequired()
+                      .HasMaxLength(50);
+                entity.Property(v => v.Color)
+                      .IsRequired()
+                      .HasMaxLength(30);
+                entity.Property(v => v.Year).IsRequired();
+                entity.Property(v => v.CreatedAt)
+                      .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.HasOne<User>()
+                      .WithMany(u => u.Vehicles)
+                      .HasForeignKey(v => v.UserID)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
 
-//                 entity.HasOne(f => f.Owner)
-//                       .WithMany(u => u.FileItems)
-//                       .HasForeignKey(f => f.OwnerID)
-//                       .OnDelete(DeleteBehavior.Cascade);
-//             });
+            modelBuilder.Entity<ParkingLot>(entity =>
+            {
+                entity.HasKey(p => p.ID);
+                entity.Property(p => p.Name)
+                      .IsRequired()
+                      .HasMaxLength(100);
+                entity.Property(p => p.Location)
+                      .IsRequired()
+                      .HasMaxLength(150);
+                entity.Property(p => p.Address)
+                      .IsRequired()
+                      .HasMaxLength(250);
+                entity.Property(p => p.Capacity).IsRequired();
+                entity.Property(p => p.Reserved).IsRequired();
+                entity.Property(p => p.Tariff).IsRequired();
+                entity.Property(p => p.DayTariff).IsRequired();
+                entity.Property(p => p.CreatedAt)
+                      .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                entity.Property(p => p.latitude).IsRequired();
+                entity.Property(p => p.longitude).IsRequired();
+            });
 
-//             modelBuilder.Entity<SharedFileItem>(entity =>
-//             {
-//                 entity.HasKey(fs => new { fs.FileID, fs.UserID });
+            modelBuilder.Entity<Reservation>(entity =>
+            {
+                entity.HasKey(r => r.ID);
+                entity.Property(r => r.Status).IsRequired().HasMaxLength(50);
+                entity.Property(r => r.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-//                 entity.HasOne(fs => fs.File)
-//                       .WithMany(f => f.SharedWith)
-//                       .HasForeignKey(fs => fs.FileID)
-//                       .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(r => r.User)
+                      .WithMany(u => u.Reservations)
+                      .HasForeignKey(r => r.UserID)
+                      .OnDelete(DeleteBehavior.Cascade);
 
-//                 entity.HasOne(fs => fs.User)
-//                       .WithMany(u => u.SharedFileItems)
-//                       .HasForeignKey(fs => fs.UserID)
-//                       .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(r => r.ParkingLot)
+                      .WithMany(p => p.Reservations)
+                      .HasForeignKey(r => r.ParkingLotID)
+                      .OnDelete(DeleteBehavior.Cascade);
 
-//                 entity.Property(fs => fs.Permission)
-//                       .HasConversion<string>()
-//                       .HasMaxLength(10);
-//             });
-//             modelBuilder.Entity<Session>(entity =>
-//             {
-//                 entity.HasKey(s => s.ID);
+                entity.HasOne(r => r.Vehicle)
+                      .WithMany(v => v.Reservations)
+                      .HasForeignKey(r => r.VehicleID)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
 
-//                 entity.Property(s => s.Token)
-//                     .IsRequired()
-//                     .HasMaxLength(255);
 
-//                 entity.Property(s => s.UserID)
-//                     .IsRequired();
+            modelBuilder.Entity<Session>(entity =>
+            {
 
-//                 entity.Property(s => s.CreatedAt)
-//                     .HasDefaultValueSql("CURRENT_TIMESTAMP");
+            });
 
-//                 entity.Property(s => s.ExpiresAt);
-
-//                 entity.HasOne(s => s.User)
-//                     .WithOne(u => u.Session)
-//                     .HasForeignKey<Session>(s => s.UserID)
-//                     .OnDelete(DeleteBehavior.Cascade);
-//             });
-
-//         }
-//     }
-// }
+        }
+    }
+}

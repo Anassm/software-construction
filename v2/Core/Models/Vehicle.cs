@@ -10,4 +10,7 @@ public class Vehicle
     public required string Color { get; set; }
     public required int Year { get; set; }
     public required DateOnly CreatedAt { get; set; }
+
+    public User? User { get; set; }
+    public required ICollection<Reservation> Reservations { get; set; }
 }

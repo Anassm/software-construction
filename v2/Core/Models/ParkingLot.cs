@@ -13,4 +13,6 @@ public class ParkingLot
     public required DateTime CreatedAt { get; set; }
     public required float latitude { get; set; }
     public required float longitude { get; set; }
+
+    public required ICollection<Reservation> Reservations { get; set; }
 }

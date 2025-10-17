@@ -12,4 +12,7 @@ public class User
     public required DateOnly CreatedAt { get; set; }
     public required DateOnly BirthDate { get; set; }
     public required bool IsActive { get; set; }
+
+    public required ICollection<Vehicle> Vehicles { get; set; }
+    public required ICollection<Reservation> Reservations { get; set; }
 }
