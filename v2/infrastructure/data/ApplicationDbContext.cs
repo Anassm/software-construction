@@ -15,7 +15,7 @@ namespace ChefServe.Infrastructure.Data
             public DbSet<User> Users { get; set; }
             public DbSet<Vehicle> Vehicles { get; set; }
             public DbSet<Session> Sessions { get; set; }
-            public DbSet<Reservation> Reservation { get; set; }
+            public DbSet<Reservation> Reservations { get; set; }
             public DbSet<Payment> Payments { get; set; }
             public DbSet<ParkingLot> ParkingLots { get; set; }
 
