@@ -2,7 +2,7 @@ namespace v2.Core.Models;
 
 public class Vehicle
 {
-    public required Guid ID { get; set; }
+    public required Guid ID { get; set; } = Guid.NewGuid();
     public required string LicensePlate { get; set; }
     public required string Make { get; set; }
     public required string Model { get; set; }

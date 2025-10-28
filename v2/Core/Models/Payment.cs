@@ -2,7 +2,7 @@ namespace v2.Core.Models;
 
 public class Payment
 {
-    public Guid ID { get; set; }
+    public Guid ID { get; set; } = Guid.NewGuid();
     public required float Amount { get; set; }
     public required string Initiator { get; set; }
     public required DateTime CreatedAt { get; set; }

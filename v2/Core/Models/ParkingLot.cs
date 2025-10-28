@@ -2,7 +2,7 @@ namespace v2.Core.Models;
 
 public class ParkingLot
 {
-    public required Guid ID { get; set; }
+    public required Guid ID { get; set; } = Guid.NewGuid();
     public required string Name { get; set; }
     public required string Location { get; set; }
     public required string Address { get; set; }

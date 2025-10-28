@@ -4,7 +4,7 @@ namespace v2.Core.Models;
 
 public class Reservation
 {
-    public required Guid ID { get; set; }
+    public required Guid ID { get; set; } = Guid.NewGuid();
     public required DateTime StartDate { get; set; }
     public required DateTime EndDate { get; set; }
     public required string Status { get; set; }
