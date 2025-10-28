@@ -1,9 +1,12 @@
 using Microsoft.EntityFrameworkCore;
+
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using v2.Core.Models;
 
 namespace ChefServe.Infrastructure.Data
 {
-      public class ApplicationDbContext : DbContext
+      public class ApplicationDbContext : IdentityDbContext<IdentityUser>
       {
             public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
                 : base(options)
@@ -24,7 +27,6 @@ namespace ChefServe.Infrastructure.Data
                   {
                         entity.HasKey(u => u.ID);
                         entity.Property(u => u.Username).IsRequired().HasMaxLength(100);
-                        entity.Property(u => u.PasswordHash).IsRequired();
                         entity.Property(u => u.Name).IsRequired().HasMaxLength(150);
                         entity.Property(u => u.Email).IsRequired().HasMaxLength(150);
                         entity.Property(u => u.PhoneNumber).IsRequired().HasMaxLength(20);
@@ -33,6 +35,11 @@ namespace ChefServe.Infrastructure.Data
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
                         entity.Property(u => u.BirthDate).IsRequired();
                         entity.Property(u => u.IsActive).HasDefaultValueSql("1");
+                        modelBuilder.Entity<User>()
+                        .HasOne(u => u.IdentityUser)
+                        .WithOne()
+                        .HasForeignKey<User>(u => u.IdentityUserId)
+                        .OnDelete(DeleteBehavior.Cascade);
                   });
 
                   modelBuilder.Entity<Vehicle>(entity =>
