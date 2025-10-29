@@ -1,0 +1,1700 @@
+[
+    {
+        "transaction": "1535349fea5cca288b217d491838f836AA",
+        "amount": 5.5,
+        "initiator": "testuser",
+        "created_at": "22-05-2025 09:09:1747898315",
+        "completed": "22-05-2025 09:09:1747898330",
+        "hash": "d15acc14-02c3-4c9d-b047-c6b16befc302",
+        "t_data": {
+            "amount": 5.5,
+            "date": "2025-05-22 22:22:22",
+            "method": "ideal",
+            "issuer": "XYY910HH",
+            "bank": "ABN-NL"
+        }
+    },
+    {
+        "transaction": "82724346a21e6ddf8da490f7c49355bcBB",
+        "amount": 16.5,
+        "initiator": "natasjadewit",
+        "created_at": "26-03-2020 05:40:151585197647",
+        "completed": "26-03-2020 05:40:151585197655",
+        "hash": "3524ea52-c49a-4a5b-9395-82f2a152368f",
+        "t_data": {
+            "amount": 16.5,
+            "date": "2020-03-26 05:40:47",
+            "method": "bancontact",
+            "issuer": "9I2G36YZ",
+            "bank": "Bunq"
+        },
+        "session_id": "1",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "09b825af4025bd30be494b444d386b35AA",
+        "amount": 16.97,
+        "initiator": "cindy.adriaanse1",
+        "created_at": "26-03-2020 21:20:151585254012",
+        "completed": "26-03-2020 21:20:151585254020",
+        "hash": "d4614f50-0f03-40e6-96eb-f8ca0374fbaa",
+        "t_data": {
+            "amount": 16.97,
+            "date": "2020-03-26 21:20:12",
+            "method": "ideal",
+            "issuer": "E0M9P5UG",
+            "bank": "Knab"
+        },
+        "session_id": "2",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "83125ee5b2e0b5f43482536cd18182afBB",
+        "amount": 15.36,
+        "initiator": "michel.kuipers",
+        "created_at": "27-03-2020 23:45:151585349149",
+        "completed": "27-03-2020 23:45:151585349152",
+        "hash": "1466a09f-8a0a-42a6-bef8-d613d3813ec2",
+        "t_data": {
+            "amount": 15.36,
+            "date": "2020-03-27 23:45:49",
+            "method": "googlepay",
+            "issuer": "MFGYL7LH",
+            "bank": "Van Lanschot"
+        },
+        "session_id": "3",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "161838e1482899aa4839b34e3ccaf585CC",
+        "amount": 17.8,
+        "initiator": "roos.degroot",
+        "created_at": "31-03-2020 16:18:151585664292",
+        "completed": "31-03-2020 16:18:151585664297",
+        "hash": "b75b825e-198f-4ec9-a19f-c964b1f503c1",
+        "t_data": {
+            "amount": 17.8,
+            "date": "2020-03-31 16:18:12",
+            "method": "creditcard",
+            "issuer": "JYWY765J",
+            "bank": "Van Lanschot"
+        },
+        "session_id": "4",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "aafa02abebcf2593e146caf49ce81306CC",
+        "amount": 18.65,
+        "initiator": "saar.brouwer",
+        "created_at": "31-03-2020 20:54:151585680892",
+        "completed": "31-03-2020 20:55:151585680900",
+        "hash": "f9c3d5f4-2c5e-4e07-8a64-c1e9eca8a3c4",
+        "t_data": {
+            "amount": 18.65,
+            "date": "2020-03-31 20:54:52",
+            "method": "bancontact",
+            "issuer": "M6VYSJAI",
+            "bank": "Knab"
+        },
+        "session_id": "5",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "9bb85e3bdb857f32799c0be02c28a898CC",
+        "amount": 15.29,
+        "initiator": "sophie194324",
+        "created_at": "03-04-2020 01:58:151585871919",
+        "completed": "03-04-2020 01:58:151585871921",
+        "hash": "dd0f5bb7-1ca4-4b75-9af8-5c1fc7c0eca4",
+        "t_data": {
+            "amount": 15.29,
+            "date": "2020-04-03 01:58:39",
+            "method": "applepay",
+            "issuer": "VT1D1FX3",
+            "bank": "Rabobank"
+        },
+        "session_id": "6",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "49d969a2610b6aec790093fb0e784febBB",
+        "amount": 18.08,
+        "initiator": "paul.jonge40",
+        "created_at": "04-04-2020 00:11:151585951888",
+        "completed": "04-04-2020 00:11:151585951897",
+        "hash": "a1acb991-1173-41a1-b878-64115d23defc",
+        "t_data": {
+            "amount": 18.08,
+            "date": "2020-04-04 00:11:28",
+            "method": "googlepay",
+            "issuer": "RH0R2IG9",
+            "bank": "SNS"
+        },
+        "session_id": "7",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "a420d87b1b425f08b961ac7c98acf399AA",
+        "amount": 15.33,
+        "initiator": "tygovandenheuvel68",
+        "created_at": "07-04-2020 00:52:151586213548",
+        "completed": "07-04-2020 00:52:151586213550",
+        "hash": "3cb164f6-4a82-4f9a-8b80-fc93f43810b1",
+        "t_data": {
+            "amount": 15.33,
+            "date": "2020-04-07 00:52:28",
+            "method": "googlepay",
+            "issuer": "HMQEG09K",
+            "bank": "ABN-AMRO"
+        },
+        "session_id": "8",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "2baa0f5ada1abed09256078942ec321aDD",
+        "amount": 15.86,
+        "initiator": "liam.verbeek",
+        "created_at": "08-04-2020 06:57:151586321862",
+        "completed": "08-04-2020 06:57:151586321872",
+        "hash": "faaaaf25-4eb1-492f-8688-fb2707a22392",
+        "t_data": {
+            "amount": 15.86,
+            "date": "2020-04-08 06:57:42",
+            "method": "creditcard",
+            "issuer": "OQ4GNKPA",
+            "bank": "Bunq"
+        },
+        "session_id": "9",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "dd082f569b135fa0c6f0dd8c3646b720AA",
+        "amount": 17.04,
+        "initiator": "jan.devries",
+        "created_at": "10-04-2020 07:44:151586497453",
+        "completed": "10-04-2020 07:44:151586497459",
+        "hash": "b0e3ef21-7f47-4074-aa76-690f0d3507ff",
+        "t_data": {
+            "amount": 17.04,
+            "date": "2020-04-10 07:44:13",
+            "method": "creditcard",
+            "issuer": "BE08WQ7X",
+            "bank": "Knab"
+        },
+        "session_id": "10",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "cb403b97b84148a36f64732283e5d6b1AA",
+        "amount": 16.21,
+        "initiator": "sem.schouten",
+        "created_at": "14-04-2020 06:42:151586839335",
+        "completed": "14-04-2020 06:42:151586839340",
+        "hash": "b5c5e44d-529f-45c2-91c4-515bdd9faa79",
+        "t_data": {
+            "amount": 16.21,
+            "date": "2020-04-14 06:42:15",
+            "method": "paypal",
+            "issuer": "X9WEEPBP",
+            "bank": "Rabobank"
+        },
+        "session_id": "11",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "2645b8f20eef51c57ddea105302b11fcCC",
+        "amount": 15.71,
+        "initiator": "tygomaas47",
+        "created_at": "15-04-2020 22:56:151586984185",
+        "completed": "15-04-2020 22:56:151586984188",
+        "hash": "e55c154b-63c9-4fe1-acd8-70a3700191e5",
+        "t_data": {
+            "amount": 15.71,
+            "date": "2020-04-15 22:56:25",
+            "method": "applepay",
+            "issuer": "11X2SDKR",
+            "bank": "SNS"
+        },
+        "session_id": "12",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "1988eba2e8a21046c659fcbc23b6b95aCC",
+        "amount": 16.94,
+        "initiator": "marloes.kuiper",
+        "created_at": "16-04-2020 22:25:151587068709",
+        "completed": "16-04-2020 22:25:151587068716",
+        "hash": "058abdf6-c126-435e-a9a7-02f8baf2728b",
+        "t_data": {
+            "amount": 16.94,
+            "date": "2020-04-16 22:25:09",
+            "method": "ideal",
+            "issuer": "DFB8MB5M",
+            "bank": "Rabobank"
+        },
+        "session_id": "13",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "1d8bfe272c4d340f7523c4938455ab78AA",
+        "amount": 18.71,
+        "initiator": "jesse.vanvliet",
+        "created_at": "17-04-2020 16:20:151587133258",
+        "completed": "17-04-2020 16:21:151587133264",
+        "hash": "d51c4465-dcbf-4bb8-a222-284e07524060",
+        "t_data": {
+            "amount": 18.71,
+            "date": "2020-04-17 16:20:58",
+            "method": "creditcard",
+            "issuer": "OY92DOVY",
+            "bank": "SNS"
+        },
+        "session_id": "14",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "64917d3c7b0ebbe780913045aa758335DD",
+        "amount": 17.29,
+        "initiator": "monique194180",
+        "created_at": "21-04-2020 04:05:151587434753",
+        "completed": "21-04-2020 04:06:151587434762",
+        "hash": "4a515d15-622a-4408-9d6e-93c3de742966",
+        "t_data": {
+            "amount": 17.29,
+            "date": "2020-04-21 04:05:53",
+            "method": "ideal",
+            "issuer": "ODF8ZQSJ",
+            "bank": "Volksbank"
+        },
+        "session_id": "15",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "1f34676e457be3bc14754943e6decac7DD",
+        "amount": 17.29,
+        "initiator": "rubenderidder",
+        "created_at": "22-04-2020 03:28:151587518900",
+        "completed": "22-04-2020 03:28:151587518902",
+        "hash": "0aab057a-fec9-4fa6-b9c8-a9a9a48aa7b0",
+        "t_data": {
+            "amount": 17.29,
+            "date": "2020-04-22 03:28:20",
+            "method": "creditcard",
+            "issuer": "0TG64R74",
+            "bank": "ING"
+        },
+        "session_id": "16",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "ba22a88dab0136990396f29d4748ace0CC",
+        "amount": 18.08,
+        "initiator": "bram.wal",
+        "created_at": "22-04-2020 18:31:151587573114",
+        "completed": "22-04-2020 18:31:151587573117",
+        "hash": "7f46798d-f33e-464a-b64f-4f70d66e3562",
+        "t_data": {
+            "amount": 18.08,
+            "date": "2020-04-22 18:31:54",
+            "method": "applepay",
+            "issuer": "UA651M2G",
+            "bank": "SNS"
+        },
+        "session_id": "17",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "b1fe85b4fdcd11c04d4741627ed55cdfAA",
+        "amount": 16.18,
+        "initiator": "saravanwijk89",
+        "created_at": "24-04-2020 05:14:151587698042",
+        "completed": "24-04-2020 05:14:151587698050",
+        "hash": "665b5809-29e7-44f0-b2cc-c47ab54f81a2",
+        "t_data": {
+            "amount": 16.18,
+            "date": "2020-04-24 05:14:02",
+            "method": "googlepay",
+            "issuer": "XD7IUMTP",
+            "bank": "ASN"
+        },
+        "session_id": "18",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "24eb22ffd1d878cdaf22ab8084c06e84AA",
+        "amount": 17.07,
+        "initiator": "lotte.groot66",
+        "created_at": "27-04-2020 21:15:151588014957",
+        "completed": "27-04-2020 21:15:151588014959",
+        "hash": "964660fa-fecf-4e72-873c-56aae8b0f992",
+        "t_data": {
+            "amount": 17.07,
+            "date": "2020-04-27 21:15:57",
+            "method": "ideal",
+            "issuer": "7DFMJENC",
+            "bank": "ING"
+        },
+        "session_id": "20",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "a6a9812c536a629a45e5dac58b31fa2aAA",
+        "amount": 16.12,
+        "initiator": "ellen1953",
+        "created_at": "28-04-2020 17:31:151588087902",
+        "completed": "28-04-2020 17:31:151588087910",
+        "hash": "858fcaf2-2fe5-4180-ac6f-016058ee07c7",
+        "t_data": {
+            "amount": 16.12,
+            "date": "2020-04-28 17:31:42",
+            "method": "bancontact",
+            "issuer": "X9LMO19R",
+            "bank": "ABN-AMRO"
+        },
+        "session_id": "21",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "1c42e5974972651ed3bc440483877b68CC",
+        "amount": 18.75,
+        "initiator": "pip.pieters8",
+        "created_at": "29-04-2020 19:31:151588181471",
+        "completed": "29-04-2020 19:31:151588181476",
+        "hash": "dba33511-b2d5-4718-b7e1-44478bd5f084",
+        "t_data": {
+            "amount": 18.75,
+            "date": "2020-04-29 19:31:11",
+            "method": "bancontact",
+            "issuer": "9P9EQDKW",
+            "bank": "Volksbank"
+        },
+        "session_id": "22",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "c1f69ae0d65fd097549c3ccf4e04d1fbDD",
+        "amount": 16.72,
+        "initiator": "marloes197785",
+        "created_at": "01-05-2020 04:47:151588301243",
+        "completed": "01-05-2020 04:47:151588301253",
+        "hash": "299eda5f-7cb0-45c8-ab37-54a170d5889f",
+        "t_data": {
+            "amount": 16.72,
+            "date": "2020-05-01 04:47:23",
+            "method": "googlepay",
+            "issuer": "4S9A2QLW",
+            "bank": "Triodos"
+        },
+        "session_id": "23",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "cf055e023228e6147d743784471b7e03CC",
+        "amount": 16.12,
+        "initiator": "paul.scholten14",
+        "created_at": "02-05-2020 05:01:151588388509",
+        "completed": "02-05-2020 05:01:151588388512",
+        "hash": "680536de-22bd-439a-88f2-627952872bdf",
+        "t_data": {
+            "amount": 16.12,
+            "date": "2020-05-02 05:01:49",
+            "method": "applepay",
+            "issuer": "C6BOOFBN",
+            "bank": "Triodos"
+        },
+        "session_id": "24",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "fedf65e0664f531eb685ebe1cabdfa5aBB",
+        "amount": 16.31,
+        "initiator": "nora1946",
+        "created_at": "05-05-2020 02:22:151588638167",
+        "completed": "05-05-2020 02:22:151588638170",
+        "hash": "dbfb6373-cfa4-4903-94f4-02af70152406",
+        "t_data": {
+            "amount": 16.31,
+            "date": "2020-05-05 02:22:47",
+            "method": "bancontact",
+            "issuer": "CDOWBMCY",
+            "bank": "SNS"
+        },
+        "session_id": "25",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "5b8ec6deef9902b2bb2102055e02d218CC",
+        "amount": 17.07,
+        "initiator": "stijn1965",
+        "created_at": "06-05-2020 19:50:151588787402",
+        "completed": "06-05-2020 19:50:151588787405",
+        "hash": "18262991-8a51-4762-afa7-8fde27b733c6",
+        "t_data": {
+            "amount": 17.07,
+            "date": "2020-05-06 19:50:02",
+            "method": "googlepay",
+            "issuer": "X5XQWNL9",
+            "bank": "ASN"
+        },
+        "session_id": "26",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "c5a241da5c5487c16b7492a551f36310CC",
+        "amount": 16.37,
+        "initiator": "eva.dejong",
+        "created_at": "08-05-2020 06:26:151588912007",
+        "completed": "08-05-2020 06:26:151588912011",
+        "hash": "a251b453-2893-4fa5-8d9a-6e4a3be1a6dd",
+        "t_data": {
+            "amount": 16.37,
+            "date": "2020-05-08 06:26:47",
+            "method": "creditcard",
+            "issuer": "1EE2S9VT",
+            "bank": "Triodos"
+        },
+        "session_id": "27",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "2d012d751c3d7b82f1abfa0956ee21e9AA",
+        "amount": 18.34,
+        "initiator": "natasja.jansen73",
+        "created_at": "08-05-2020 19:25:151588958724",
+        "completed": "08-05-2020 19:25:151588958727",
+        "hash": "bcf4ce7c-3d11-458f-a5a3-5edc9ac9bac3",
+        "t_data": {
+            "amount": 18.34,
+            "date": "2020-05-08 19:25:24",
+            "method": "bancontact",
+            "issuer": "VOL0HFE8",
+            "bank": "Triodos"
+        },
+        "session_id": "28",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "761c377a0a9dbd794a0a3dc610524cf5CC",
+        "amount": 16.75,
+        "initiator": "sara.vanleeuwen",
+        "created_at": "11-05-2020 17:34:151589211266",
+        "completed": "11-05-2020 17:34:151589211273",
+        "hash": "0bdbc78c-ec65-4182-b76d-4efeebbe12f9",
+        "t_data": {
+            "amount": 16.75,
+            "date": "2020-05-11 17:34:26",
+            "method": "creditcard",
+            "issuer": "8Z4UHEUU",
+            "bank": "Triodos"
+        },
+        "session_id": "29",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "0b6b8b4cb20f1cbce7dd1886defd230fCC",
+        "amount": 17.07,
+        "initiator": "ruben1957",
+        "created_at": "13-05-2020 03:04:151589331876",
+        "completed": "13-05-2020 03:04:151589331881",
+        "hash": "487b83a2-50a7-4e92-bd4e-a450909e4ead",
+        "t_data": {
+            "amount": 17.07,
+            "date": "2020-05-13 03:04:36",
+            "method": "applepay",
+            "issuer": "EKPWDMD6",
+            "bank": "ABN-AMRO"
+        },
+        "session_id": "30",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "d864cd3ea9f6724b9d54699aa998453fCC",
+        "amount": 16.62,
+        "initiator": "dennis.vanderveen",
+        "created_at": "14-05-2020 06:14:151589429675",
+        "completed": "14-05-2020 06:14:151589429681",
+        "hash": "5b1c00ec-7eba-4244-a515-34ac59b3587d",
+        "t_data": {
+            "amount": 16.62,
+            "date": "2020-05-14 06:14:35",
+            "method": "googlepay",
+            "issuer": "A4T973QG",
+            "bank": "ASN"
+        },
+        "session_id": "31",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "c30325b5cd013f63da9c1ecebf21622eBB",
+        "amount": 16.72,
+        "initiator": "ninavandijk",
+        "created_at": "15-05-2020 02:09:151589501367",
+        "completed": "15-05-2020 02:09:151589501370",
+        "hash": "637aafcc-1f6f-415d-9c1c-02e7b5340588",
+        "t_data": {
+            "amount": 16.72,
+            "date": "2020-05-15 02:09:27",
+            "method": "applepay",
+            "issuer": "ME124EVJ",
+            "bank": "ING"
+        },
+        "session_id": "32",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "61c1f72c850e57cb1cde0760864ed819BB",
+        "amount": 16.28,
+        "initiator": "pieter1992",
+        "created_at": "15-05-2020 20:46:151589568380",
+        "completed": "15-05-2020 20:46:151589568383",
+        "hash": "11ac8114-ee82-4818-afcb-751ff79c65ab",
+        "t_data": {
+            "amount": 16.28,
+            "date": "2020-05-15 20:46:20",
+            "method": "applepay",
+            "issuer": "VLIYQR87",
+            "bank": "Volksbank"
+        },
+        "session_id": "33",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "ff4807ac4f86beb180f4a135b436b6e0AA",
+        "amount": 15.86,
+        "initiator": "lauren.vandenheuvel",
+        "created_at": "21-05-2020 04:07:151590026844",
+        "completed": "21-05-2020 04:07:151590026854",
+        "hash": "7585857e-cbac-4abb-9345-cdb6cdb23251",
+        "t_data": {
+            "amount": 15.86,
+            "date": "2020-05-21 04:07:24",
+            "method": "applepay",
+            "issuer": "MKOPEBXZ",
+            "bank": "Knab"
+        },
+        "session_id": "34",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "4386eddeac28ffd204f75b88f8c73778AA",
+        "amount": 15.42,
+        "initiator": "patrick197926",
+        "created_at": "22-05-2020 23:35:151590183329",
+        "completed": "22-05-2020 23:35:151590183336",
+        "hash": "34c186f4-f91d-457b-a12f-c80254045481",
+        "t_data": {
+            "amount": 15.42,
+            "date": "2020-05-22 23:35:29",
+            "method": "bancontact",
+            "issuer": "EV5H4DIU",
+            "bank": "Triodos"
+        },
+        "session_id": "35",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "293b11f1e2381b8a470c97597273f410CC",
+        "amount": 15.26,
+        "initiator": "finn.groot48",
+        "created_at": "26-05-2020 21:48:151590522511",
+        "completed": "26-05-2020 21:48:151590522519",
+        "hash": "1953530c-1a5b-46f3-a1f2-07511b6be8e1",
+        "t_data": {
+            "amount": 15.26,
+            "date": "2020-05-26 21:48:31",
+            "method": "creditcard",
+            "issuer": "YS77PTPW",
+            "bank": "Rabobank"
+        },
+        "session_id": "37",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "2fe194e4ed5aebd8f59e45d7e3ac766aDD",
+        "amount": 15.61,
+        "initiator": "annavanwijk",
+        "created_at": "28-05-2020 01:56:151590623815",
+        "completed": "28-05-2020 01:57:151590623825",
+        "hash": "35394f31-a9f6-4a38-8d2c-d942f3f57ebc",
+        "t_data": {
+            "amount": 15.61,
+            "date": "2020-05-28 01:56:55",
+            "method": "ideal",
+            "issuer": "JN48WPL7",
+            "bank": "Knab"
+        },
+        "session_id": "38",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "f85fc2c8c6f3921a8432e37c3295cad1CC",
+        "amount": 17.0,
+        "initiator": "esther.kuiper",
+        "created_at": "28-05-2020 23:40:151590702015",
+        "completed": "28-05-2020 23:40:151590702016",
+        "hash": "fa059ed3-4d26-46e7-8aef-dfb9f08450b3",
+        "t_data": {
+            "amount": 17.0,
+            "date": "2020-05-28 23:40:15",
+            "method": "googlepay",
+            "issuer": "67U9L3NW",
+            "bank": "RegioBank"
+        },
+        "session_id": "39",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "0449140f83afef0f5b72c892a8bdc3e5CC",
+        "amount": 15.26,
+        "initiator": "carolinepostma45",
+        "created_at": "30-05-2020 00:55:151590792903",
+        "completed": "30-05-2020 00:55:151590792913",
+        "hash": "849e3ce4-4e16-4f22-8614-853274c9a5c4",
+        "t_data": {
+            "amount": 15.26,
+            "date": "2020-05-30 00:55:03",
+            "method": "applepay",
+            "issuer": "0OA5B0DR",
+            "bank": "ASN"
+        },
+        "session_id": "40",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "a7813109d60aab4cb34611f7e852892eCC",
+        "amount": 15.36,
+        "initiator": "kai.vandepol",
+        "created_at": "01-06-2020 23:34:151591047295",
+        "completed": "01-06-2020 23:35:151591047305",
+        "hash": "4ad2151b-e944-443f-9bd2-f6c7d9a50d30",
+        "t_data": {
+            "amount": 15.36,
+            "date": "2020-06-01 23:34:55",
+            "method": "ideal",
+            "issuer": "2YWGW2TU",
+            "bank": "Knab"
+        },
+        "session_id": "41",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "d53f498109a60f079fe6bcee75e98d8eDD",
+        "amount": 15.2,
+        "initiator": "ryan.dewit",
+        "created_at": "01-06-2020 16:35:151591022100",
+        "completed": "01-06-2020 16:35:151591022108",
+        "hash": "5b443f2a-8a4b-4a1c-a904-24bf6b16fa1e",
+        "t_data": {
+            "amount": 15.2,
+            "date": "2020-06-01 16:35:00",
+            "method": "paypal",
+            "issuer": "DDL2KN5S",
+            "bank": "RegioBank"
+        },
+        "session_id": "42",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "7bf6d84e0e02eeef6815eea18ba776a6DD",
+        "amount": 16.53,
+        "initiator": "tygo1968",
+        "created_at": "03-06-2020 06:53:151591160034",
+        "completed": "03-06-2020 06:54:151591160040",
+        "hash": "7df23a22-1b02-4bb2-b570-873aff8ecf87",
+        "t_data": {
+            "amount": 16.53,
+            "date": "2020-06-03 06:53:54",
+            "method": "applepay",
+            "issuer": "ILVE3K1L",
+            "bank": "RegioBank"
+        },
+        "session_id": "43",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "954c9fd67db45370f9f989672ff8b70fBB",
+        "amount": 17.0,
+        "initiator": "sofie.vermeulen",
+        "created_at": "04-06-2020 02:32:151591230721",
+        "completed": "04-06-2020 02:32:151591230725",
+        "hash": "bf22a3f2-f199-4fab-af31-0faeb3649646",
+        "t_data": {
+            "amount": 17.0,
+            "date": "2020-06-04 02:32:01",
+            "method": "applepay",
+            "issuer": "YNAXOXHQ",
+            "bank": "Rabobank"
+        },
+        "session_id": "44",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "4c959e8bc1e3c1446739b93b34d79b91CC",
+        "amount": 18.21,
+        "initiator": "sabrina1967",
+        "created_at": "05-06-2020 02:23:151591316604",
+        "completed": "05-06-2020 02:23:151591316609",
+        "hash": "7f1771fb-469a-4f15-92dc-d33311e61c9f",
+        "t_data": {
+            "amount": 18.21,
+            "date": "2020-06-05 02:23:24",
+            "method": "ideal",
+            "issuer": "N8MJTZHX",
+            "bank": "Bunq"
+        },
+        "session_id": "45",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "201d0e079908ad06a943ea48320f0e29DD",
+        "amount": 16.85,
+        "initiator": "stefan2002",
+        "created_at": "06-06-2020 02:35:151591403740",
+        "completed": "06-06-2020 02:35:151591403745",
+        "hash": "0205fc98-d79f-42b4-bb30-e1ba2817ea0f",
+        "t_data": {
+            "amount": 16.85,
+            "date": "2020-06-06 02:35:40",
+            "method": "ideal",
+            "issuer": "HC3X187H",
+            "bank": "ABN-AMRO"
+        },
+        "session_id": "46",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "cfb3d03a60d9f733607f7199995a0947CC",
+        "amount": 18.65,
+        "initiator": "emma.scholten",
+        "created_at": "09-06-2020 04:03:151591668208",
+        "completed": "09-06-2020 04:03:151591668209",
+        "hash": "21711499-8303-4155-90bf-efb0471ea794",
+        "t_data": {
+            "amount": 18.65,
+            "date": "2020-06-09 04:03:28",
+            "method": "creditcard",
+            "issuer": "5LK7M1B3",
+            "bank": "Triodos"
+        },
+        "session_id": "47",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "4391b67b0aeb2cd43db342959c70a275CC",
+        "amount": 18.9,
+        "initiator": "kevin.degraaf",
+        "created_at": "11-06-2020 02:00:151591833656",
+        "completed": "11-06-2020 02:01:151591833663",
+        "hash": "482d0a16-a575-4cb0-b8cd-338f4181a913",
+        "t_data": {
+            "amount": 18.9,
+            "date": "2020-06-11 02:00:56",
+            "method": "googlepay",
+            "issuer": "XZMSRACM",
+            "bank": "Knab"
+        },
+        "session_id": "49",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "6b9456d79e867c98c53966bc79d0e20dDD",
+        "amount": 15.61,
+        "initiator": "ryan.prins",
+        "created_at": "12-06-2020 00:29:151591914559",
+        "completed": "12-06-2020 00:29:151591914565",
+        "hash": "56fd4297-5f6e-4e03-a412-a9d777524bce",
+        "t_data": {
+            "amount": 15.61,
+            "date": "2020-06-12 00:29:19",
+            "method": "ideal",
+            "issuer": "25CPUD9X",
+            "bank": "Bunq"
+        },
+        "session_id": "50",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "e5f957aa7b59a1690325343bbc549bb8AA",
+        "amount": 18.27,
+        "initiator": "natasja.haan76",
+        "created_at": "13-06-2020 00:22:151592000559",
+        "completed": "13-06-2020 00:22:151592000569",
+        "hash": "5d7922d5-bcbc-4010-8d97-04931c826fcb",
+        "t_data": {
+            "amount": 18.27,
+            "date": "2020-06-13 00:22:39",
+            "method": "paypal",
+            "issuer": "7UI5WKE6",
+            "bank": "Triodos"
+        },
+        "session_id": "51",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "0731b85e5fe30019af7f1d60326dfa0aAA",
+        "amount": 17.13,
+        "initiator": "ryan.dejong39",
+        "created_at": "16-06-2020 02:32:151592267522",
+        "completed": "16-06-2020 02:32:151592267524",
+        "hash": "6b3752cf-c53b-4aeb-888e-41345dc08a09",
+        "t_data": {
+            "amount": 17.13,
+            "date": "2020-06-16 02:32:02",
+            "method": "bancontact",
+            "issuer": "5S4Y21N7",
+            "bank": "Volksbank"
+        },
+        "session_id": "52",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "92eb876f183fb8b083cdaee376cc36c1BB",
+        "amount": 17.0,
+        "initiator": "isa.bakker",
+        "created_at": "16-06-2020 18:19:151592324378",
+        "completed": "16-06-2020 18:19:151592324381",
+        "hash": "e37d821a-39b4-43c9-ae24-98317a631ce8",
+        "t_data": {
+            "amount": 17.0,
+            "date": "2020-06-16 18:19:38",
+            "method": "googlepay",
+            "issuer": "JGASS3C0",
+            "bank": "ASN"
+        },
+        "session_id": "53",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "d0b11f9a10a6ce80b43ecc538e382435BB",
+        "amount": 17.29,
+        "initiator": "martijn.devries14",
+        "created_at": "18-06-2020 23:21:151592515294",
+        "completed": "18-06-2020 23:21:151592515298",
+        "hash": "47113069-f766-47b1-9741-5f105703030b",
+        "t_data": {
+            "amount": 17.29,
+            "date": "2020-06-18 23:21:34",
+            "method": "ideal",
+            "issuer": "EAQ0TKB9",
+            "bank": "Rabobank"
+        },
+        "session_id": "54",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "b1d1c124b8d75734c9610bf6185638beBB",
+        "amount": 15.39,
+        "initiator": "zoëvangelderen21",
+        "created_at": "19-06-2020 16:56:151592578598",
+        "completed": "19-06-2020 16:56:151592578604",
+        "hash": "49188f74-f40f-40b8-9ce8-ab578c942c79",
+        "t_data": {
+            "amount": 15.39,
+            "date": "2020-06-19 16:56:38",
+            "method": "applepay",
+            "issuer": "YGVEI7O0",
+            "bank": "ASN"
+        },
+        "session_id": "55",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "566827f6857cf329c1cc558e44e77c13BB",
+        "amount": 16.5,
+        "initiator": "milahoekstra",
+        "created_at": "22-06-2020 18:49:151592844543",
+        "completed": "22-06-2020 18:49:151592844550",
+        "hash": "aca58580-c805-462e-af11-cd25fa6713ec",
+        "t_data": {
+            "amount": 16.5,
+            "date": "2020-06-22 18:49:03",
+            "method": "paypal",
+            "issuer": "BZJ6O3AB",
+            "bank": "ING"
+        },
+        "session_id": "56",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "33a82d88560658911545b55c63426b3cAA",
+        "amount": 16.34,
+        "initiator": "mark1999",
+        "created_at": "23-06-2020 20:22:151592936528",
+        "completed": "23-06-2020 20:22:151592936532",
+        "hash": "c18c4e6d-e9b8-43f0-91a9-03ff8366beda",
+        "t_data": {
+            "amount": 16.34,
+            "date": "2020-06-23 20:22:08",
+            "method": "googlepay",
+            "issuer": "4TO1F8YY",
+            "bank": "Van Lanschot"
+        },
+        "session_id": "57",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "dbd9405303a47ec66322f187fc50dc47CC",
+        "amount": 16.09,
+        "initiator": "mila1957",
+        "created_at": "24-06-2020 17:51:151593013890",
+        "completed": "24-06-2020 17:51:151593013895",
+        "hash": "54a18172-9755-45c1-8866-d78da231c501",
+        "t_data": {
+            "amount": 16.09,
+            "date": "2020-06-24 17:51:30",
+            "method": "bancontact",
+            "issuer": "8JZ54F5W",
+            "bank": "SNS"
+        },
+        "session_id": "58",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "61552a09168dbb28799e806b67628de6AA",
+        "amount": 16.4,
+        "initiator": "nora.dejonge",
+        "created_at": "25-06-2020 16:55:151593096941",
+        "completed": "25-06-2020 16:55:151593096944",
+        "hash": "056e7628-45e6-4f66-9187-979b396fc9c7",
+        "t_data": {
+            "amount": 16.4,
+            "date": "2020-06-25 16:55:41",
+            "method": "applepay",
+            "issuer": "O2KV26JQ",
+            "bank": "Bunq"
+        },
+        "session_id": "59",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "042284ced89b555a323c732774f174b9BB",
+        "amount": 16.34,
+        "initiator": "yara1974",
+        "created_at": "26-06-2020 21:38:151593200334",
+        "completed": "26-06-2020 21:39:151593200340",
+        "hash": "b2365f97-ab6e-42ef-8c08-ae3498e03e93",
+        "t_data": {
+            "amount": 16.34,
+            "date": "2020-06-26 21:38:54",
+            "method": "bancontact",
+            "issuer": "JJYRXCYM",
+            "bank": "SNS"
+        },
+        "session_id": "60",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "7f34720ca2974dc05ad1ca16e45a6cbeDD",
+        "amount": 16.72,
+        "initiator": "mirandavanderveen",
+        "created_at": "30-06-2020 23:53:151593554016",
+        "completed": "30-06-2020 23:53:151593554017",
+        "hash": "133a8f37-4dd9-4ae5-add3-bc25cb7ce11e",
+        "t_data": {
+            "amount": 16.72,
+            "date": "2020-06-30 23:53:36",
+            "method": "ideal",
+            "issuer": "6IJZEGCN",
+            "bank": "Triodos"
+        },
+        "session_id": "61",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "b3310c0d0bd14adec9338561b4ea6274BB",
+        "amount": 16.5,
+        "initiator": "sofie.maas",
+        "created_at": "01-07-2020 22:17:151593634620",
+        "completed": "01-07-2020 22:17:151593634630",
+        "hash": "b3d420b4-46ef-4434-a689-d365934859b7",
+        "t_data": {
+            "amount": 16.5,
+            "date": "2020-07-01 22:17:00",
+            "method": "ideal",
+            "issuer": "BGD29Q0N",
+            "bank": "Bunq"
+        },
+        "session_id": "62",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "25929ed39402ba744a8334b2000d6fa0CC",
+        "amount": 16.53,
+        "initiator": "pieter199869",
+        "created_at": "02-07-2020 21:45:151593719158",
+        "completed": "02-07-2020 21:46:151593719165",
+        "hash": "520e1f26-2fac-4be0-b996-161d3c0c371a",
+        "t_data": {
+            "amount": 16.53,
+            "date": "2020-07-02 21:45:58",
+            "method": "applepay",
+            "issuer": "7F11MNSE",
+            "bank": "ASN"
+        },
+        "session_id": "63",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "9891e0cef31e5f656de2f311be233ed0CC",
+        "amount": 15.48,
+        "initiator": "sara.vanwijk24",
+        "created_at": "03-07-2020 23:52:151593813124",
+        "completed": "03-07-2020 23:52:151593813127",
+        "hash": "ab10323d-6b7f-4f06-b5c2-fca7f68ffe74",
+        "t_data": {
+            "amount": 15.48,
+            "date": "2020-07-03 23:52:04",
+            "method": "bancontact",
+            "issuer": "BIQ37V4Y",
+            "bank": "ASN"
+        },
+        "session_id": "64",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "ce1df6bf12e429bb0657bb0f0a337be2CC",
+        "amount": 16.53,
+        "initiator": "joycevermeulen97",
+        "created_at": "07-07-2020 05:24:151594092295",
+        "completed": "07-07-2020 05:25:151594092305",
+        "hash": "535d10fe-af07-4195-a4ba-8e6b0614aa24",
+        "t_data": {
+            "amount": 16.53,
+            "date": "2020-07-07 05:24:55",
+            "method": "applepay",
+            "issuer": "HW1244NC",
+            "bank": "SNS"
+        },
+        "session_id": "65",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "a6603bed8a3e0235dfc9f57d2e52d38fBB",
+        "amount": 17.67,
+        "initiator": "thomas.leeuwen15",
+        "created_at": "06-07-2020 21:59:151594065556",
+        "completed": "06-07-2020 21:59:151594065560",
+        "hash": "f47083ad-a189-4f28-8741-195a7a1677c3",
+        "t_data": {
+            "amount": 17.67,
+            "date": "2020-07-06 21:59:16",
+            "method": "paypal",
+            "issuer": "6BF5K1SK",
+            "bank": "Rabobank"
+        },
+        "session_id": "66",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "583348892519a93d1c0ec41bf4db87a7AA",
+        "amount": 18.84,
+        "initiator": "sophie.bos",
+        "created_at": "08-07-2020 16:16:151594217810",
+        "completed": "08-07-2020 16:16:151594217819",
+        "hash": "d40b93a1-e64e-4597-90c8-b316c52c075e",
+        "t_data": {
+            "amount": 18.84,
+            "date": "2020-07-08 16:16:50",
+            "method": "creditcard",
+            "issuer": "ZV77UD0P",
+            "bank": "ING"
+        },
+        "session_id": "67",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "02402d9b28594c31c954431554a0e541BB",
+        "amount": 15.83,
+        "initiator": "frank.jansen",
+        "created_at": "10-07-2020 05:13:151594350790",
+        "completed": "10-07-2020 05:13:151594350795",
+        "hash": "5a95e013-0ce0-4f48-a9ad-ebb6e03f3bc8",
+        "t_data": {
+            "amount": 15.83,
+            "date": "2020-07-10 05:13:10",
+            "method": "paypal",
+            "issuer": "2JDTVIJ9",
+            "bank": "Volksbank"
+        },
+        "session_id": "68",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "ad35d4ff181dc8363fff1cfca2d242d3CC",
+        "amount": 17.1,
+        "initiator": "ruben1995",
+        "created_at": "11-07-2020 06:30:151594441810",
+        "completed": "11-07-2020 06:30:151594441820",
+        "hash": "f2cb2ea8-bf03-4140-a62b-fae8b2ed540d",
+        "t_data": {
+            "amount": 17.1,
+            "date": "2020-07-11 06:30:10",
+            "method": "creditcard",
+            "issuer": "SVDI1CVN",
+            "bank": "Triodos"
+        },
+        "session_id": "69",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "708d9ebb7663a82f226eefe123279ac9DD",
+        "amount": 16.5,
+        "initiator": "femke.vandenheuvel",
+        "created_at": "14-07-2020 02:33:151594686827",
+        "completed": "14-07-2020 02:33:151594686830",
+        "hash": "afa7b5a7-9a47-4f98-9914-3c2385c6f682",
+        "t_data": {
+            "amount": 16.5,
+            "date": "2020-07-14 02:33:47",
+            "method": "paypal",
+            "issuer": "16100H5V",
+            "bank": "ING"
+        },
+        "session_id": "70",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "2b3f34e206c64b1f906a4a63c994f2f4CC",
+        "amount": 15.55,
+        "initiator": "luna.devries",
+        "created_at": "14-07-2020 17:35:151594740951",
+        "completed": "14-07-2020 17:35:151594740954",
+        "hash": "5176367b-da67-42ac-a8b5-e252a89f348f",
+        "t_data": {
+            "amount": 15.55,
+            "date": "2020-07-14 17:35:51",
+            "method": "ideal",
+            "issuer": "HRB4SCBE",
+            "bank": "ING"
+        },
+        "session_id": "71",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "64bba939a336f49fb179e6d7e473664cCC",
+        "amount": 15.58,
+        "initiator": "nora.hendriks78",
+        "created_at": "15-07-2020 19:54:151594835671",
+        "completed": "15-07-2020 19:54:151594835676",
+        "hash": "826b837a-4218-416c-875f-6cbbb4deab19",
+        "t_data": {
+            "amount": 15.58,
+            "date": "2020-07-15 19:54:31",
+            "method": "applepay",
+            "issuer": "1HWAS1YP",
+            "bank": "SNS"
+        },
+        "session_id": "72",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "3525394cc927f1a21ca11dcff8bdb7e5BB",
+        "amount": 15.61,
+        "initiator": "erik1966",
+        "created_at": "17-07-2020 19:14:151595006049",
+        "completed": "17-07-2020 19:14:151595006050",
+        "hash": "a2a36643-fcfd-4675-befb-8d9d41d7c10a",
+        "t_data": {
+            "amount": 15.61,
+            "date": "2020-07-17 19:14:09",
+            "method": "paypal",
+            "issuer": "QLHHPL7V",
+            "bank": "SNS"
+        },
+        "session_id": "74",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "cdb3c3b9d1481438756a6d6131888165DD",
+        "amount": 17.35,
+        "initiator": "mees.degraaf46",
+        "created_at": "22-07-2020 01:40:151595374851",
+        "completed": "22-07-2020 01:40:151595374859",
+        "hash": "818081f8-1b7d-4468-8dd7-d3bdc8d48bf6",
+        "t_data": {
+            "amount": 17.35,
+            "date": "2020-07-22 01:40:51",
+            "method": "googlepay",
+            "issuer": "0RL8EID4",
+            "bank": "Van Lanschot"
+        },
+        "session_id": "75",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "26abb2bbd8612896931c8680392047b5AA",
+        "amount": 15.71,
+        "initiator": "paul.jonge40",
+        "created_at": "22-07-2020 16:26:151595427971",
+        "completed": "22-07-2020 16:26:151595427980",
+        "hash": "e419b6b6-cb94-4ea5-a6da-bd5767b986df",
+        "t_data": {
+            "amount": 15.71,
+            "date": "2020-07-22 16:26:11",
+            "method": "creditcard",
+            "issuer": "EL94WWX1",
+            "bank": "ABN-AMRO"
+        },
+        "session_id": "76",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "587696a8c581646808fa2d598f2be828CC",
+        "amount": 17.0,
+        "initiator": "danielle195590",
+        "created_at": "24-07-2020 03:45:151595555117",
+        "completed": "24-07-2020 03:45:151595555118",
+        "hash": "245e714d-d329-469c-8ae4-1e416f8de1e6",
+        "t_data": {
+            "amount": 17.0,
+            "date": "2020-07-24 03:45:17",
+            "method": "bancontact",
+            "issuer": "PV3WTA2P",
+            "bank": "ASN"
+        },
+        "session_id": "77",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "363851f5fdbb533786f9218dddf92f59AA",
+        "amount": 18.27,
+        "initiator": "anna.koster",
+        "created_at": "28-07-2020 03:41:151595900491",
+        "completed": "28-07-2020 03:41:151595900500",
+        "hash": "46763d44-50b2-4a9a-8005-748e98adb760",
+        "t_data": {
+            "amount": 18.27,
+            "date": "2020-07-28 03:41:31",
+            "method": "ideal",
+            "issuer": "PPN9027H",
+            "bank": "Triodos"
+        },
+        "session_id": "78",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "cfc90377e9e8ee02d2dbe46f3076897dBB",
+        "amount": 15.58,
+        "initiator": "kevinvanderlaan",
+        "created_at": "30-07-2020 18:11:151596125460",
+        "completed": "30-07-2020 18:11:151596125465",
+        "hash": "233e615d-5fd1-48b6-bb75-de4a045ff86a",
+        "t_data": {
+            "amount": 15.58,
+            "date": "2020-07-30 18:11:00",
+            "method": "bancontact",
+            "issuer": "76X8MTPQ",
+            "bank": "RegioBank"
+        },
+        "session_id": "81",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "953462fe791cc0a1911b045fdf4ee311CC",
+        "amount": 17.54,
+        "initiator": "bas.leenders",
+        "created_at": "01-08-2020 04:30:151596249029",
+        "completed": "01-08-2020 04:30:151596249032",
+        "hash": "907ac51f-2051-4a98-b5ea-458187134655",
+        "t_data": {
+            "amount": 17.54,
+            "date": "2020-08-01 04:30:29",
+            "method": "ideal",
+            "issuer": "8CIRSCKN",
+            "bank": "SNS"
+        },
+        "session_id": "82",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "43b08e741a2d9c4cf83e1712eb1f6029AA",
+        "amount": 16.25,
+        "initiator": "astrid.scholten",
+        "created_at": "03-08-2020 20:16:151596478618",
+        "completed": "03-08-2020 20:16:151596478619",
+        "hash": "2b2df8c3-fbea-4d56-a7cd-7b7cd726616e",
+        "t_data": {
+            "amount": 16.25,
+            "date": "2020-08-03 20:16:58",
+            "method": "ideal",
+            "issuer": "OU66MAE4",
+            "bank": "SNS"
+        },
+        "session_id": "83",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "466c4e6940fe1169e52f3997fdc25ebcAA",
+        "amount": 16.91,
+        "initiator": "sandra.hoekstra76",
+        "created_at": "04-08-2020 01:14:151596496473",
+        "completed": "04-08-2020 01:14:151596496476",
+        "hash": "f324bfde-9ca6-47e0-b739-b7690f8b75f8",
+        "t_data": {
+            "amount": 16.91,
+            "date": "2020-08-04 01:14:33",
+            "method": "bancontact",
+            "issuer": "0PD2E9TI",
+            "bank": "ASN"
+        },
+        "session_id": "84",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "92f5480706e22a4b6d73c450689d5095CC",
+        "amount": 16.97,
+        "initiator": "tim.willems",
+        "created_at": "05-08-2020 07:47:151596606422",
+        "completed": "05-08-2020 07:47:151596606432",
+        "hash": "e3ddad2d-a5b7-4381-9694-cf801c9cf55c",
+        "t_data": {
+            "amount": 16.97,
+            "date": "2020-08-05 07:47:02",
+            "method": "ideal",
+            "issuer": "BSIM5BL4",
+            "bank": "ING"
+        },
+        "session_id": "85",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "5d8a0517143a16f62ed226ef7bd798eaDD",
+        "amount": 16.91,
+        "initiator": "noud.blom20",
+        "created_at": "05-08-2020 16:26:151596637567",
+        "completed": "05-08-2020 16:26:151596637575",
+        "hash": "6a3f4f16-508b-45b3-91bc-7608246725ae",
+        "t_data": {
+            "amount": 16.91,
+            "date": "2020-08-05 16:26:07",
+            "method": "creditcard",
+            "issuer": "9YOVC8PM",
+            "bank": "Volksbank"
+        },
+        "session_id": "86",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "2cd04c60d9d9b8b7ead12843f0584d09DD",
+        "amount": 18.24,
+        "initiator": "noravanwijk33",
+        "created_at": "06-08-2020 19:00:151596733238",
+        "completed": "06-08-2020 19:00:151596733245",
+        "hash": "383a1568-4777-4af4-ba63-cf8b23403833",
+        "t_data": {
+            "amount": 18.24,
+            "date": "2020-08-06 19:00:38",
+            "method": "paypal",
+            "issuer": "CQ7RS55E",
+            "bank": "ING"
+        },
+        "session_id": "87",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "fa12086600960cd40ff47ea9352df46fCC",
+        "amount": 18.59,
+        "initiator": "dennis.kuipers",
+        "created_at": "07-08-2020 21:48:151596829694",
+        "completed": "07-08-2020 21:48:151596829698",
+        "hash": "7cd9a34f-408c-4026-af35-435bc5c9a75c",
+        "t_data": {
+            "amount": 18.59,
+            "date": "2020-08-07 21:48:14",
+            "method": "creditcard",
+            "issuer": "ALOPDRED",
+            "bank": "RegioBank"
+        },
+        "session_id": "88",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "8279d9aff96a43b511bf6cfcd8fdceaeDD",
+        "amount": 17.13,
+        "initiator": "anna.pieters",
+        "created_at": "12-08-2020 05:53:151597204420",
+        "completed": "12-08-2020 05:53:151597204426",
+        "hash": "eb9c02c4-5fa7-4497-8795-5c4092a7ea26",
+        "t_data": {
+            "amount": 17.13,
+            "date": "2020-08-12 05:53:40",
+            "method": "googlepay",
+            "issuer": "MZQX8I88",
+            "bank": "ASN"
+        },
+        "session_id": "89",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "d661a3909160d56a6b904d2b747633b9BB",
+        "amount": 17.42,
+        "initiator": "natasjavisser54",
+        "created_at": "13-08-2020 19:57:151597341439",
+        "completed": "13-08-2020 19:57:151597341440",
+        "hash": "cdb72c17-58c9-45e7-b274-dc9fc4a33e98",
+        "t_data": {
+            "amount": 17.42,
+            "date": "2020-08-13 19:57:19",
+            "method": "ideal",
+            "issuer": "OSJWLDRR",
+            "bank": "RegioBank"
+        },
+        "session_id": "90",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "47ef1e51ce90893d632d94c70543a9f7DD",
+        "amount": 16.43,
+        "initiator": "sabrina.dijkstra",
+        "created_at": "14-08-2020 20:52:151597431128",
+        "completed": "14-08-2020 20:52:151597431133",
+        "hash": "07dcbad0-1d63-4cfe-9fd4-a924547802f2",
+        "t_data": {
+            "amount": 16.43,
+            "date": "2020-08-14 20:52:08",
+            "method": "creditcard",
+            "issuer": "C11OEEZO",
+            "bank": "ING"
+        },
+        "session_id": "91",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "7f775ae60b549ac0ff9a1295605fcc0bCC",
+        "amount": 15.29,
+        "initiator": "lauren.willems",
+        "created_at": "17-08-2020 14:55:151597668916",
+        "completed": "17-08-2020 14:55:151597668923",
+        "hash": "48f6df62-3861-424e-bd45-7dd29929112b",
+        "t_data": {
+            "amount": 15.29,
+            "date": "2020-08-17 14:55:16",
+            "method": "googlepay",
+            "issuer": "E6O9L40L",
+            "bank": "Bunq"
+        },
+        "session_id": "92",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "4dc93f13f9de49a3cfa0f72378406202BB",
+        "amount": 17.92,
+        "initiator": "dennis194365",
+        "created_at": "19-08-2020 07:28:151597814891",
+        "completed": "19-08-2020 07:28:151597814897",
+        "hash": "6aa68f10-3c29-46d5-96dd-4ceff3133232",
+        "t_data": {
+            "amount": 17.92,
+            "date": "2020-08-19 07:28:11",
+            "method": "googlepay",
+            "issuer": "XX39VYJI",
+            "bank": "Rabobank"
+        },
+        "session_id": "93",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "967ffd5f4208008559897055cce65a39DD",
+        "amount": 16.62,
+        "initiator": "evi.dejonge14",
+        "created_at": "20-08-2020 07:23:151597900987",
+        "completed": "20-08-2020 07:23:151597900990",
+        "hash": "7107f58c-b44c-4923-a860-f924ebebfa50",
+        "t_data": {
+            "amount": 16.62,
+            "date": "2020-08-20 07:23:07",
+            "method": "applepay",
+            "issuer": "BCZSND2S",
+            "bank": "SNS"
+        },
+        "session_id": "94",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "eb1e3f28e35aa9780240aab78f85fb9cCC",
+        "amount": 15.74,
+        "initiator": "danielle.koster",
+        "created_at": "20-08-2020 20:48:151597949298",
+        "completed": "20-08-2020 20:48:151597949299",
+        "hash": "b14c9f70-327f-46f1-b8f1-92b692a46a10",
+        "t_data": {
+            "amount": 15.74,
+            "date": "2020-08-20 20:48:18",
+            "method": "bancontact",
+            "issuer": "3AI0A15L",
+            "bank": "Bunq"
+        },
+        "session_id": "95",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "8efb94f80f9e66412315bb04cc8c3138AA",
+        "amount": 16.66,
+        "initiator": "boaz.hoekstra",
+        "created_at": "26-08-2020 17:06:151598454362",
+        "completed": "26-08-2020 17:06:151598454369",
+        "hash": "c3bc8820-c8e8-460b-acb5-1b33485ae822",
+        "t_data": {
+            "amount": 16.66,
+            "date": "2020-08-26 17:06:02",
+            "method": "ideal",
+            "issuer": "0QPUW0KZ",
+            "bank": "ING"
+        },
+        "session_id": "97",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "3e6a52a303d412c4e7c932a22c27f91bBB",
+        "amount": 17.99,
+        "initiator": "manonsmit70",
+        "created_at": "28-08-2020 03:02:151598576565",
+        "completed": "28-08-2020 03:02:151598576572",
+        "hash": "2df56e87-a0af-4e77-bc63-0bfab381396f",
+        "t_data": {
+            "amount": 17.99,
+            "date": "2020-08-28 03:02:45",
+            "method": "ideal",
+            "issuer": "AXT3BO6K",
+            "bank": "ABN-AMRO"
+        },
+        "session_id": "98",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "ebc261b98fba3f7f13225a7fae464f44CC",
+        "amount": 15.61,
+        "initiator": "paul.visser",
+        "created_at": "29-08-2020 07:32:151598679126",
+        "completed": "29-08-2020 07:32:151598679129",
+        "hash": "5c0e45ad-cee3-4c65-a3a8-7a6925ea668e",
+        "t_data": {
+            "amount": 15.61,
+            "date": "2020-08-29 07:32:06",
+            "method": "bancontact",
+            "issuer": "9PYULTLZ",
+            "bank": "ING"
+        },
+        "session_id": "99",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "15b998b14c24af0618c29c7277cfc14eAA",
+        "amount": 16.59,
+        "initiator": "emmabrouwer35",
+        "created_at": "01-09-2020 05:17:151598930238",
+        "completed": "01-09-2020 05:17:151598930241",
+        "hash": "e124f456-4d7c-425a-9eeb-dcc8f79b8400",
+        "t_data": {
+            "amount": 16.59,
+            "date": "2020-09-01 05:17:18",
+            "method": "bancontact",
+            "issuer": "5SCMUG6H",
+            "bank": "Bunq"
+        },
+        "session_id": "100",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "a5962b5c085e762f7a290dde9edf0751CC",
+        "amount": 15.23,
+        "initiator": "thijsvandijk",
+        "created_at": "01-09-2020 14:45:151598964347",
+        "completed": "01-09-2020 14:45:151598964350",
+        "hash": "7ead2e67-d0a7-4ec3-89a9-44b6c3a4d1b7",
+        "t_data": {
+            "amount": 15.23,
+            "date": "2020-09-01 14:45:47",
+            "method": "googlepay",
+            "issuer": "KSQI37WY",
+            "bank": "ABN-AMRO"
+        },
+        "session_id": "101",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "e82bfa2aa0611d9dca1badb8f992c607DD",
+        "amount": 15.93,
+        "initiator": "frank.vermeulen",
+        "created_at": "03-09-2020 02:30:151599093037",
+        "completed": "03-09-2020 02:30:151599093041",
+        "hash": "626a9558-42bd-4546-b822-e6dee3dd25bb",
+        "t_data": {
+            "amount": 15.93,
+            "date": "2020-09-03 02:30:37",
+            "method": "paypal",
+            "issuer": "P0CXSSP5",
+            "bank": "ING"
+        },
+        "session_id": "102",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "583639a0ebd4653af526fab29edde3abBB",
+        "amount": 17.89,
+        "initiator": "nicole.bos",
+        "created_at": "03-09-2020 21:40:151599162028",
+        "completed": "03-09-2020 21:40:151599162031",
+        "hash": "eb863c38-b362-49b9-83ee-a7e1675ef01d",
+        "t_data": {
+            "amount": 17.89,
+            "date": "2020-09-03 21:40:28",
+            "method": "bancontact",
+            "issuer": "U3AUK59Z",
+            "bank": "Knab"
+        },
+        "session_id": "103",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "c47d663d0ecedf86735ee25e3a92901bCC",
+        "amount": 17.67,
+        "initiator": "chantalbrouwer45",
+        "created_at": "07-09-2020 22:53:151599512007",
+        "completed": "07-09-2020 22:53:151599512009",
+        "hash": "dd9f1795-189e-452f-b4db-9cee9fcc5021",
+        "t_data": {
+            "amount": 17.67,
+            "date": "2020-09-07 22:53:27",
+            "method": "applepay",
+            "issuer": "JMYD1WP8",
+            "bank": "Van Lanschot"
+        },
+        "session_id": "104",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "36d04306a5e718f553c4e71302984cd6DD",
+        "amount": 17.1,
+        "initiator": "vera.vanderwal",
+        "created_at": "09-09-2020 00:19:151599603568",
+        "completed": "09-09-2020 00:19:151599603578",
+        "hash": "aa606088-c17d-4fb5-9e56-c881ff3b6f9e",
+        "t_data": {
+            "amount": 17.1,
+            "date": "2020-09-09 00:19:28",
+            "method": "googlepay",
+            "issuer": "SDWIWEIA",
+            "bank": "Knab"
+        },
+        "session_id": "105",
+        "parking_lot_id": "1"
+    },
+    {
+        "transaction": "a97bc4eef088a4fdd1349a2c00b2bc6bBB",
+        "amount": 16.28,
+        "initiator": "teun.scholten41",
+        "created_at": "10-09-2020 16:50:151599749457",
+        "completed": "10-09-2020 16:50:151599749459",
+        "hash": "40155eb7-8af1-4f84-bb75-96bff040cc73",
+        "t_data": {
+            "amount": 16.28,
+            "date": "2020-09-10 16:50:57",
+            "method": "bancontact",
+            "issuer": "BYLJUUG4",
+            "bank": "Volksbank"
+        },
+        "session_id": "107",
+        "parking_lot_id": "1"
+    }
+]
