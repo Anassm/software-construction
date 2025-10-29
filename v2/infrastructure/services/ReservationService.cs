@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using v2.Core.Interfaces;
 using v2.Core.DTOs;
 using v2.Core.Models;
+using v2.Core.Constants;
 
 namespace v2.infrastructure.Services;
 
@@ -16,6 +17,25 @@ public class ReservationService : IReservation
     {
         _db = db;
         _logger = logger;
+    }
+
+    /// <summary>
+    /// Checks if there are any reservations that overlap with the given date range
+    /// </summary>
+    private async Task<bool> HasOverlappingReservations(Guid? vehicleId, Guid? parkingLotId, DateTime startDate, DateTime endDate)
+    {
+        var query = _db.Reservations
+            .Where(r => r.Status != ReservationStatus.Cancelled
+                && r.StartDate < endDate 
+                && r.EndDate > startDate);
+
+        if (vehicleId.HasValue)
+            query = query.Where(r => r.VehicleID == vehicleId.Value);
+        
+        if (parkingLotId.HasValue)
+            query = query.Where(r => r.ParkingLotID == parkingLotId.Value);
+
+        return await query.AnyAsync();
     }
 
     public async Task<Reservation> CreateReservationAsync(ReservationCreateRequest request)
@@ -61,28 +81,27 @@ public class ReservationService : IReservation
         }
 
         // Check for overlapping reservations for the same vehicle
-        var hasOverlappingReservations = await _db.Reservations
-            .Where(r => r.VehicleID == vehicle.ID
-                && r.Status != "Cancelled"
-                && r.StartDate < request.EndDate 
-                && r.EndDate > request.StartDate)
-            .AnyAsync();
+        var hasVehicleOverlap = await HasOverlappingReservations(
+            vehicleId: vehicle.ID, 
+            parkingLotId: null, 
+            request.StartDate, 
+            request.EndDate);
 
-        if (hasOverlappingReservations)
+        if (hasVehicleOverlap)
         {
             _logger.LogWarning("Vehicle {LicensePlate} already has a reservation for the selected dates", request.LicensePlate);
             throw new ArgumentException("Vehicle already has a reservation for the selected dates.");
         }
 
-        // Check parking lot capacity
-        var existingReservations = await _db.Reservations
+        // Check parking lot capacity by counting overlapping reservations
+        var overlappingCount = await _db.Reservations
             .Where(r => r.ParkingLotID == request.ParkingLotId 
-                && r.Status != "Cancelled"
+                && r.Status != ReservationStatus.Cancelled
                 && r.StartDate < request.EndDate 
                 && r.EndDate > request.StartDate)
             .CountAsync();
 
-        if (existingReservations >= lot.Capacity)
+        if (overlappingCount >= lot.Capacity)
         {
             _logger.LogWarning("Parking lot {ParkingLotId} is fully booked for the selected dates", request.ParkingLotId);
             throw new ArgumentException("Parking lot is fully booked for the selected dates.");
@@ -101,7 +120,7 @@ public class ReservationService : IReservation
                 ID = Guid.NewGuid(),
                 StartDate = request.StartDate,
                 EndDate = request.EndDate,
-                Status = "Pending",
+                Status = ReservationStatus.Pending,
                 CreatedAt = DateTime.UtcNow,
                 TotalPrice = totalPrice,
                 UserID = vehicle.UserID,
@@ -111,7 +130,9 @@ public class ReservationService : IReservation
 
             _db.Reservations.Add(reservation);
             
-            // Update parking lot reserved count
+            // Note: Reserved count is a denormalized field for quick lookups.
+            // In high-concurrency scenarios, consider calculating this dynamically
+            // or using optimistic concurrency control.
             lot.Reserved++;
             
             await _db.SaveChangesAsync();
