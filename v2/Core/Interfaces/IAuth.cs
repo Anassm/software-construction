@@ -1,0 +1,1 @@
+namespace v2.core.Interfaces;
