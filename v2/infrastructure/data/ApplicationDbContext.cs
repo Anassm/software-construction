@@ -140,7 +140,7 @@ namespace ChefServe.Infrastructure.Data
                         entity.Property(p => p.Amount).IsRequired();
                         entity.Property(p => p.Initiator).IsRequired().HasMaxLength(100);
                         entity.Property(p => p.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
-                        entity.Property(p => p.CompletedAt);
+                        entity.Property(p => p.CompletedAt).IsRequired(false);
                         entity.Property(p => p.Hash).HasMaxLength(256);
                         entity.Property(p => p.TransactionAmount).IsRequired();
                         entity.Property(p => p.TransactionDate).IsRequired();

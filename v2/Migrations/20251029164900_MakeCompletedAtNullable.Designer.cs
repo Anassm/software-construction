@@ -3,6 +3,7 @@ using System;
 using ChefServe.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace v2.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251029164900_MakeCompletedAtNullable")]
+    partial class MakeCompletedAtNullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.10");
@@ -381,7 +384,7 @@ namespace v2.Migrations
                     b.Property<Guid>("ParkingLotID")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("PaymentID")
+                    b.Property<Guid>("PaymentID")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("PaymentStatus")

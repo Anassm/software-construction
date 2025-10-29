@@ -12,7 +12,7 @@ public class Session
 
     public required Guid UserID { get; set; }
     public required Guid ParkingLotID { get; set; }
-    public required Guid PaymentID { get; set; }
+    public Guid? PaymentID { get; set; }
 
     public User? User { get; set; }
     public ParkingLot? ParkingLot { get; set; }

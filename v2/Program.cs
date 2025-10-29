@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using ChefServe.Infrastructure.Data;
 using v2.core.Interfaces;
 using v2.infrastructure.Services;
+using v2.Core.Interfaces;
+using v2.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +22,7 @@ builder.Services.AddScoped<IReservation, ReservationService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
+builder.Services.AddScoped<IPayment, PaymentService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

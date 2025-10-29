@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace v2.Infrastructure.Services;
 
-public class PaymentService : IPayments
+public class PaymentService : IPayment
 {
     private readonly ApplicationDbContext _context;
 

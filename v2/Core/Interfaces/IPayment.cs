@@ -5,7 +5,7 @@ using v2.Core.DTOs;
 
 namespace v2.Core.Interfaces
 {
-    public interface IPayments
+    public interface IPayment
     {
         // 5.5.1 Start/create a new Payment
         Task<PaymentResponseDTO> CreatePaymentAsync(CreatePaymentRequestDTO request);

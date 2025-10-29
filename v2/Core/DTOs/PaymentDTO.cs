@@ -55,6 +55,6 @@ public class UpdatePaymentRequestDTO
     public string? TransactionMethod { get; set; }
     public string? TransactionIssuer { get; set; }
     public string? TransactionBank { get; set; }
-    public DateTime? CompletedAt { get; set; } // allow finalizing
-    public string? Hash { get; set; } // allow setting hash if needed
+    public DateTime? CompletedAt { get; set; }
+    public string? Hash { get; set; }
 }
