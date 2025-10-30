@@ -1,18 +1,19 @@
 using v2.Core.Models;
 using v2.Core.DTOs;
+using Microsoft.EntityFrameworkCore.InMemory.Query.Internal;
 
 namespace v2.Core.Interfaces;
 public interface IVehicles
 {
-    Task<Vehicle> CreateVehicleAsync(CreateVehicleDto vehicle);
+    Task<(int statusCode, object message)> CreateVehicleAsync(CreateVehicleDto vehicle, string identityUserId);
 
-    Task<Vehicle?> UpdateVehicleAsync(string licensePlate, CreateVehicleDto updatedVehicle);
+    Task<(int statusCode, object message)> UpdateVehicleAsync(string licensePlate, UpdateVehicleDto updatedVehicle, string identityUserId);
 
-    Task<bool> DeleteVehicleAsync(string licensePlate);
+    Task<(bool success, int statusCode, object message)> DeleteVehicleAsync(string licensePlate);
 
-    Task<IEnumerable<Vehicle>> GetAllVehiclesAsync(Guid? userId = null);
+    Task<(IEnumerable<Vehicle> data, int statusCode, object message)> GetAllVehiclesAsync(Guid? userId = null);
 
-    Task<IEnumerable<Reservation>> GetReservationsByVehicleAsync(string licensePlate);
+    Task<(IEnumerable<Reservation> data, int statusCode, object message)> GetReservationsByVehicleAsync(string licensePlate);
 
-    Task<VehicleHistoryDTO?> GetVehicleHistoryAsync(string licensePlate);
+    Task<(VehicleHistoryDTO? data, int statusCode, object message)> GetVehicleHistoryAsync(string licensePlate);
 }
