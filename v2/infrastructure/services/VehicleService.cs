@@ -95,52 +95,23 @@ public class VehicleService : IVehicles
         }
     }
 
-    public async Task<bool> DeleteVehicleAsync(string licensePlate)
-    {
-        var vehicle = await _dbContext.Vehicles.FirstOrDefaultAsync(v => v.LicensePlate == licensePlate);
-        if (vehicle == null)
-            return false;
+    // Task<(bool success, int statusCode, object message)> DeleteVehicleAsync(string licensePlate)
+    // {
+    //     
+    // }
 
-        _dbContext.Vehicles.Remove(vehicle);
-        await _dbContext.SaveChangesAsync();
-        return true;
-    }
+    // Task<(IEnumerable<Vehicle> data, int statusCode, object message)> GetAllVehiclesAsync(Guid? userId = null)
+    // {
+        
+    // }
 
-    public async Task<IEnumerable<Vehicle>> GetAllVehiclesAsync(Guid? userId = null)
-    {
-        if (userId == null)
-        {
-            return await _dbContext.Vehicles.ToListAsync();
-        }
-        return await _dbContext.Vehicles
-            .Where(v => v.UserID == userId)
-            .ToListAsync();
-    }
+    // Task<(IEnumerable<Reservation> data, int statusCode, object message)> GetReservationsByVehicleAsync(string licensePlate)
+    // {
+        
+    // }
 
-    public async Task<IEnumerable<Reservation>> GetReservationsByVehicleAsync(string licensePlate)
-    {
-        var vehicle = await _dbContext.Vehicles
-            .Include(v => v.Reservations)
-            .FirstOrDefaultAsync(v => v.LicensePlate == licensePlate);
-
-        return vehicle?.Reservations ?? Enumerable.Empty<Reservation>();
-    }
-
-    public async Task<VehicleHistoryDTO?> GetVehicleHistoryAsync(string licensePlate)
-    {
-        var vehicle = await _dbContext.Vehicles
-            .Include(v => v.Reservations)
-            .FirstOrDefaultAsync(v => v.LicensePlate == licensePlate);
-
-        if (vehicle == null)
-            return null;
-
-        var vehicleHistory = new VehicleHistoryDTO
-        {
-            Vehicle = vehicle,
-            Reservations = vehicle.Reservations
-        };
-
-        return vehicleHistory;
-    }
+    // Task<(VehicleHistoryDTO? data, int statusCode, object message)> GetVehicleHistoryAsync(string licensePlate)
+    // {
+        
+    // }
 }
