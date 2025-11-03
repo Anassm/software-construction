@@ -17,5 +17,5 @@ public class Payment
     public required string TransactionBank { get; set; }    
 
     public required Guid SessionID { get; set; }
-    public required Session Session { get; set; }
+    public Session? Session { get; set; }
 }

@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using v2.Infrastructure.Data;
+using v2.core.Interfaces;
+using v2.infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +16,7 @@ builder.Services.AddIdentityApiEndpoints<IdentityUser>()
 builder.Services.AddAuthorization();
 
 builder.Services.AddControllers();
+builder.Services.AddScoped<IReservation, ReservationService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
