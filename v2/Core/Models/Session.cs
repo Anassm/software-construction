@@ -3,6 +3,7 @@ namespace v2.Core.Models;
 public class Session
 {
     public required Guid ID { get; set; } = Guid.NewGuid();
+    public string OldID { get; set; } = "";
     public required string LicensePlate { get; set; }
     public required DateTime StartTime { get; set; }
     public required DateTime? EndTime { get; set; }
