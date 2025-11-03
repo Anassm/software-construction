@@ -9,7 +9,7 @@ using System.Security.Claims;
 namespace v2.Controller;
 
 [ApiController]
-[Route("api/v2/vehicles")]
+[Route("vehicles")]
 public class VehicleController : ControllerBase
 {
     private readonly IVehicles _vehicleService;
@@ -19,7 +19,7 @@ public class VehicleController : ControllerBase
         _vehicleService = vehicleService;
     }
 
-    [HttpPost("create")]
+    [HttpPost]
     public async Task<IActionResult> CreateVehicle([FromBody] CreateVehicleDto dto)
     {
         var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -44,7 +44,7 @@ public class VehicleController : ControllerBase
         };
     }
 
-    [HttpPut("update/{lid}")]
+    [HttpPut("{lid}")]
     public async Task<IActionResult> UpdateVehicle(string lid, [FromBody] UpdateVehicleDto dto)
     {
         var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -72,7 +72,7 @@ public class VehicleController : ControllerBase
         };
     }
 
-    [HttpDelete("delete/{lid}")]
+    [HttpDelete("{lid}")]
     public async Task<IActionResult> DeleteVehicle(string lid)
     {
         var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -93,7 +93,7 @@ public class VehicleController : ControllerBase
         };
     }
 
-    [HttpGet("get")]
+    [HttpGet]
     public async Task<IActionResult> GetAllVehicles()
     {
         var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -111,7 +111,7 @@ public class VehicleController : ControllerBase
         };
     }
 
-    [HttpGet("get/{username}")]
+    [HttpGet("{username}")]
     public async Task<IActionResult> GetAllVehiclesforUser([FromQuery] string? username)
     {
         var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -129,7 +129,7 @@ public class VehicleController : ControllerBase
         };
     }
 
-    [HttpGet("get/{vid}/reservations")]
+    [HttpGet("{vid}/reservations")]
     public async Task<IActionResult> GetReservationsByVehicle([FromQuery] string vid)
     {
         var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -147,7 +147,7 @@ public class VehicleController : ControllerBase
         };
     }
 
-    [HttpGet("get/{licensePlate}/history")]
+    [HttpGet("{vid}/history")]
     public async Task<IActionResult> GetVehicleHistory([FromQuery] string licensePlate)
     {
         var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
