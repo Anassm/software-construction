@@ -44,6 +44,12 @@ public class VehicleController : ControllerBase
         };
     }
 
+    // [HttpPost("{lid}/entry")]
+    // public async Task<IActionResult> StartSessionByEntry(string lid, [FromBody] UpdateVehicleEntryDto dto)
+    // {
+    //     ...
+    // }
+
     [HttpPut("{lid}")]
     public async Task<IActionResult> UpdateVehicle(string lid, [FromBody] UpdateVehicleDto dto)
     {

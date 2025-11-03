@@ -11,7 +11,7 @@ public class ParkingLot
     public required int Reserved { get; set; }
     public required float Tariff { get; set; }
     public required float DayTariff { get; set; }
-    public required DateTime CreatedAt { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public required float latitude { get; set; }
     public required float longitude { get; set; }
 

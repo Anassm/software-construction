@@ -208,4 +208,64 @@ public class VehicleService : IVehicles
             return (null!, 500, new { error = "An unexpected error occurred." });
         }
     }
+
+    // public async Task<(int statusCode, object message)> StartSessionByEntryAsync(string lid, string parkingLotId, string identityUserId)
+    // {
+    //     try
+    //     {
+    //         var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.IdentityUserId == identityUserId);
+    //         if (user == null)
+    //             return (404, new { error = "User not found" });
+
+    //         Guid lidGuidId;
+    //         bool isGuid = Guid.TryParse(lid, out lidGuidId);
+
+    //         Vehicle? vehicle;
+    //         if (isGuid)
+    //         {
+    //             vehicle = await _dbContext.Vehicles
+    //                 .FirstOrDefaultAsync(v => v.ID == lidGuidId);
+    //         }
+    //         else
+    //         {
+    //             vehicle = await _dbContext.Vehicles
+    //                 .FirstOrDefaultAsync(v => v.OldID == lid);
+    //         }
+    //         if (vehicle == null)
+    //             return (404, new { error = "Vehicle not found" });
+
+    //         Guid parkingLotGuidId;
+    //         bool isGuid2 = Guid.TryParse(parkingLotId, out parkingLotGuidId);
+
+    //         ParkingLot? parkingLot;
+    //         if (isGuid2)
+    //         {
+    //             parkingLot = await _dbContext.ParkingLots.FirstOrDefaultAsync(p => p.ID == lidGuidId);
+    //         }
+    //         else
+    //         {
+    //             parkingLot = await _dbContext.ParkingLots.FirstOrDefaultAsync(p => p.OldID == parkingLotId);
+    //         }
+    //         if (parkingLot == null)
+    //             return (404, new { error = "Parkinglot not found" });
+
+    //         Payment payment = new Payment
+    //         {
+    //             Initiator = user.Username,
+
+    //         }
+
+    //         Session session = new Session
+    //         {
+    //             LicensePlate = vehicle.LicensePlate,
+    //             UserID = user.ID,
+    //             ParkingLotID = parkingLot.ID,
+
+    //         }
+    //     }
+    //     catch
+    //     {
+    //         return (500, new { error = "An unexpected error occurred." });
+    //     }
+    // }
 }
