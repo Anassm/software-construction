@@ -1,4 +1,4 @@
-using ChefServe.Infrastructure.Data;         // ApplicationDbContext
+using v2.Infrastructure.Data;         // ApplicationDbContext
 using Microsoft.EntityFrameworkCore;         // FirstOrDefaultAsync, Include
 using v2.core.Interfaces;
 using v2.Core.DTOs;
@@ -42,7 +42,7 @@ public class ReservationService : IReservation
             VehicleID = vehicle.ID
         };
 
-        _db.Reservation.Add(reservation);
+        _db.Reservations.Add(reservation);
         await _db.SaveChangesAsync();
 
         return reservation;
