@@ -11,8 +11,8 @@ def _data():
     }
 
 
-def test_get_reservations_admin(_data):
-    tokenAdmin = 'adminToken123'
+def test_get_reservations_admin(_data, admin_token):
+    tokenAdmin = admin_token
     id = '1'
     response = requests.get(f"{_data['url']}{id}", headers={'Authorization' : tokenAdmin})
 

@@ -8,10 +8,26 @@ using v2.infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+#if TEST
+{
+    builder.Services.AddDbContext<ApplicationDbContext>(
+        options =>options.UseInMemoryDatabase("TestDatabase"));
+
+    // builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+    //     .AddEntityFrameworkStores<ApplicationDbContext>()
+    //     .AddDefaultTokenProviders();
+}
+
+
+#else
 builder.Services.AddDbContext<ApplicationDbContext>(
     options => options.UseSqlite("Data Source=infrastructure/data/app.db"));
+#endif
+
+
 
 builder.Services.AddIdentityApiEndpoints<IdentityUser>()
+    .AddRoles<IdentityRole>() 
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddAuthorization();
 
@@ -26,7 +42,51 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+#if TEST
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var services = scope.ServiceProvider;
+        var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
+        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+        var context = services.GetRequiredService<ApplicationDbContext>();
 
+        context.Database.EnsureCreated();
+
+        if (!roleManager.RoleExistsAsync("Admin").Result)
+            roleManager.CreateAsync(new IdentityRole("Admin")).Wait();
+        if (!roleManager.RoleExistsAsync("User").Result)
+            roleManager.CreateAsync(new IdentityRole("User")).Wait();
+
+        var admin = new IdentityUser
+        {
+            UserName = "admin@test.com",
+            Email = "admin@test.com",
+            EmailConfirmed = true
+        };
+        var user = new IdentityUser
+        {
+            UserName = "user@test.com",
+            Email = "user@test.com",
+            EmailConfirmed = true
+        };
+
+        if (userManager.FindByEmailAsync(admin.Email).Result == null)
+        {
+            userManager.CreateAsync(admin, "Admin123!").Wait();
+            userManager.AddToRoleAsync(admin, "Admin").Wait();
+        }
+
+        if (userManager.FindByEmailAsync(user.Email).Result == null)
+        {
+            userManager.CreateAsync(user, "User123!").Wait();
+            userManager.AddToRoleAsync(user, "User").Wait();
+        }
+
+        Console.WriteLine("✅ Seeded ASP.NET Identity users (Admin/User) into InMemoryDatabase.");
+    }
+}
+#endif
 
 if (app.Environment.IsDevelopment())
 {

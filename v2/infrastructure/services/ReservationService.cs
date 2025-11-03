@@ -42,7 +42,7 @@ public class ReservationService : IReservation
             VehicleID = vehicle.ID
         };
 
-        _db.Reservation.Add(reservation);
+        _db.Reservations.Add(reservation);
         await _db.SaveChangesAsync();
 
         return reservation;
