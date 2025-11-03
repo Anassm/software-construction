@@ -1,8 +1,8 @@
-namespace v2.Core.Models;
 
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
+namespace v2.Core.Models;
 public class User
 {
     public Guid ID { get; set; } = Guid.NewGuid();

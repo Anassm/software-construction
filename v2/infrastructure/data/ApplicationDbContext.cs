@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using v2.Core.Models;
 
-namespace ChefServe.Infrastructure.Data
+namespace v2.Infrastructure.Data
 {
       public class ApplicationDbContext : IdentityDbContext<IdentityUser>
       {
@@ -12,12 +12,12 @@ namespace ChefServe.Infrastructure.Data
                 : base(options)
             { }
 
-            public DbSet<User> Users { get; set; }
-            public DbSet<Vehicle> Vehicles { get; set; }
-            public DbSet<Session> Sessions { get; set; }
-            public DbSet<Reservation> Reservations { get; set; }
-            public DbSet<Payment> Payments { get; set; }
-            public DbSet<ParkingLot> ParkingLots { get; set; }
+            public virtual DbSet<User> Users { get; set; }
+            public virtual DbSet<Vehicle> Vehicles { get; set; }
+            public virtual DbSet<Session> Sessions { get; set; }
+            public virtual DbSet<Reservation> Reservations { get; set; }
+            public virtual DbSet<Payment> Payments { get; set; }
+            public virtual DbSet<ParkingLot> ParkingLots { get; set; }
 
             protected override void OnModelCreating(ModelBuilder modelBuilder)
             {

@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using v2.Core.Interfaces;
 using v2.Core.Models;
-using ChefServe.Infrastructure.Data;
+using v2.Infrastructure.Data;
 using v2.Core.DTOs;
 
 namespace v2.infrastructure.Services;
