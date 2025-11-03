@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
-using ChefServe.Infrastructure.Data;
+using v2.Infrastructure.Data;
 using v2.core.Interfaces;
 using v2.infrastructure.Services;
 

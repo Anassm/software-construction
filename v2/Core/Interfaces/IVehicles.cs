@@ -9,11 +9,13 @@ public interface IVehicles
 
     Task<(int statusCode, object message)> UpdateVehicleAsync(string licensePlate, UpdateVehicleDto updatedVehicle, string identityUserId);
 
-    Task<(bool success, int statusCode, object message)> DeleteVehicleAsync(string licensePlate);
+    Task<(int statusCode, object message)> DeleteVehicleAsync(string lid, string identityUserId);
 
-    Task<(IEnumerable<Vehicle> data, int statusCode, object message)> GetAllVehiclesAsync(Guid? userId = null);
+    Task<(IEnumerable<Vehicle> data, int statusCode, object message)> GetAllVehiclesAsync(string identityUserId);
 
-    Task<(IEnumerable<Reservation> data, int statusCode, object message)> GetReservationsByVehicleAsync(string licensePlate);
+    Task<(IEnumerable<Vehicle> data, int statusCode, object message)> GetAllVehiclesForUserAsync(string username, string identityUserId);
 
-    Task<(VehicleHistoryDTO? data, int statusCode, object message)> GetVehicleHistoryAsync(string licensePlate);
+    Task<(IEnumerable<Reservation> data, int statusCode, object message)> GetReservationsByVehicleAsync(string vid, string identityUserId);
+
+    Task<(IEnumerable<Session> data, int statusCode, object message)> GetVehicleHistoryAsync(string licensePlate, string identityUserId);
 }
