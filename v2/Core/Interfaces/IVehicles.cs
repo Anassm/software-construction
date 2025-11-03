@@ -2,7 +2,7 @@ using v2.Core.Models;
 using v2.Core.DTOs;
 using Microsoft.EntityFrameworkCore.InMemory.Query.Internal;
 
-namespace v2.Core.Interfaces;
+namespace v2.core.Interfaces;
 public interface IVehicles
 {
     Task<(int statusCode, object message)> CreateVehicleAsync(CreateVehicleDto vehicle, string identityUserId);

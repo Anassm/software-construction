@@ -1,61 +1,113 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.Text;
+using System.Security.Claims;
 using v2.Infrastructure.Data;
 using v2.core.Interfaces;
 using v2.infrastructure.Services;
+using v2.Core.DTOs;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var jwtKey = "thisIsASuperSecretKeyWithAtLeast32Bytes!"; 
+var jwtIssuer = "yourIssuer";
+var jwtAudience = "yourAudience";
+
+// --- Database ---
 builder.Services.AddDbContext<ApplicationDbContext>(
     options => options.UseSqlite("Data Source=infrastructure/data/app.db"));
 
-builder.Services.AddIdentityApiEndpoints<IdentityUser>()
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+// --- Identity ---
+builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
+
+// --- JWT Authentication ---
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtIssuer,
+        ValidAudience = jwtAudience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+    };
+});
+
+// --- Authorization ---
 builder.Services.AddAuthorization();
 
-builder.Services.AddControllers();
+// --- Services ---
 builder.Services.AddScoped<IReservation, ReservationService>();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddScoped<IVehicles, VehicleService>();
+
+// --- Controllers & Swagger ---
 builder.Services.AddControllers();
-
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// --- App ---
 var app = builder.Build();
 
-
-
+// Swagger
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(options => // UseSwaggerUI is called only in Development.
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
-        options.RoutePrefix = string.Empty;
-    });
+    app.UseSwaggerUI();
 }
-app.MapIdentityApi<IdentityUser>();
-app.MapPost("/logout", async (SignInManager<IdentityUser> signInManager,
-    [FromBody] object empty) =>
-{
-    if (empty != null)
-    {
-        await signInManager.SignOutAsync();
-        return Results.Ok();
-    }
-    return Results.Unauthorized();
-})
-.WithOpenApi()
-.RequireAuthorization();
-app.UseHttpsRedirection();
 
+app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 
+// --- Login endpoint returning JWT ---
+app.MapPost("/login", async (UserManager<IdentityUser> userManager,
+                              [FromBody] LoginDto login) =>
+{
+    var user = await userManager.FindByNameAsync(login.Email);
+    if (user == null) return Results.Unauthorized();
+
+    var passwordValid = await userManager.CheckPasswordAsync(user, login.Password);
+    if (!passwordValid) return Results.Unauthorized();
+
+    var claims = new[]
+    {
+        new Claim(ClaimTypes.NameIdentifier, user.Id),
+        new Claim(ClaimTypes.Email, user.Email)
+    };
+
+    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
+    var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+    var token = new System.IdentityModel.Tokens.Jwt.JwtSecurityToken(
+        issuer: jwtIssuer,
+        audience: jwtAudience,
+        claims: claims,
+        expires: DateTime.UtcNow.AddHours(1),
+        signingCredentials: creds
+    );
+
+    return Results.Ok(new
+    {
+        tokenType = "Bearer",
+        accessToken = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler().WriteToken(token)
+    });
+});
+
+// --- Map controllers ---
 app.MapControllers();
 
 app.Run();
-//     options => options.UseInMemoryDatabase("AppDb"));
-// builder.Services.AddAuthorization();
+
+

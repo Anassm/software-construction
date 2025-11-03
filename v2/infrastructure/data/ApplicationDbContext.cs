@@ -26,7 +26,7 @@ namespace v2.Infrastructure.Data
                   modelBuilder.Entity<User>(entity =>
                   {
                         entity.HasKey(u => u.ID);
-                        entity.HasAlternateKey(u => u.OldID);
+                        entity.Property(u => u.OldID);
                         entity.Property(u => u.Username).IsRequired().HasMaxLength(100);
                         entity.Property(u => u.Name).IsRequired().HasMaxLength(150);
                         entity.Property(u => u.Email).IsRequired().HasMaxLength(150);
@@ -46,7 +46,7 @@ namespace v2.Infrastructure.Data
                   modelBuilder.Entity<Vehicle>(entity =>
                   {
                         entity.HasKey(v => v.ID);
-                        entity.HasAlternateKey(v => v.OldID);
+                        entity.Property(v => v.OldID);
                         entity.Property(v => v.LicensePlate)
                         .IsRequired()
                         .HasMaxLength(20);
@@ -70,7 +70,7 @@ namespace v2.Infrastructure.Data
                   modelBuilder.Entity<ParkingLot>(entity =>
                   {
                         entity.HasKey(p => p.ID);
-                        entity.HasAlternateKey(p => p.OldID);
+                        entity.Property(p => p.OldID);
                         entity.Property(p => p.Name)
                         .IsRequired()
                         .HasMaxLength(100);
@@ -93,7 +93,7 @@ namespace v2.Infrastructure.Data
                   modelBuilder.Entity<Reservation>(entity =>
                   {
                         entity.HasKey(r => r.ID);
-                        entity.HasAlternateKey(r => r.OldID);
+                        entity.Property(r => r.OldID);
                         entity.Property(r => r.StartDate).IsRequired();
                         entity.Property(r => r.EndDate).IsRequired();
                         entity.Property(r => r.Status).IsRequired().HasMaxLength(50);
@@ -120,7 +120,7 @@ namespace v2.Infrastructure.Data
                   modelBuilder.Entity<Session>(entity =>
                   {
                         entity.HasKey(s => s.ID);
-                        entity.HasAlternateKey(s => s.OldID);
+                        entity.Property(s => s.OldID);
                         entity.Property(s => s.LicensePlate).IsRequired().HasMaxLength(20);
                         entity.Property(s => s.StartTime).IsRequired();
                         entity.Property(s => s.EndTime).IsRequired(false);
@@ -142,7 +142,7 @@ namespace v2.Infrastructure.Data
                   modelBuilder.Entity<Payment>(entity =>
                   {
                         entity.HasKey(p => p.ID);
-                        entity.HasAlternateKey(p => p.OldID);
+                        entity.Property(p => p.OldID);
                         entity.Property(p => p.Amount).IsRequired();
                         entity.Property(p => p.Initiator).IsRequired().HasMaxLength(100);
                         entity.Property(p => p.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");

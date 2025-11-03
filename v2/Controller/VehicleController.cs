@@ -1,6 +1,6 @@
 using v2.Core.DTOs;
 using v2.Core.Models;
-using v2.Core.Interfaces;
+using v2.core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Specialized;
 using System.Security.Claims;
