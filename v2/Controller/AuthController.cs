@@ -30,7 +30,7 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto dto)
     {
-        var identityUser = new IdentityUser { UserName = dto.Email, Email = dto.Email };
+        var identityUser = new IdentityUser { UserName = dto.Username };
         var result = await _userManager.CreateAsync(identityUser, dto.Password);
         if (!result.Succeeded)
             return BadRequest(result.Errors);
@@ -40,11 +40,11 @@ public class AuthController : ControllerBase
             IdentityUserId = identityUser.Id,
             IdentityUser = identityUser, 
             Username = dto.Username,
-            Email = dto.Email,
+            Email = null,
             Name = dto.Name,
-            PhoneNumber = dto.PhoneNumber, 
+            PhoneNumber = null, 
             BirthDate = DateTime.UtcNow, 
-            Role = dto.Role,
+            Role = null,
             IsActive = true,
             CreatedAt = DateTime.UtcNow,
             Vehicles = new List<Vehicle>(),
@@ -62,7 +62,7 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
-        var user = await _userManager.FindByEmailAsync(dto.Email);
+        var user = await _userManager.FindByEmailAsync(dto.Username);
         if (user == null)
             return Unauthorized(new { error = "Invalid credentials" });
 
@@ -74,7 +74,7 @@ public class AuthController : ControllerBase
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id),
-            new Claim(ClaimTypes.Email, user.Email)
+            new Claim(ClaimTypes.Name, user.UserName),
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("yourSuperSecretKey"));
@@ -93,4 +93,28 @@ public class AuthController : ControllerBase
             accessToken = new JwtSecurityTokenHandler().WriteToken(token)
         });
     }
+    
+//     [HttpPost("profile")]
+//     public async Task<IActionResult> Profile([FromBody] ProfileDto dto)
+//     {
+
+//         var user = _dbContext.Users.FirstOrDefault(u => u.ID == dto.Id);
+
+//         if (user != null)
+//         {
+//             user.Username = dto.Username;
+//             user.Email = dto.Email;
+//             user.PhoneNumber = dto.Phone;
+//             user.Role = dto.Role;
+//             user.IsActive = dto.Active;
+
+//             _dbContext.SaveChanges();
+//         }
+
+//         return Ok(new
+//         {
+//             tokenType = "Bearer",
+//             accessToken = new JwtSecurityTokenHandler().WriteToken(token)
+//         });
+//     }
 }
