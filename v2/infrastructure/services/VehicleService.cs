@@ -176,7 +176,7 @@ public class VehicleService : IVehicles
                 return (null!, 404, new { error = "User not found" });
 
             var vehicle = _dbContext.Vehicles.Where(v => v.ID.ToString() == vid && v.UserID == user.ID || v.OldID == vid && v.UserID == user.ID).AsQueryable();
-            if (vehicle == null)
+            if (!vehicle.Any())
                 return (null!, 404, new { error = "Vehicle not found" });
 
             var reservations = await vehicle.SelectMany(v => v.Reservations).ToListAsync();
