@@ -43,7 +43,7 @@ public class AuthController : ControllerBase
             Email = null,
             Name = dto.Name,
             PhoneNumber = null, 
-            BirthDate = DateTime.UtcNow, 
+            BirthYear = null, 
             Role = null,
             IsActive = true,
             CreatedAt = DateTime.UtcNow,
@@ -93,28 +93,83 @@ public class AuthController : ControllerBase
             accessToken = new JwtSecurityTokenHandler().WriteToken(token)
         });
     }
+
+    [HttpPut("profile")]
+    public async Task<IActionResult> Profile([FromBody] ProfileDto dto)
+    {
+
+        var user = _dbContext.Users.FirstOrDefault(u => u.ID == dto.Id);
+        var userASP = await _userManager.FindByIdAsync(user.IdentityUserId);
+        var verify = _userManager.PasswordHasher.VerifyHashedPassword(userASP, userASP.PasswordHash, dto.Password);
+        // If password has changed, update it
+        if (verify != PasswordVerificationResult.Success)
+        {
+            var token = await _userManager.GeneratePasswordResetTokenAsync(userASP);
+            var result = await _userManager.ResetPasswordAsync(userASP, token, dto.Password);
+
+        }
+
+        // Update Email
+        if (!string.Equals(userASP.Email, dto.Email, StringComparison.OrdinalIgnoreCase))
+        {
+            var setEmailResult = await _userManager.SetEmailAsync(userASP, dto.Email);
+            if (!setEmailResult.Succeeded)
+            {
+                var errors = string.Join(", ", setEmailResult.Errors.Select(e => e.Description));
+                return BadRequest($"Failed to update email: {errors}");
+            }
+        }
+
+        // Update Username
+        if (!string.Equals(userASP.UserName, dto.Username, StringComparison.OrdinalIgnoreCase))
+        {
+            var setUserNameResult = await _userManager.SetUserNameAsync(userASP, dto.Username);
+            if (!setUserNameResult.Succeeded)
+            {
+                var errors = string.Join(", ", setUserNameResult.Errors.Select(e => e.Description));
+                return BadRequest($"Failed to update username: {errors}");
+            }
+        }
+
+        if (user != null)
+        {
+            user.Username = dto.Username;
+            user.Name = dto.Name;
+            user.Email = dto.Email;
+            user.PhoneNumber = dto.Phone;
+            user.Role = dto.Role;
+            user.CreatedAt = dto.Created_at;
+            user.BirthYear = dto.Birth_year;
+            user.IsActive = dto.Active;
+
+            _dbContext.SaveChanges();
+        }
+
+
+
+        return Ok(new
+        {
+            // tokenType = "Bearer",
+            // accessToken = new JwtSecurityTokenHandler().WriteToken(token)
+            message = "Profile updated successfully"
+        });
+    }
     
-//     [HttpPost("profile")]
-//     public async Task<IActionResult> Profile([FromBody] ProfileDto dto)
-//     {
+    // [HttpGet("profile")]
+    // public async Task<IActionResult> GetVehicleHistory([FromQuery] string licensePlate)
+    // {
+    //     var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    //     if (identityUserId == null)
+    //         return StatusCode(StatusCodes.Status401Unauthorized, new { error = "Unauthorized: Invalid or missing session token" });
 
-//         var user = _dbContext.Users.FirstOrDefault(u => u.ID == dto.Id);
+    //     var result = await _vehicleService.GetVehicleHistoryAsync(licensePlate, identityUserId);
 
-//         if (user != null)
-//         {
-//             user.Username = dto.Username;
-//             user.Email = dto.Email;
-//             user.PhoneNumber = dto.Phone;
-//             user.Role = dto.Role;
-//             user.IsActive = dto.Active;
-
-//             _dbContext.SaveChanges();
-//         }
-
-//         return Ok(new
-//         {
-//             tokenType = "Bearer",
-//             accessToken = new JwtSecurityTokenHandler().WriteToken(token)
-//         });
-//     }
+    //     return result.statusCode switch
+    //     {
+    //         200 => StatusCode(StatusCodes.Status200OK, result.data),
+    //         404 => StatusCode(StatusCodes.Status404NotFound, result.message),
+    //         500 => StatusCode(StatusCodes.Status500InternalServerError, result.message),
+    //         _ => StatusCode(StatusCodes.Status501NotImplemented, new { error = $"Unhandled statuscode: {result.statusCode}" })
+    //     };
+    // }
 }

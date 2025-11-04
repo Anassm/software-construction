@@ -16,7 +16,7 @@ public class User
     public string? PhoneNumber { get; set; }
     public string? Role { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public required DateTime BirthDate { get; set; }
+    public int? BirthYear { get; set; }
     public required bool IsActive { get; set; } = true;
 
     public required ICollection<Vehicle> Vehicles { get; set; }
