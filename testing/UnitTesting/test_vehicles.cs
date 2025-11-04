@@ -363,7 +363,7 @@ public class VehicleServiceTests
     [Fact]
     public async Task GetVehicleHistory_Success()
     {
-        var result = await _service.GetVehicleHistoryAsync(_vehicle.LicensePlate, _user.IdentityUserId);
+        var result = await _service.GetVehicleHistoryAsync(_vehicle.ID.ToString(), _user.IdentityUserId);
         Assert.Equal(200, result.statusCode);
         Assert.NotNull(result.data);
     }
