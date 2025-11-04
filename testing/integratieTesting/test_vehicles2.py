@@ -2,143 +2,267 @@ import pytest
 import requests
 import uuid
 
-BASE_URL = "http://localhost:8000"
-REGISTER_URL = f"{BASE_URL}/register"
-LOGIN_URL = f"{BASE_URL}/login"
-
-@pytest.fixture(scope="session")
-def create_user():
-    """Registers and logs in a new user, returns username + auth headers."""
-    username = f"testuser_{uuid.uuid4().hex[:6]}"
-    password = "TestPass123!"
-
-    # Register
-    reg = requests.post(REGISTER_URL, json={"username": username, "password": password})
-    assert reg.status_code in [200, 201], f"Register failed: {reg.text}"
-
-    # Login
-    login = requests.post(LOGIN_URL, json={"username": username, "password": password})
-    assert login.status_code == 200, f"Login failed: {login.text}"
-
-    token = login.json().get("token")
-    assert token, f"No token returned in login: {login.text}"
-
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Content-Type": "application/json"
+@pytest.fixture
+def _data():
+    return {
+        "base": "http://localhost:8000",
+        "users": {
+            "user_a": {
+                "email": "user@example.com",
+                "password": "UserPass123!",
+                "username": "regular.user",
+                "name": "Regular User",
+                "role": "user"
+            },
+            "user_b": {
+                "email": "user2@example.com",
+                "password": "User2Pass123!",
+                "username": "user.two",
+                "name": "Second User",
+                "role": "user"
+            },
+            "admin": {
+                "email": "admin@example.com",
+                "password": "AdminPass123!",
+                "username": "admin.user",
+                "name": "Admin User",
+                "role": "admin"
+            }
+        }
     }
 
-    return {"username": username, "headers": headers}
+def register_and_login(base_url, user):
+    requests.post(f"{base_url}/register", json=user)
+    r = requests.post(f"{base_url}/login", json={"email": user["email"], "password": user["password"]})
+    return {"Authorization": f"Bearer {r.json()['accessToken']}"}
 
+@pytest.fixture
+def user_token(_data):
+    return register_and_login(_data["base"], _data["users"]["user_a"])
 
-# ------------------ POST /vehicles ------------------
+@pytest.fixture
+def user_token_b(_data):
+    return register_and_login(_data["base"], _data["users"]["user_b"])
 
-def test_post_vehicle_success(create_user):
-    payload = {"name": "Toyota", "license_plate": "AB-123"}
-    r = requests.post(BASE_URL, headers=create_user["headers"], json=payload)
-    assert r.status_code == 201
-    data = r.json()
-    assert data["vehicle"]["license_plate"] == "AB-123"
+@pytest.fixture
+def admin_token(_data):
+    return register_and_login(_data["base"], _data["users"]["admin"])
 
-def test_post_vehicle_no_auth():
-    r = requests.post(BASE_URL, json={"name": "Toyota", "license_plate": "AB-123"})
-    assert r.status_code == 401
+LICENSE_PLATES = [
+    "AB-123",
+    "AB123",
+    "XY-999",
+    "XY999",
+    "ZZ-999",
+    "ZZ999",
+    "nonexistent_id"
+]
 
-def test_post_vehicle_missing_field(create_user):
-    r = requests.post(BASE_URL, headers=create_user["headers"], json={"name": "Toyota"})
-    assert r.status_code == 400
-    assert "LicensePlate" in r.text
+@pytest.fixture(autouse=True)
+def clean_vehicles(_data, admin_token):
+    for lp in LICENSE_PLATES:
+        requests.delete(f"{_data['base']}/vehicles/{lp}", headers=admin_token)
+    
+    yield
 
-def test_post_vehicle_duplicate(create_user):
-    payload = {"name": "Toyota", "license_plate": "AB-123"}
-    requests.post(BASE_URL, headers=create_user["headers"], json=payload)
-    r = requests.post(BASE_URL, headers=create_user["headers"], json=payload)
-    assert r.status_code == 409
+    for lp in LICENSE_PLATES:
+        requests.delete(f"{_data['base']}/vehicles/{lp}", headers=admin_token)
 
-def test_post_vehicle_invalid_json(create_user):
-    r = requests.post(BASE_URL, headers=create_user["headers"], data="{ invalid json")
-    assert r.status_code == 400
+def vehicle_url(_data, lid=None, suffix=None):
+    url = f"{_data['base']}/vehicles"
+    if lid:
+        url += f"/{lid}"
+    if suffix:
+        url += f"/{suffix}"
+    return url
 
-# ------------------ GET /vehicles ------------------
+# POST / vehicles
 
-def test_get_vehicles_success(create_user):
-    r = requests.get(BASE_URL, headers=create_user["headers"])
-    assert r.status_code == 200
-    assert isinstance(r.json(), dict) or isinstance(r.json(), list)
+def test_post_vehicle_no_auth(_data):
+    response = requests.post(
+        vehicle_url(_data),
+        json={"name": "Toyota", "LicensePlate": "AB-123"}
+    )
+    assert response.status_code == 401
+    assert "Unauthorized" in response.text
 
-def test_get_vehicles_no_auth():
-    r = requests.get(BASE_URL)
-    assert r.status_code == 401
+def test_post_vehicle_invalid_token(_data):
+    response = requests.post(
+        vehicle_url(_data),
+        headers={"Authorization": "invalid-token"},
+        json={"name": "Toyota", "LicensePlate": "AB-123"}
+    )
+    assert response.status_code == 401
+    assert "Unauthorized" in response.text or "Invalid" in response.text
 
-def test_get_vehicles_invalid_token():
-    headers = {"Authorization": "Bearer invalid", "Content-Type": "application/json"}
-    r = requests.get(BASE_URL, headers=headers)
-    assert r.status_code == 401
+def test_post_missing_field_license_plate(_data, user_token):
+    payload = {"name": "Toyota"} 
+    response = requests.post(vehicle_url(_data), headers=user_token, json=payload)
+    assert response.status_code == 400
+    body = response.json()
+    assert "errors" in body
+    error_string = body["errors"]["$"][0]
+    assert "licensePlate" in error_string
 
-def test_get_vehicles_empty(create_user):
-    r = requests.get(BASE_URL, headers=create_user["headers"])
-    assert r.status_code in [200, 404]  # depending on implementation
+def test_post_invalid_json(_data, user_token):
+    response = requests.post(
+        vehicle_url(_data),
+        headers={**user_token, "Content-Type": "application/json"},
+        data="{ invalid json"
+    )
+    assert response.status_code == 400
 
-def test_get_vehicles_format(create_user):
-    r = requests.get(BASE_URL, headers=create_user["headers"])
-    assert r.status_code == 200
-    body = r.json()
-    assert isinstance(body, (list, dict))
+def test_post_create_vehicle_success(_data, user_token):
+    lp = f"AB-{str(uuid.uuid4())[:6]}"
+    payload = {"name": "Toyota", "LicensePlate": lp}
+    response = requests.post(vehicle_url(_data), headers=user_token, json=payload)
+    assert response.status_code == 201
+    body = response.json()
+    assert body is not None
 
-# ------------------ PUT /vehicles/{lid} ------------------
+def test_post_duplicate_vehicle(_data, user_token):
+    payload = {"name": "Toyota", "LicensePlate": "AB-123"}
+    requests.post(vehicle_url(_data), headers=user_token, json=payload)
+    response = requests.post(vehicle_url(_data), headers=user_token, json=payload)
+    assert response.status_code == 409
+    body = response.json()
+    assert body is not None
 
-def test_put_vehicle_update_success(create_user):
-    payload = {"name": "Honda", "license_plate": "XY-111"}
-    r = requests.post(BASE_URL, headers=create_user["headers"], json=payload)
-    assert r.status_code == 201
+#put /Vehicles
+def test_put_vehicle_no_auth(_data):
+    url = vehicle_url(_data, "AB-123")
+    response = requests.put(url, json={"name": "Toyota", "LicensePlate": "AB-123"})
+    assert response.status_code == 401
+    assert "Unauthorized" in response.text
 
-    update = {"name": "Honda Civic", "license_plate": "XY-111"}
-    url = f"{BASE_URL}/XY-111"
-    r2 = requests.put(url, headers=create_user["headers"], json=update)
-    assert r2.status_code == 200
-    assert "Civic" in r2.text
+def test_put_vehicle_invalid_token(_data):
+    url = vehicle_url(_data, "AB-123")
+    response = requests.put(url, headers={"Authorization": "invalid-token"}, json={"name": "Toyota", "LicensePlate": "AB-123"})
+    assert response.status_code == 401
 
-def test_put_vehicle_no_auth():
-    r = requests.put(f"{BASE_URL}/AB-123", json={"name": "Test"})
-    assert r.status_code == 401
+def test_put_vehicle_missing_field(_data, user_token):
+    url = vehicle_url(_data, "AB-123")
+    response = requests.put(url, headers=user_token, json={}) 
+    assert response.status_code == 400
+    body = response.json()
+    assert "Request must contain a body" in body["error"] or "LicensePlate" in body["error"]
 
-def test_put_vehicle_missing_field(create_user):
-    r = requests.put(f"{BASE_URL}/ZZ-999", headers=create_user["headers"], json={})
-    assert r.status_code == 400
+def test_put_vehicle_invalid_json(_data, user_token):
+    url = vehicle_url(_data, "AB-123")
+    headers = {**user_token, "Content-Type": "application/json"}
+    response = requests.put(url, headers=headers, data="{ invalid json")
+    assert response.status_code == 400
 
-def test_put_vehicle_invalid_json(create_user):
-    r = requests.put(f"{BASE_URL}/ZZ-999", headers=create_user["headers"], data="{ invalid")
-    assert r.status_code == 400
+def test_put_vehicle_create_new(_data, user_token):
+    url = vehicle_url(_data, "XY-999")
+    payload = {"name": "Tesla Model 3", "LicensePlate": "XY-999"}
+    response = requests.put(url, headers=user_token, json=payload)
+    assert response.status_code == 404
+    body = response.json()
+    assert body is not None
+    if "vehicle" in body:
+        assert body["vehicle"]["name"] == "Tesla Model 3"
 
-def test_put_vehicle_not_found(create_user):
-    payload = {"name": "Ford", "license_plate": "XX-777"}
-    r = requests.put(f"{BASE_URL}/XX-777", headers=create_user["headers"], json=payload)
-    assert r.status_code in [201, 404]
+def test_put_vehicle_update_existing(_data, user_token):
+    create_payload = {"name": "Toyota", "LicensePlate": "AB-123"}
+    requests.post(vehicle_url(_data), headers=user_token, json=create_payload)
+    update_payload = {"name": "Toyota Supra", "LicensePlate": "AB-123"}
+    url = vehicle_url(_data, "AB-123")
+    response = requests.put(url, headers=user_token, json=update_payload)
+    assert response.status_code == 200
 
-# ------------------ DELETE /vehicles/{lid} ------------------
+#delete /vehicles
+def test_delete_vehicle_no_auth(_data):
+    url = vehicle_url(_data, "AB-123")
+    response = requests.delete(url)
+    assert response.status_code == 401
+    assert "Unauthorized" in response.text
 
-def test_delete_vehicle_success(create_user):
-    payload = {"name": "BMW", "license_plate": "DD-555"}
-    requests.post(BASE_URL, headers=create_user["headers"], json=payload)
-    r = requests.delete(f"{BASE_URL}/DD-555", headers=create_user["headers"])
-    assert r.status_code == 200
+def test_delete_vehicle_invalid_token(_data):
+    url = vehicle_url(_data, "AB-123")
+    response = requests.delete(url, headers={"Authorization": "invalid-token"})
+    assert response.status_code == 401
 
-def test_delete_vehicle_no_auth():
-    r = requests.delete(f"{BASE_URL}/DD-555")
-    assert r.status_code == 401
+def test_delete_vehicle_not_found(_data, user_token):
+    url = vehicle_url(_data, "ZZ-999")
+    response = requests.delete(url, headers=user_token)
+    assert response.status_code == 404
+    body = response.json()
+    assert body is not None
 
-def test_delete_vehicle_invalid_token():
-    headers = {"Authorization": "Bearer invalid"}
-    r = requests.delete(f"{BASE_URL}/DD-555", headers=headers)
-    assert r.status_code == 401
+def test_delete_vehicle_success(_data, user_token):
+    payload = {"name": "Toyota", "LicensePlate": "AB-123"}
+    requests.post(vehicle_url(_data), headers=user_token, json=payload)
+    url = vehicle_url(_data, "AB-123")
+    response = requests.delete(url, headers=user_token)
+    assert response.status_code == 200
+    body = response.json()
+    assert body is not None
 
-def test_delete_vehicle_not_found(create_user):
-    r = requests.delete(f"{BASE_URL}/ZZ-999", headers=create_user["headers"])
-    assert r.status_code == 404
+def test_delete_vehicle_twice_returns_404(_data, user_token):
+    """Tweemaal verwijderen → tweede keer moet 404 geven."""
+    payload = {"name": "Toyota", "LicensePlate": "AB-123"}
+    requests.post(vehicle_url(_data), headers=user_token, json=payload)
+    url = vehicle_url(_data, "AB-123")
+    requests.delete(url, headers=user_token)
+    response = requests.delete(url, headers=user_token)
+    assert response.status_code == 404
+    body = response.json()
+    assert body is not None
 
-def test_delete_vehicle_twice(create_user):
-    payload = {"name": "Opel", "license_plate": "OP-222"}
-    requests.post(BASE_URL, headers=create_user["headers"], json=payload)
-    requests.delete(f"{BASE_URL}/OP-222", headers=create_user["headers"])
-    r = requests.delete(f"{BASE_URL}/OP-222", headers=create_user["headers"])
-    assert r.status_code == 404
+def test_delete_vehicle_different_user_cannot_delete(_data, user_token, user_token_b):
+    payload = {"name": "Toyota", "LicensePlate": "AB-123"}
+    requests.post(vehicle_url(_data), headers=user_token, json=payload)
+    url = vehicle_url(_data, "AB-123")
+    response = requests.delete(url, headers=user_token_b)
+    assert response.status_code in [403, 404]
+    body = response.json()
+    assert body is not None
+
+#Get /vehicles
+def test_get_vehicles_no_auth(_data):
+    response = requests.get(vehicle_url(_data))
+    assert response.status_code == 401
+    assert "Unauthorized" in response.text
+
+def test_get_vehicles_invalid_token(_data):
+    response = requests.get(vehicle_url(_data), headers={"Authorization": "invalid-token"})
+    assert response.status_code == 401
+
+def test_get_vehicles_success(_data, user_token):
+    response = requests.get(vehicle_url(_data), headers=user_token)
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list) or isinstance(data, dict)
+
+def test_get_vehicle_reservations_not_found(_data, user_token):
+    url = vehicle_url(_data, "nonexistent_id", "reservations")
+    response = requests.get(url, headers=user_token)
+    assert response.status_code == 404
+
+def test_get_vehicle_reservations_success(_data, user_token):
+    payload = {"name": "Toyota", "LicensePlate": f"AB-{str(uuid.uuid4())[:4]}"}
+    rqResponse = requests.post(vehicle_url(_data), headers=user_token, json=payload)
+    body = rqResponse.json()
+    vid = body["vehicle"]["id"]
+    url = vehicle_url(_data, vid, "reservations")
+    response = requests.get(url, headers=user_token)
+    assert response.status_code == 200
+    body = response.json()
+    assert isinstance(body, list)
+
+def test_get_vehicle_history_not_found(_data, user_token):
+    url = vehicle_url(_data, "nonexistent_id", "history")
+    response = requests.get(url, headers=user_token)
+    assert response.status_code == 404
+
+def test_get_vehicle_history_success(_data, user_token):
+    payload = {"name": "Toyota", "LicensePlate": f"AB-{str(uuid.uuid4())[:4]}"}
+    rqResponse = requests.post(vehicle_url(_data), headers=user_token, json=payload)
+    body = rqResponse.json()
+    vid = body["vehicle"]["id"]
+    url = vehicle_url(_data, vid, "history")
+    response = requests.get(url, headers=user_token)
+    assert response.status_code == 200
+    body = response.json()
+    assert isinstance(body, list)

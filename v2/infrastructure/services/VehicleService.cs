@@ -31,7 +31,7 @@ public class VehicleService : IVehicles
 
             var vehicle = new Vehicle
             {
-                LicensePlate = dto.LicensePlate,
+                LicensePlate = licensePlate,
                 Make = dto.Make,
                 Model = dto.Model,
                 Color = dto.Color,
@@ -59,7 +59,7 @@ public class VehicleService : IVehicles
             if (user == null)
                 return (404, new { error = "User not found" });
 
-            var vehicle = await _dbContext.Vehicles.FirstOrDefaultAsync(v => v.ID.ToString() == lid && v.UserID == user.ID || v.LicensePlate == lid && v.UserID == user.ID || v.OldID == lid && v.UserID == user.ID);
+            var vehicle = await _dbContext.Vehicles.FirstOrDefaultAsync(v => v.ID.ToString() == lid && v.UserID == user.ID || v.LicensePlate.Replace("-", "") == lid.Replace("-", "") && v.UserID == user.ID || v.OldID == lid && v.UserID == user.ID);
             if (vehicle == null)
                 return (404, new { error = "Vehicle not found" });
 
@@ -175,7 +175,7 @@ public class VehicleService : IVehicles
             if (user == null)
                 return (null!, 404, new { error = "User not found" });
 
-            var vehicle = _dbContext.Vehicles.Where(v => v.ID.ToString() == vid && v.UserID == user.ID || v.OldID == vid && v.UserID == user.ID).AsQueryable();
+            var vehicle = _dbContext.Vehicles.Where(v => v.ID.ToString().ToLower() == vid && v.UserID == user.ID || v.OldID == vid && v.UserID == user.ID).AsQueryable();
             if (!vehicle.Any())
                 return (null!, 404, new { error = "Vehicle not found" });
 
@@ -188,7 +188,7 @@ public class VehicleService : IVehicles
         }
     }
 
-    public async Task<(IEnumerable<Session> data, int statusCode, object message)> GetVehicleHistoryAsync(string licensePlate, string identityUserId)
+    public async Task<(IEnumerable<Session> data, int statusCode, object message)> GetVehicleHistoryAsync(string vid, string identityUserId)
     {
         try
         {
@@ -196,7 +196,7 @@ public class VehicleService : IVehicles
             if (user == null)
                 return (null!, 404, new { error = "User not found" });
 
-            var vehicle = await _dbContext.Vehicles.Where(v => v.LicensePlate == licensePlate && v.UserID == user.ID).FirstOrDefaultAsync();
+            var vehicle = await _dbContext.Vehicles.Where(v => v.ID.ToString().ToLower() == vid && v.UserID == user.ID).FirstOrDefaultAsync();
             if (vehicle == null)
                 return (null!, 404, new { error = "Vehicle not found" });
 
