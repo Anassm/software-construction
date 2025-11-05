@@ -11,8 +11,8 @@ public class Session
     public float Price { get; set; } = 0;
     public PaymentStatus PaymentStatus { get; set; } = PaymentStatus.Unpaid;
 
-    public required Guid UserID { get; set; }
-    public required Guid ParkingLotID { get; set; }
+    public Guid UserID { get; set; }
+    public Guid ParkingLotID { get; set; }
     public Guid? PaymentID { get; set; }
 
     public User? User { get; set; }
