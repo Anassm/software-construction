@@ -91,8 +91,8 @@ public class AuthController : ControllerBase
 
         return Ok(new
         {
-            tokenType = "Bearer",
-            accessToken = new JwtSecurityTokenHandler().WriteToken(token)
+            tokentype = "Bearer",
+            accesstoken = new JwtSecurityTokenHandler().WriteToken(token)
         });
     }
 
