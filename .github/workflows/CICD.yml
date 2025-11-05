@@ -29,13 +29,19 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '9.0.x'
+      
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-    - name: Restore and build .NET project
+    - name: Apply EF Core migrations
       run: |
         cd v2
-        dotnet restore
-        dotnet build
-
+        dotnet ef database update
+        fi
+      
     - name: Start ASP.NET server and wait for it
       run: |
         cd v2
@@ -60,12 +66,6 @@ jobs:
             exit 1
         fi
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install pytest
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    
     - name: Test with pytest
       run: |
         cd testing/integratieTesting
