@@ -19,18 +19,20 @@ public class AuthController : ControllerBase
     private readonly SignInManager<IdentityUser> _signInManager;
     private readonly UserManager<IdentityUser> _userManager;
     private readonly ApplicationDbContext _dbContext;
+    private readonly AuthService _authService;
 
     public AuthController(SignInManager<IdentityUser> signInManager, UserManager<IdentityUser> userManager, ApplicationDbContext dbContext)
     {
         _signInManager = signInManager;
         _userManager = userManager;
         _dbContext = dbContext;
+        _authService = new AuthService(dbContext);
     }
 
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto dto)
     {
-        var identityUser = new IdentityUser { UserName = dto.Email, Email = dto.Email };
+        var identityUser = new IdentityUser { UserName = dto.Username };
         var result = await _userManager.CreateAsync(identityUser, dto.Password);
         if (!result.Succeeded)
             return BadRequest(result.Errors);
@@ -40,11 +42,11 @@ public class AuthController : ControllerBase
             IdentityUserId = identityUser.Id,
             IdentityUser = identityUser, 
             Username = dto.Username,
-            Email = dto.Email,
+            Email = null,
             Name = dto.Name,
-            PhoneNumber = dto.PhoneNumber, 
-            BirthDate = DateTime.UtcNow, 
-            Role = dto.Role,
+            PhoneNumber = null, 
+            BirthYear = null, 
+            Role = null,
             IsActive = true,
             CreatedAt = DateTime.UtcNow,
             Vehicles = new List<Vehicle>(),
@@ -62,7 +64,7 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
-        var user = await _userManager.FindByEmailAsync(dto.Email);
+        var user = await _userManager.FindByEmailAsync(dto.Username);
         if (user == null)
             return Unauthorized(new { error = "Invalid credentials" });
 
@@ -74,7 +76,7 @@ public class AuthController : ControllerBase
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id),
-            new Claim(ClaimTypes.Email, user.Email)
+            new Claim(ClaimTypes.Name, user.UserName),
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("yourSuperSecretKey"));
@@ -92,5 +94,82 @@ public class AuthController : ControllerBase
             tokenType = "Bearer",
             accessToken = new JwtSecurityTokenHandler().WriteToken(token)
         });
+    }
+
+    [HttpPut("profile")]
+    public async Task<IActionResult> Profile([FromBody] ProfileDto dto)
+    {
+
+        var user = _dbContext.Users.FirstOrDefault(u => u.ID == dto.Id);
+        var userASP = await _userManager.FindByIdAsync(user.IdentityUserId);
+        var verify = _userManager.PasswordHasher.VerifyHashedPassword(userASP, userASP.PasswordHash, dto.Password);
+        // If password has changed, update it
+        if (verify != PasswordVerificationResult.Success)
+        {
+            var token = await _userManager.GeneratePasswordResetTokenAsync(userASP);
+            var result = await _userManager.ResetPasswordAsync(userASP, token, dto.Password);
+
+        }
+
+        // Update Email
+        if (!string.Equals(userASP.Email, dto.Email, StringComparison.OrdinalIgnoreCase))
+        {
+            var setEmailResult = await _userManager.SetEmailAsync(userASP, dto.Email);
+            if (!setEmailResult.Succeeded)
+            {
+                var errors = string.Join(", ", setEmailResult.Errors.Select(e => e.Description));
+                return BadRequest($"Failed to update email: {errors}");
+            }
+        }
+
+        // Update Username
+        if (!string.Equals(userASP.UserName, dto.Username, StringComparison.OrdinalIgnoreCase))
+        {
+            var setUserNameResult = await _userManager.SetUserNameAsync(userASP, dto.Username);
+            if (!setUserNameResult.Succeeded)
+            {
+                var errors = string.Join(", ", setUserNameResult.Errors.Select(e => e.Description));
+                return BadRequest($"Failed to update username: {errors}");
+            }
+        }
+
+        if (user != null)
+        {
+            user.Username = dto.Username;
+            user.Name = dto.Name;
+            user.Email = dto.Email;
+            user.PhoneNumber = dto.Phone;
+            user.Role = dto.Role;
+            user.CreatedAt = dto.Created_at;
+            user.BirthYear = dto.Birth_year;
+            user.IsActive = dto.Active;
+
+            _dbContext.SaveChanges();
+        }
+
+
+
+        return Ok(new
+        {
+            message = "Profile updated successfully"
+        });
+    }
+    
+    [HttpGet("profile")]
+    public async Task<IActionResult> Profile()
+    {
+        var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (identityUserId == null)
+            return StatusCode(StatusCodes.Status401Unauthorized, new { error = "Unauthorized: Invalid or missing session token" });
+
+        var result = await _authService.GetProfile(identityUserId);
+
+        return result.statusCode switch
+        {
+            200 => StatusCode(StatusCodes.Status200OK, result.data),
+            404 => StatusCode(StatusCodes.Status404NotFound, result.message),
+            500 => StatusCode(StatusCodes.Status500InternalServerError, result.message),
+            _ => StatusCode(StatusCodes.Status501NotImplemented, new { error = $"Unhandled statuscode: {result.statusCode}" })
+        };
     }
 }
