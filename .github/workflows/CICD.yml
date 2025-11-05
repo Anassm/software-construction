@@ -54,6 +54,11 @@ jobs:
             fi
         done
 
+        if ! curl --silent --fail http://localhost:8000 > /dev/null; then
+        echo "Server failed to start after 10 attempts!"
+        exit 1
+        fi
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
