@@ -172,9 +172,4 @@ public class VehicleController : ControllerBase
         };
     }
 
-    [HttpGet("health")]
-    public async Task<IActionResult> health()
-    {
-        return Ok(); 
-    }
 }

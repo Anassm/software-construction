@@ -112,6 +112,7 @@ app.MapPost("/login", async (UserManager<IdentityUser> userManager,
 // --- Map controllers ---
 app.MapControllers();
 
+app.MapGet("/health", () => Results.Ok("Healthy"));
 app.Run();
 
 
