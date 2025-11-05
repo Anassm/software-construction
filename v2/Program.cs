@@ -79,10 +79,10 @@ app.UseAuthorization();
 app.MapPost("/login", async (UserManager<IdentityUser> userManager,
                               [FromBody] LoginDto login) =>
 {
-    var user = await userManager.FindByNameAsync(login.Username);
+    var user = await userManager.FindByNameAsync(login.username);
     if (user == null) return Results.Unauthorized();
 
-    var passwordValid = await userManager.CheckPasswordAsync(user, login.Password);
+    var passwordValid = await userManager.CheckPasswordAsync(user, login.password);
     if (!passwordValid) return Results.Unauthorized();
 
     var claims = new[]
@@ -104,8 +104,8 @@ app.MapPost("/login", async (UserManager<IdentityUser> userManager,
 
     return Results.Ok(new
     {
-        tokenType = "Bearer",
-        accessToken = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler().WriteToken(token)
+        tokentype = "Bearer",
+        accesstoken = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler().WriteToken(token)
     });
 });
 

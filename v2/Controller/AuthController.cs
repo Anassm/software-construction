@@ -64,11 +64,11 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
-        var user = await _userManager.FindByNameAsync(dto.Username);
+        var user = await _userManager.FindByNameAsync(dto.username);
         if (user == null)
             return Unauthorized(new { error = "Invalid credentials" });
 
-        var result = await _signInManager.CheckPasswordSignInAsync(user, dto.Password, false);
+        var result = await _signInManager.CheckPasswordSignInAsync(user, dto.password, false);
         if (!result.Succeeded)
             return Unauthorized(new { error = "Invalid credentials" });
 
