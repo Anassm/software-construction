@@ -4,7 +4,7 @@ on:
   push:
     branches: [ "development, main", "test-CICD" ]
   pull_request: 
-    branches: ["development", "main"]
+    branches: ["main"]
 
 jobs:
   build:
