@@ -64,7 +64,7 @@ public class ReservationServiceTests
             PhoneNumber = "0000000000",
             Role = "User",
             CreatedAt = DateTime.UtcNow,
-            BirthDate = new DateTime(2000, 1, 1),
+            BirthYear = 1990,
             IsActive = true,
             Vehicles = new List<Vehicle>(),
             Reservations = new List<Reservation>(),
