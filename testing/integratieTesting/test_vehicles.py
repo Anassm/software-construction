@@ -33,8 +33,8 @@ def _data():
 
 def register_and_login(base_url, user):
     requests.post(f"{base_url}/register", json=user)
-    r = requests.post(f"{base_url}/login", json={"email": user["Username"], "password": user["Password"]})
-    return {"Authorization": f"Bearer {r.json()['accessToken']}"}
+    r = requests.post(f"{base_url}/login", json={"email": user["username"], "password": user["password"]})
+    return {"Authorization": f"{r["tokentype"]} {r["accesstoken"]}"}
 
 @pytest.fixture
 def user_token(_data):
