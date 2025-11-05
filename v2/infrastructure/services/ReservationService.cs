@@ -1,8 +1,9 @@
-using v2.Infrastructure.Data;         // ApplicationDbContext
-using Microsoft.EntityFrameworkCore;         // FirstOrDefaultAsync, Include
+using v2.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 using v2.core.Interfaces;
 using v2.Core.DTOs;
 using v2.Core.Models;
+using System.Collections.Generic;
 
 namespace v2.infrastructure.Services;
 
@@ -30,7 +31,7 @@ public class ReservationService : IReservation
         {
             StartDate = request.StartDate,
             EndDate = request.EndDate,
-            Status = "Pending", // Vanwegen error nu alleen pending
+            Status = "Pending",
             TotalPrice = 0f,
             UserID = vehicle.UserID,
             ParkingLotID = lot.ID,
@@ -42,6 +43,18 @@ public class ReservationService : IReservation
         await _db.SaveChangesAsync();
 
         return reservation;
+    }
+
+    public async Task<IEnumerable<Reservation>> GetReservationsAsync(Guid userId)
+    {
+        var reservations = await _db.Reservations
+            .Where(r => r.UserID == userId)
+            .Include(r => r.Vehicle)
+            .Include(r => r.ParkingLot)
+            .OrderBy(r => r.StartDate)
+            .ToListAsync();
+            
+        return reservations;
     }
 
 }

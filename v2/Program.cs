@@ -76,8 +76,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 // --- Login endpoint returning JWT ---
-app.MapPost("/login", async (UserManager<IdentityUser> userManager,
-                              [FromBody] LoginDto login) =>
+app.MapPost("/api/login", async (UserManager<IdentityUser> userManager,
+                             LoginDto login) =>
 {
     var user = await userManager.FindByNameAsync(login.Email);
     if (user == null) return Results.Unauthorized();
