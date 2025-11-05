@@ -15,7 +15,6 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '9.0.x'
-        cache: 'pip'
     - name: Install dependencies
       run: |
         cd v2 && dotnet restore
