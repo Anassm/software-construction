@@ -8,11 +8,13 @@ using System.Security.Claims;
 using v2.Infrastructure.Data;
 using v2.core.Interfaces;
 using v2.infrastructure.Services;
+using v2.Core.Interfaces;
+using v2.Infrastructure.Services;
 using v2.Core.DTOs;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var jwtKey = "thisIsASuperSecretKeyWithAtLeast32Bytes!"; 
+var jwtKey = "thisIsASuperSecretKeyWithAtLeast32Bytes!";
 var jwtIssuer = "yourIssuer";
 var jwtAudience = "yourAudience";
 
@@ -54,6 +56,8 @@ builder.Services.AddScoped<IVehicles, VehicleService>();
 
 // --- Controllers & Swagger ---
 builder.Services.AddControllers();
+builder.Services.AddScoped<IPayment, PaymentService>();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
