@@ -2,7 +2,7 @@ name: MobiParkV2
 
 on:
   push:
-    branches: [ "Test-CICD" ]
+    branches: [ "test-CICD" ]
 
 jobs:
   build:
