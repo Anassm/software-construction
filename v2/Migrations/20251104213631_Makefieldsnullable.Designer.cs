@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using v2.Infrastructure.Data;
 
@@ -10,9 +11,11 @@ using v2.Infrastructure.Data;
 namespace v2.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251104213631_Makefieldsnullable")]
+    partial class Makefieldsnullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.10");
@@ -271,7 +274,7 @@ namespace v2.Migrations
                     b.Property<decimal>("Amount")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime?>("CompletedAt")
+                    b.Property<DateTime>("CompletedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
@@ -397,7 +400,7 @@ namespace v2.Migrations
                     b.Property<Guid>("ParkingLotID")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("PaymentID")
+                    b.Property<Guid>("PaymentID")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("PaymentStatus")
@@ -594,7 +597,8 @@ namespace v2.Migrations
                     b.HasOne("v2.Core.Models.Session", "Session")
                         .WithOne("Payment")
                         .HasForeignKey("v2.Core.Models.Payment", "SessionID")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Session");
                 });

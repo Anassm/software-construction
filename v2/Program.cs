@@ -79,7 +79,7 @@ app.UseAuthorization();
 app.MapPost("/login", async (UserManager<IdentityUser> userManager,
                               [FromBody] LoginDto login) =>
 {
-    var user = await userManager.FindByNameAsync(login.Email);
+    var user = await userManager.FindByNameAsync(login.Username);
     if (user == null) return Results.Unauthorized();
 
     var passwordValid = await userManager.CheckPasswordAsync(user, login.Password);
@@ -88,7 +88,7 @@ app.MapPost("/login", async (UserManager<IdentityUser> userManager,
     var claims = new[]
     {
         new Claim(ClaimTypes.NameIdentifier, user.Id),
-        new Claim(ClaimTypes.Email, user.Email)
+        new Claim(ClaimTypes.Name, user.UserName), 
     };
 
     var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
