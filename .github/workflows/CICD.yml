@@ -45,7 +45,7 @@ jobs:
         dotnet run --urls "http://localhost:8000" &
         echo "Waiting for server to start..."
         for i in {1..10}; do
-            if curl --silent --fail http://127.0.0.1:8000 > /dev/null; then
+            if curl --silent --fail http://127.0.0.1:8000/health > /dev/null; then
                 echo "Server is up!"
                 break
             else

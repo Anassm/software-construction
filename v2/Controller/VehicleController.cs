@@ -171,4 +171,10 @@ public class VehicleController : ControllerBase
             _ => StatusCode(StatusCodes.Status501NotImplemented, new { error = $"Unhandled statuscode: {result.statusCode}" })
         };
     }
+
+    [HttpGet("health")]
+    public async Task<IActionResult> health()
+    {
+        return Ok(); 
+    }
 }
