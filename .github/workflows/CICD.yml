@@ -41,23 +41,25 @@ jobs:
     - name: Start ASP.NET server and wait for it
       run: |
         cd v2
-        # Start server in background
-        dotnet run --urls "http://0.0.0.0:8000" &
-        sleep 30
-        echo "Waiting for server to start..."
-        for i in {1..10}; do
+        echo "Starting server..."
+        dotnet run --urls "http://0.0.0.0:8000" --no-launch-profile > server.log 2>&1 &
+
+        echo "Waiting for server to be ready..."
+        for i in {1..30}; do
             if curl --silent --fail http://localhost:8000/health > /dev/null; then
                 echo "Server is up!"
                 break
             else
-                echo "Server not ready yet... retrying ($i/10)"
+                echo "Server not ready yet... retrying ($i/30)"
                 sleep 3
             fi
         done
 
+        # Final check
         if ! curl --silent --fail http://localhost:8000/health > /dev/null; then
-        echo "Server failed to start after 10 attempts!"
-        exit 1
+            echo "Server failed to start after 30 attempts!"
+            tail -n 50 server.log
+            exit 1
         fi
 
     - name: Install dependencies
