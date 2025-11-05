@@ -50,7 +50,6 @@ jobs:
       run: |
         cd v2
         dotnet ef database update
-        fi
       
     - name: Start ASP.NET server and wait for it
       run: |
