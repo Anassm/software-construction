@@ -1,0 +1,111 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: MobiParkV2
+
+on:
+  push:
+    branches: [ "development, main", "test-CICD" ]
+  pull_request: 
+    branches: ["development", "main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+        cache: 'pip'
+    - name: Install dependencies
+      run: |
+        cd v2 && dotnet restore
+    - name: Build
+      run: cd v2 && dotnet build --configuration Release --no-restore
+
+
+  Integratie-tests: 
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+
+    - name: Restore and build .NET project
+      run: |
+        cd v2
+        dotnet restore
+        dotnet build
+
+    - name: Start ASP.NET server and wait for it
+      run: |
+        cd v2
+        dotnet run
+
+        echo "Waiting for server to start..."
+        for i in {1..10}; do
+        if curl --silent --fail http://localhost:8000 > /dev/null; then
+            echo "Server is up!"
+            break
+        else
+            echo "Server not ready yet... retrying ($i/10)"
+            sleep 3
+        fi
+        done
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    
+    - name: Test with pytest
+      run: |
+        cd testing/integratieTesting
+        
+    - name: run tests
+      run: |
+        pytest test_vehicles.py
+
+
+  Unit-tests: 
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10"
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 pytest
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    - name: Test with pytest
+      run: |
+        coverage run -m pytest
+
+    - name: Run code coverage
+      run: |
+        # Run coverage report
+        #coverage xml
+
+        # Report and write to summary.
+        coverage report --format=markdown >> $GITHUB_STEP_SUMMARY
+
+        # Report again and fail if under 100%.
+        coverage report --fail-under=100
+
+    - name: Store coverage report
+      uses: actions/upload-artifact@v4
+      with:
+        path: coverage.xml
+      if: ${{ failure() }}
