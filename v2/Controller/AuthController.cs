@@ -19,12 +19,14 @@ public class AuthController : ControllerBase
     private readonly SignInManager<IdentityUser> _signInManager;
     private readonly UserManager<IdentityUser> _userManager;
     private readonly ApplicationDbContext _dbContext;
+    private readonly AuthService _authService;
 
     public AuthController(SignInManager<IdentityUser> signInManager, UserManager<IdentityUser> userManager, ApplicationDbContext dbContext)
     {
         _signInManager = signInManager;
         _userManager = userManager;
         _dbContext = dbContext;
+        _authService = new AuthService(dbContext);
     }
 
     [HttpPost("register")]
@@ -149,27 +151,25 @@ public class AuthController : ControllerBase
 
         return Ok(new
         {
-            // tokenType = "Bearer",
-            // accessToken = new JwtSecurityTokenHandler().WriteToken(token)
             message = "Profile updated successfully"
         });
     }
     
-    // [HttpGet("profile")]
-    // public async Task<IActionResult> GetVehicleHistory([FromQuery] string licensePlate)
-    // {
-    //     var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-    //     if (identityUserId == null)
-    //         return StatusCode(StatusCodes.Status401Unauthorized, new { error = "Unauthorized: Invalid or missing session token" });
+    [HttpGet("profile")]
+    public async Task<IActionResult> Profile()
+    {
+        var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (identityUserId == null)
+            return StatusCode(StatusCodes.Status401Unauthorized, new { error = "Unauthorized: Invalid or missing session token" });
 
-    //     var result = await _vehicleService.GetVehicleHistoryAsync(licensePlate, identityUserId);
+        var result = await _authService.GetProfile(identityUserId);
 
-    //     return result.statusCode switch
-    //     {
-    //         200 => StatusCode(StatusCodes.Status200OK, result.data),
-    //         404 => StatusCode(StatusCodes.Status404NotFound, result.message),
-    //         500 => StatusCode(StatusCodes.Status500InternalServerError, result.message),
-    //         _ => StatusCode(StatusCodes.Status501NotImplemented, new { error = $"Unhandled statuscode: {result.statusCode}" })
-    //     };
-    // }
+        return result.statusCode switch
+        {
+            200 => StatusCode(StatusCodes.Status200OK, result.data),
+            404 => StatusCode(StatusCodes.Status404NotFound, result.message),
+            500 => StatusCode(StatusCodes.Status500InternalServerError, result.message),
+            _ => StatusCode(StatusCodes.Status501NotImplemented, new { error = $"Unhandled statuscode: {result.statusCode}" })
+        };
+    }
 }
