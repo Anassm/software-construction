@@ -79,7 +79,13 @@ jobs:
       run: |
         cd testing/integratieTesting
         pytest test_vehicles.py
-        
+
+    - name: Debug server log if tests fail
+      if: failure()
+      run: |
+        echo "---- LAST 100 LINES OF SERVER LOG ----"
+        tail -n 100 v2/server.log || true
+            
         
 
 
