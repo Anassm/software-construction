@@ -42,10 +42,10 @@ jobs:
       run: |
         cd v2
         # Start server in background
-        nohup dotnet run > server.log 2>&1 &
+        dotnet run --urls "http://0.0.0.0:8000" &
         echo "Waiting for server to start..."
         for i in {1..10}; do
-            if curl --silent --fail http://localhost:8000 > /dev/null; then
+            if curl --silent --fail http://0.0.0.0:8000 > /dev/null; then
                 echo "Server is up!"
                 break
             else
