@@ -189,7 +189,7 @@ def test_put_payment_no_auth(_data, setup_payment):
 
 def test_put_payment_missing_field(_data, user_headers, setup_payment):
     url = f"{_data['url']}/{setup_payment}"
-    data = {"t_data": {"info": "ok"}}  # 'validation' mist
+    data = {"t_data": {"info": "ok"}}
     response = requests.put(url, headers=user_headers, json=data)
     assert response.status_code == 400
     body = response.json()
