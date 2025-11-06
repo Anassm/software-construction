@@ -24,17 +24,10 @@ namespace V2.Controllers
                 return StatusCode(StatusCodes.Status401Unauthorized, new { error = "Unauthorized: Invalid or missing session token" });
 
             if (request == null)
-                 return StatusCode(StatusCodes.Status400BadRequest, new { error = "Request must contain a body." });
+                return StatusCode(StatusCodes.Status400BadRequest, new { error = "Request must contain a body." });
 
             if (request.Amount <= 0)
-                 return StatusCode(StatusCodes.Status400BadRequest, new { error = "Required field missing, field: amount" });
-            
-            // // De V1-test (test_post_payment_missing_field) stuurt 'transaction'
-            // if (string.IsNullOrEmpty(request.Transaction))
-            // {
-            //      // De V1 DTO (aangepast in vorige stap) verwacht nu 'Transaction' (de V1 ID)
-            //      // Als je de strikte V2 DTO (met SessionID) wilt houden, moet je hier 'SessionID' valideren.
-            // }
+                return StatusCode(StatusCodes.Status400BadRequest, new { error = "Required field missing, field: amount" });
 
             var result = await _paymentService.CreatePaymentAsync(request, identityUserId);
 
@@ -47,24 +40,33 @@ namespace V2.Controllers
         }
 
         [HttpPut("{paymentId:guid}")]
+        [Consumes("application/json")]
         public async Task<IActionResult> ConfirmPayment(Guid paymentId, [FromBody] ConfirmPaymentRequestDTO request)
         {
             var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (identityUserId == null)
                 return StatusCode(StatusCodes.Status401Unauthorized, new { error = "Unauthorized: Invalid or missing session token" });
-            
+
             if (request == null)
-                 return StatusCode(StatusCodes.Status400BadRequest, new { error = "Request must contain a body." });
-            
+                return StatusCode(StatusCodes.Status400BadRequest, new { error = "Request must contain a body." });
+
             if (string.IsNullOrEmpty(request.Validation))
-                return StatusCode(StatusCodes.Status400BadRequest, new { error = "Required field missing, field: validation" });
+                return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    error = "Required field missing, field: validation"
+                });
+
+            if (request.T_Data == null)
+                return StatusCode(StatusCodes.Status400BadRequest, new
+                {
+                    error = "Required field missing, field: t_data"
+                });
 
             var result = await _paymentService.ConfirmPaymentAsync(paymentId, request, identityUserId);
-
             return result.statusCode switch
             {
                 200 => StatusCode(StatusCodes.Status200OK, result.data),
-                401 => StatusCode(StatusCodes.Status401Unauthorized, result.data), 
+                401 => StatusCode(StatusCodes.Status401Unauthorized, result.data),
                 403 => StatusCode(StatusCodes.Status403Forbidden, result.data),
                 404 => StatusCode(StatusCodes.Status404NotFound, result.data),
                 _ => StatusCode(StatusCodes.Status500InternalServerError, result.data)
@@ -80,7 +82,7 @@ namespace V2.Controllers
 
             if (request == null || request.PaymentId == Guid.Empty)
                 return StatusCode(StatusCodes.Status400BadRequest, new { error = "Required field missing, field: paymentId" });
-            
+
             var result = await _paymentService.RefundPaymentAsync(request, identityUserId);
 
             return result.statusCode switch
@@ -100,7 +102,7 @@ namespace V2.Controllers
             if (identityUserId == null)
                 return StatusCode(StatusCodes.Status401Unauthorized, new { error = "Unauthorized: Invalid or missing session token" });
 
-            var result = await _paymentService.GetPaymentsByUserAsync(null, identityUserId); 
+            var result = await _paymentService.GetPaymentsByUserAsync(null, identityUserId);
 
             return result.statusCode switch
             {
@@ -117,7 +119,7 @@ namespace V2.Controllers
             if (identityUserId == null)
                 return StatusCode(StatusCodes.Status401Unauthorized, new { error = "Unauthorized: Invalid or missing session token" });
 
-            var result = await _paymentService.GetPaymentsByUserAsync(username, identityUserId); 
+            var result = await _paymentService.GetPaymentsByUserAsync(username, identityUserId);
 
             return result.statusCode switch
             {

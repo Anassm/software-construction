@@ -55,7 +55,22 @@ builder.Services.AddScoped<IReservation, ReservationService>();
 builder.Services.AddScoped<IVehicles, VehicleService>();
 
 // --- Controllers & Swagger ---
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.InvalidModelStateResponseFactory = context =>
+        {
+            var fieldName = context.ModelState.Keys.FirstOrDefault() ?? "unknown";
+
+            var v1ErrorResponse = new
+            {
+                error = "Required field missing",
+                field = fieldName
+            };
+
+            return new BadRequestObjectResult(v1ErrorResponse);
+        };
+    });
 builder.Services.AddScoped<IPayment, PaymentService>();
 
 builder.Services.AddEndpointsApiExplorer();
