@@ -1,12 +1,12 @@
 using v2.Core.Interfaces;
 using v2.Core.Models;
 using v2.Core.DTOs;
-using ChefServe.Infrastructure.Data;
+using v2.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace v2.Infrastructure.Services;
 
-public class PaymentService : IPayments
+public class PaymentService : IPayment
 {
     private readonly ApplicationDbContext _context;
 
@@ -56,13 +56,13 @@ public class PaymentService : IPayments
     {
         if (hash == null || string.IsNullOrWhiteSpace(hash))
         {
-            throw new ArgumentException("Hash is required.", nameof(hash));
+            return null;
         }
 
         var payment = await _context.Payments.FirstOrDefaultAsync(payment => payment.ID == paymentId);
         if (payment == null)
         {
-            throw new KeyNotFoundException($"Payment with id {paymentId} not found.");
+            return null;
         }
 
         payment.Hash = hash;
@@ -92,7 +92,7 @@ public class PaymentService : IPayments
     {
         if (initiator == null || string.IsNullOrWhiteSpace(initiator))
         {
-            throw new ArgumentException("Initiator is required.", nameof(initiator));
+            return Enumerable.Empty<PaymentResponseDTO>();
         }
 
         var query = _context.Payments
@@ -122,11 +122,11 @@ public class PaymentService : IPayments
     public async Task<PaymentResponseDTO> UpdatePaymentAsync(Guid paymentId, UpdatePaymentRequestDTO updateData)
     {
         if (updateData == null)
-            throw new ArgumentException("Update data is required.", nameof(updateData));
+            return null;
 
         var payment = await _context.Payments.FirstOrDefaultAsync(payment => payment.ID == paymentId);
         if (payment == null)
-            throw new KeyNotFoundException($"Payment with id {paymentId} not found.");
+            return null;
 
         // Apply only the properties from which updateData has values for.
         if (updateData.Amount.HasValue)
@@ -176,9 +176,10 @@ public class PaymentService : IPayments
     public async Task<PaymentResponseDTO> RefundPaymentAsync(Guid paymentId, string? reason)
     {
         var payment = await _context.Payments.FirstOrDefaultAsync(payment => payment.ID == paymentId);
+
         if (payment == null)
         {
-            throw new KeyNotFoundException($"Payment with id {paymentId} not found.");
+            return null;
         }
 
         payment.CompletedAt = DateTime.UtcNow;

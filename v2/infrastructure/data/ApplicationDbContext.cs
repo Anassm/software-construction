@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using v2.Core.Models;
 
-namespace ChefServe.Infrastructure.Data
+namespace v2.Infrastructure.Data
 {
       public class ApplicationDbContext : IdentityDbContext<IdentityUser>
       {
@@ -12,12 +12,12 @@ namespace ChefServe.Infrastructure.Data
                 : base(options)
             { }
 
-            public DbSet<User> Users { get; set; }
-            public DbSet<Vehicle> Vehicles { get; set; }
-            public DbSet<Session> Sessions { get; set; }
-            public DbSet<Reservation> Reservations { get; set; }
-            public DbSet<Payment> Payments { get; set; }
-            public DbSet<ParkingLot> ParkingLots { get; set; }
+            public virtual DbSet<User> Users { get; set; }
+            public virtual DbSet<Vehicle> Vehicles { get; set; }
+            public virtual DbSet<Session> Sessions { get; set; }
+            public virtual DbSet<Reservation> Reservations { get; set; }
+            public virtual DbSet<Payment> Payments { get; set; }
+            public virtual DbSet<ParkingLot> ParkingLots { get; set; }
 
             protected override void OnModelCreating(ModelBuilder modelBuilder)
             {
@@ -26,14 +26,15 @@ namespace ChefServe.Infrastructure.Data
                   modelBuilder.Entity<User>(entity =>
                   {
                         entity.HasKey(u => u.ID);
+                        entity.Property(u => u.OldID);
                         entity.Property(u => u.Username).IsRequired().HasMaxLength(100);
                         entity.Property(u => u.Name).IsRequired().HasMaxLength(150);
-                        entity.Property(u => u.Email).IsRequired().HasMaxLength(150);
-                        entity.Property(u => u.PhoneNumber).IsRequired().HasMaxLength(20);
-                        entity.Property(u => u.Role).IsRequired().HasMaxLength(50);
+                        entity.Property(u => u.Email).HasMaxLength(150);
+                        entity.Property(u => u.PhoneNumber).HasMaxLength(20);
+                        entity.Property(u => u.Role).HasMaxLength(50);
                         entity.Property(u => u.CreatedAt)
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
-                        entity.Property(u => u.BirthDate).IsRequired();
+                        entity.Property(u => u.BirthYear);
                         entity.Property(u => u.IsActive).HasDefaultValueSql("1");
                         modelBuilder.Entity<User>()
                         .HasOne(u => u.IdentityUser)
@@ -45,6 +46,7 @@ namespace ChefServe.Infrastructure.Data
                   modelBuilder.Entity<Vehicle>(entity =>
                   {
                         entity.HasKey(v => v.ID);
+                        entity.Property(v => v.OldID);
                         entity.Property(v => v.LicensePlate)
                         .IsRequired()
                         .HasMaxLength(20);
@@ -68,6 +70,7 @@ namespace ChefServe.Infrastructure.Data
                   modelBuilder.Entity<ParkingLot>(entity =>
                   {
                         entity.HasKey(p => p.ID);
+                        entity.Property(p => p.OldID);
                         entity.Property(p => p.Name)
                         .IsRequired()
                         .HasMaxLength(100);
@@ -90,6 +93,7 @@ namespace ChefServe.Infrastructure.Data
                   modelBuilder.Entity<Reservation>(entity =>
                   {
                         entity.HasKey(r => r.ID);
+                        entity.Property(r => r.OldID);
                         entity.Property(r => r.StartDate).IsRequired();
                         entity.Property(r => r.EndDate).IsRequired();
                         entity.Property(r => r.Status).IsRequired().HasMaxLength(50);
@@ -116,6 +120,7 @@ namespace ChefServe.Infrastructure.Data
                   modelBuilder.Entity<Session>(entity =>
                   {
                         entity.HasKey(s => s.ID);
+                        entity.Property(s => s.OldID);
                         entity.Property(s => s.LicensePlate).IsRequired().HasMaxLength(20);
                         entity.Property(s => s.StartTime).IsRequired();
                         entity.Property(s => s.EndTime).IsRequired(false);
@@ -137,10 +142,11 @@ namespace ChefServe.Infrastructure.Data
                   modelBuilder.Entity<Payment>(entity =>
                   {
                         entity.HasKey(p => p.ID);
+                        entity.Property(p => p.OldID);
                         entity.Property(p => p.Amount).IsRequired();
                         entity.Property(p => p.Initiator).IsRequired().HasMaxLength(100);
                         entity.Property(p => p.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
-                        entity.Property(p => p.CompletedAt).IsRequired();
+                        entity.Property(p => p.CompletedAt).IsRequired(false);
                         entity.Property(p => p.Hash).HasMaxLength(256);
                         entity.Property(p => p.TransactionAmount).IsRequired();
                         entity.Property(p => p.TransactionDate).IsRequired();
@@ -151,6 +157,7 @@ namespace ChefServe.Infrastructure.Data
                         entity.HasOne(p => p.Session)
                         .WithOne(s => s.Payment)
                         .HasForeignKey<Payment>(p => p.SessionID)
+                        .IsRequired(false)
                         .OnDelete(DeleteBehavior.Cascade);
                   });
             }

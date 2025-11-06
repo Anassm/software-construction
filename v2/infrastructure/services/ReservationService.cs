@@ -1,4 +1,4 @@
-using ChefServe.Infrastructure.Data;         // ApplicationDbContext
+using v2.Infrastructure.Data;         // ApplicationDbContext
 using Microsoft.EntityFrameworkCore;         // FirstOrDefaultAsync, Include
 using v2.core.Interfaces;
 using v2.Core.DTOs;
@@ -15,36 +15,33 @@ public class ReservationService : IReservation
     {
         if (string.IsNullOrWhiteSpace(request.LicensePlate))
             throw new ArgumentException("License plate is required.");
+
         if (request.EndDate <= request.StartDate)
             throw new ArgumentException("EndDate must be greater than StartDate.");
 
-        var lot = await _db.ParkingLots
-            .FirstOrDefaultAsync(p => p.ID == request.ParkingLotId);
-        if (lot is null)
-            throw new ArgumentException("Parking lot not found.");
+        var lot = await _db.ParkingLots.FindAsync(request.ParkingLotId)
+            ?? throw new ArgumentException("Parking lot not found.");
 
         var vehicle = await _db.Vehicles
-            .Include(v => v.User)
-            .FirstOrDefaultAsync(v => v.LicensePlate == request.LicensePlate);
-        if (vehicle is null)
-            throw new ArgumentException("Vehicle with given license plate not found.");
+            .FirstOrDefaultAsync(v => v.LicensePlate == request.LicensePlate)
+            ?? throw new ArgumentException("Vehicle with given license plate not found.");
 
         var reservation = new Reservation
         {
-            ID = Guid.NewGuid(),
             StartDate = request.StartDate,
             EndDate = request.EndDate,
-            Status = "Pending",
-            CreatedAt = DateTime.UtcNow,
+            Status = "Pending", // Vanwegen error nu alleen pending
             TotalPrice = 0f,
             UserID = vehicle.UserID,
             ParkingLotID = lot.ID,
-            VehicleID = vehicle.ID
+            VehicleID = vehicle.ID,
+            CreatedAt = DateTime.UtcNow
         };
 
-        _db.Reservation.Add(reservation);
+        _db.Reservations.Add(reservation);
         await _db.SaveChangesAsync();
 
         return reservation;
     }
+
 }

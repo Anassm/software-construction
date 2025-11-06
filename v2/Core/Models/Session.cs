@@ -2,16 +2,17 @@ namespace v2.Core.Models;
 
 public class Session
 {
-     public required Guid ID { get; set; } = Guid.NewGuid();
+    public Guid ID { get; set; } = Guid.NewGuid();
+    public string OldID { get; set; } = "";
     public required string LicensePlate { get; set; }
-    public required DateTime StartTime { get; set; }
-    public required PaymentStatus PaymentStatus { get; set; } = PaymentStatus.Unpaid;
-    public required Guid UserID { get; set; }
-    public required Guid ParkingLotID { get; set; }
-    
+    public DateTime StartTime { get; set; } = DateTime.UtcNow;
     public DateTime? EndTime { get; set; }
-    public int? DurationInMinutes { get; set; }
-    public float? Price { get; set; }
+    public int duration { get; set; }
+    public float Price { get; set; } = 0;
+    public PaymentStatus PaymentStatus { get; set; } = PaymentStatus.Unpaid;
+
+    public Guid UserID { get; set; }
+    public Guid ParkingLotID { get; set; }
     public Guid? PaymentID { get; set; }
 
     public User? User { get; set; }
