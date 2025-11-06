@@ -92,10 +92,9 @@ namespace v2.Infrastructure.Services
         public async Task<(int statusCode, object data)> GetPaymentsByUserAsync(string? initiatorUsername, string identityId)
         {
             var requestingUser = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.IdentityUserId == identityId);
-
             if (requestingUser == null)
             {
-                return (404, new { error = "Requesting user record not found" });
+                return (404, new { error = "Requesting user not found" });
             }
 
             string targetUsername;
