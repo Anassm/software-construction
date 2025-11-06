@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using ChefServe.Infrastructure.Data;
 using v2.Core.Models;
 using v2.Core.DTOs;
+using v2.Core.Interfaces;
 
 namespace v2.Controllers;
 
@@ -9,8 +10,13 @@ namespace v2.Controllers;
 [Route("parkinglots")]
 public class ParkingLotsController : ControllerBase
 {
-    private readonly ApplicationDbContext _db;
-    public ParkingLotsController(ApplicationDbContext db) => _db = db;
+     private readonly IParkingLots _parkingLotService;
+
+    public ParkingLotsController(IParkingLots parkingLotService)
+    {
+        _parkingLotService = parkingLotService;
+    }
+
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] ParkingLotCreateRequest dto)
@@ -18,36 +24,69 @@ public class ParkingLotsController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var lot = new ParkingLot
+ 
+        var (statusCode, message) = await _parkingLotService.CreateParkingLotAsync(dto);
+
+    
+        return statusCode switch
         {
-            ID = Guid.NewGuid(),
-            Name = dto.Name,
-            Location = dto.Location,
-            Address = dto.Address,
-            Capacity = dto.Capacity,
-            Reserved = 0,
-            Tariff = dto.Tariff,
-            DayTariff = dto.DayTariff,
-            CreatedAt = DateTime.UtcNow,
-            latitude = dto.Latitude,
-            longitude = dto.Longitude,
-            Reservations = new List<Reservation>(),
-            Sessions = new List<Session>()
+            201 => Created($"/parkinglots/{(message as dynamic).parkingLot.id}", message), 
+            409 => Conflict(message),
+            _ => StatusCode(statusCode, message)
         };
 
-        _db.ParkingLots.Add(lot);
-        await _db.SaveChangesAsync();
+    }
 
-        return Created($"/parkinglots/{lot.ID}", new {
-            id = lot.ID,
-            lot.Name,
-            lot.Location,
-            lot.Address,
-            lot.Capacity,
-            lot.Tariff,
-            lot.DayTariff,
-            lot.latitude,
-            lot.longitude
-        });
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var (statusCode, message) = await _parkingLotService.GetAllParkingLotsAsync();
+        return StatusCode(statusCode, message); 
+    }
+
+
+    [HttpGet("{id:guid}")]
+    public async Task<IActionResult> GetById(Guid id)
+    {
+        var (statusCode, message) = await _parkingLotService.GetParkingLotAsync(id);
+
+        return statusCode switch
+        {
+            200 => Ok(message),
+            404 => NotFound(message),
+            _ => StatusCode(statusCode, message)
+        };
+    }
+
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> Update(Guid id, [FromBody] ParkingLotCreateRequest dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var (statusCode, message) = await _parkingLotService.UpdateParkingLotAsync(id, dto);
+
+        return statusCode switch
+        {
+            200 => Ok(message),
+            404 => NotFound(message),
+            409 => Conflict(message),
+            _ => StatusCode(statusCode, message)
+        };
+    }
+
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        var (statusCode, message) = await _parkingLotService.DeleteParkingLotAsync(id);
+
+        return statusCode switch
+        {
+            200 => Ok(message),
+            404 => NotFound(message),
+            _ => StatusCode(statusCode, message)
+        };
     }
 }
+
