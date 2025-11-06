@@ -47,9 +47,11 @@ public class UpdatePaymentRequestDTO
 
 public class ConfirmPaymentRequestDTO
 {
-    public object? T_Data { get; set; }
-
-    public string? Validation { get; set; }
+    [Required]
+    public object T_Data { get; set; } // V1 gebruikt 't_data' als een generiek data object
+    // Hash
+    [Required]
+    public string Validation { get; set; }
 }
 
 public class RefundPaymentRequestDTO
