@@ -33,8 +33,9 @@ def _data():
 
 def register_and_login(base_url, user):
     requests.post(f"{base_url}/register", json=user)
-    r = requests.post(f"{base_url}/login", json={"email": user["email"], "password": user["password"]})
-    return {"Authorization": f"Bearer {r.json()['accessToken']}"}
+    r = requests.post(f"{base_url}/login", json={"username": user["username"], "password": user["password"]})
+    body = r.json()
+    return {"Authorization": f"{body["tokentype"]} {body["accesstoken"]}"}
 
 @pytest.fixture
 def user_token(_data):
@@ -163,7 +164,7 @@ def test_put_vehicle_create_new(_data, user_token):
     if "vehicle" in body:
         assert body["vehicle"]["name"] == "Tesla Model 3"
 
-def test_put_vehicle_update_existing(_data, user_token):
+def test_put_vehicle_update_existing_success(_data, user_token):
     create_payload = {"name": "Toyota", "LicensePlate": "AB-123"}
     requests.post(vehicle_url(_data), headers=user_token, json=create_payload)
     update_payload = {"name": "Toyota Supra", "LicensePlate": "AB-123"}
@@ -199,8 +200,7 @@ def test_delete_vehicle_success(_data, user_token):
     body = response.json()
     assert body is not None
 
-def test_delete_vehicle_twice_returns_404(_data, user_token):
-    """Tweemaal verwijderen → tweede keer moet 404 geven."""
+def test_delete_vehicle_not_found(_data, user_token):
     payload = {"name": "Toyota", "LicensePlate": "AB-123"}
     requests.post(vehicle_url(_data), headers=user_token, json=payload)
     url = vehicle_url(_data, "AB-123")
@@ -215,7 +215,7 @@ def test_delete_vehicle_different_user_cannot_delete(_data, user_token, user_tok
     requests.post(vehicle_url(_data), headers=user_token, json=payload)
     url = vehicle_url(_data, "AB-123")
     response = requests.delete(url, headers=user_token_b)
-    assert response.status_code in [403, 404]
+    assert response.status_code == 404
     body = response.json()
     assert body is not None
 

@@ -11,8 +11,8 @@ using v2.Infrastructure.Data;
 namespace v2.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251104234007_ini")]
-    partial class ini
+    [Migration("20251105112054_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -437,8 +437,8 @@ namespace v2.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("BirthDate")
-                        .HasColumnType("TEXT");
+                    b.Property<int?>("BirthYear")
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -446,7 +446,6 @@ namespace v2.Migrations
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasMaxLength(150)
                         .HasColumnType("TEXT");
 
@@ -469,12 +468,10 @@ namespace v2.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PhoneNumber")
-                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Role")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("TEXT");
 

@@ -47,7 +47,7 @@ public class VehicleServiceTests
             Email = "test@example.com",
             PhoneNumber = "1234567890",
             Role = "user",
-            BirthDate = new DateTime(1990, 1, 1),
+            BirthYear = 1990,
             IsActive = true,
             Vehicles = new List<Vehicle>(),
             Sessions = new List<Session>(),
@@ -64,7 +64,7 @@ public class VehicleServiceTests
             Email = "admin@example.com",
             PhoneNumber = "1234567890",
             Role = "admin",
-            BirthDate = new DateTime(1990, 1, 1),
+            BirthYear = 1990,
             IsActive = true,
             Vehicles = new List<Vehicle>(),
             Sessions = new List<Session>(),
@@ -94,7 +94,7 @@ public class VehicleServiceTests
     {
         var vehicle = new CreateVehicleDto
         {
-            LicensePlate = "XYZ789",
+            LicensePlate = "XYZ-789",
             Make = "Toyota",
             Model = "Corolla",
             Color = "Blue",
@@ -111,14 +111,14 @@ public class VehicleServiceTests
     {
         var vehicle = new CreateVehicleDto
         {
-            LicensePlate = "XYZ789",
+            LicensePlate = "XYZ-789",
             Make = "Toyota",
             Model = "Corolla",
             Color = "Blue",
             Year = 2020,
         };
         var result = await _service.CreateVehicleAsync(vehicle, _user.IdentityUserId);
-        var vehicleInDb = await _context.Vehicles.AnyAsync(v => v.LicensePlate == vehicle.LicensePlate);
+        var vehicleInDb = await _context.Vehicles.AnyAsync(v => v.LicensePlate == vehicle.LicensePlate.Replace("-", ""));
         Assert.Equal(201, result.statusCode);
         Assert.True(vehicleInDb);
     }
@@ -128,14 +128,14 @@ public class VehicleServiceTests
     {
         var vehicle = new CreateVehicleDto
         {
-            LicensePlate = "ABC123",
+            LicensePlate = "ABC-123",
             Make = "Toyota",
             Model = "Corolla",
             Color = "Blue",
             Year = 2020,
         };
         var result = await _service.CreateVehicleAsync(vehicle, _user.IdentityUserId);
-        var vehiclesCount = await _context.Vehicles.CountAsync(v => v.LicensePlate == vehicle.LicensePlate);
+        var vehiclesCount = await _context.Vehicles.CountAsync(v => v.LicensePlate == vehicle.LicensePlate.Replace("-", ""));
         Assert.Equal(409, result.statusCode);
         Assert.Equal(1, vehiclesCount);
     }
@@ -145,7 +145,7 @@ public class VehicleServiceTests
     {
         var vehicle = new UpdateVehicleDto
         {
-            LicensePlate = "CBA321",
+            LicensePlate = "CBA-321",
             Make = "nissan",
             Model = "GTR",
             Color = "Black",
@@ -163,7 +163,7 @@ public class VehicleServiceTests
     {
         var vehicle = new UpdateVehicleDto
         {
-            LicensePlate = "CBA321",
+            LicensePlate = "CBA-321",
             Make = "nissan",
             Model = "GTR",
             Color = "Black",
@@ -181,7 +181,7 @@ public class VehicleServiceTests
     {
         var createVehicle = new Vehicle
         {
-            LicensePlate = "XYZ789",
+            LicensePlate = "XYZ-789",
             Make = "Toyota",
             Model = "Corolla",
             Color = "Blue",
@@ -192,7 +192,7 @@ public class VehicleServiceTests
         _context.SaveChanges();
         var updateVehicle = new UpdateVehicleDto
         {
-            LicensePlate = "XYZ789",
+            LicensePlate = "XYZ-789",
             Make = "Toyota",
             Model = "Corolla",
             Color = "Blue",
@@ -210,7 +210,7 @@ public class VehicleServiceTests
     {
         var updateVehicle = new UpdateVehicleDto
         {
-            LicensePlate = "XYZ789",
+            LicensePlate = "XYZ-789",
             Make = "Toyota",
             Model = "Corolla",
             Color = "Blue",

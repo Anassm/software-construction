@@ -29,12 +29,12 @@ namespace v2.Infrastructure.Data
                         entity.Property(u => u.OldID);
                         entity.Property(u => u.Username).IsRequired().HasMaxLength(100);
                         entity.Property(u => u.Name).IsRequired().HasMaxLength(150);
-                        entity.Property(u => u.Email).IsRequired().HasMaxLength(150);
-                        entity.Property(u => u.PhoneNumber).IsRequired().HasMaxLength(20);
-                        entity.Property(u => u.Role).IsRequired().HasMaxLength(50);
+                        entity.Property(u => u.Email).HasMaxLength(150);
+                        entity.Property(u => u.PhoneNumber).HasMaxLength(20);
+                        entity.Property(u => u.Role).HasMaxLength(50);
                         entity.Property(u => u.CreatedAt)
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
-                        entity.Property(u => u.BirthDate).IsRequired();
+                        entity.Property(u => u.BirthYear);
                         entity.Property(u => u.IsActive).HasDefaultValueSql("1");
                         modelBuilder.Entity<User>()
                         .HasOne(u => u.IdentityUser)
