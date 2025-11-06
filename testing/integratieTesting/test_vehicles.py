@@ -201,7 +201,6 @@ def test_delete_vehicle_success(_data, user_token):
     assert body is not None
 
 def test_delete_vehicle_not_found(_data, user_token):
-    """Tweemaal verwijderen → tweede keer moet 404 geven."""
     payload = {"name": "Toyota", "LicensePlate": "AB-123"}
     requests.post(vehicle_url(_data), headers=user_token, json=payload)
     url = vehicle_url(_data, "AB-123")

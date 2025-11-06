@@ -89,7 +89,7 @@ public class VehicleController : ControllerBase
         if (lid == null || lid == string.Empty)
             return StatusCode(StatusCodes.Status400BadRequest, new { error = "Required route parameter missing, parameter: lid" });
 
-        var result = await _vehicleService.DeleteVehicleAsync(lid, identityUserId);
+        var result = await _vehicleService.DeleteVehicleAsync(lid.Replace("-", ""), identityUserId);
 
         return result.statusCode switch
         {
