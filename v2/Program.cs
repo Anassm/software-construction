@@ -76,38 +76,38 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 // --- Login endpoint returning JWT ---
-app.MapPost("/login", async (UserManager<IdentityUser> userManager,
-                              [FromBody] LoginDto login) =>
-{
-    var user = await userManager.FindByNameAsync(login.username);
-    if (user == null) return Results.Unauthorized();
+// app.MapPost("/login", async (UserManager<IdentityUser> userManager,
+//                               [FromBody] LoginDto login) =>
+// {
+//     var user = await userManager.FindByNameAsync(login.username);
+//     if (user == null) return Results.Unauthorized();
 
-    var passwordValid = await userManager.CheckPasswordAsync(user, login.password);
-    if (!passwordValid) return Results.Unauthorized();
+//     var passwordValid = await userManager.CheckPasswordAsync(user, login.password);
+//     if (!passwordValid) return Results.Unauthorized();
 
-    var claims = new[]
-    {
-        new Claim(ClaimTypes.NameIdentifier, user.Id),
-        new Claim(ClaimTypes.Name, user.UserName), 
-    };
+//     var claims = new[]
+//     {
+//         new Claim(ClaimTypes.NameIdentifier, user.Id),
+//         new Claim(ClaimTypes.Name, user.UserName), 
+//     };
 
-    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
-    var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+//     var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
+//     var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-    var token = new System.IdentityModel.Tokens.Jwt.JwtSecurityToken(
-        issuer: jwtIssuer,
-        audience: jwtAudience,
-        claims: claims,
-        expires: DateTime.UtcNow.AddHours(1),
-        signingCredentials: creds
-    );
+//     var token = new System.IdentityModel.Tokens.Jwt.JwtSecurityToken(
+//         issuer: jwtIssuer,
+//         audience: jwtAudience,
+//         claims: claims,
+//         expires: DateTime.UtcNow.AddHours(1),
+//         signingCredentials: creds
+//     );
 
-    return Results.Ok(new
-    {
-        tokentype = "Bearer",
-        accesstoken = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler().WriteToken(token)
-    });
-});
+//     return Results.Ok(new
+//     {
+//         tokentype = "Bearer",
+//         accesstoken = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler().WriteToken(token)
+//     });
+// });
 
 // --- Map controllers ---
 app.MapControllers();

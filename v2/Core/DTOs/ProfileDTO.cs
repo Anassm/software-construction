@@ -9,6 +9,6 @@ public class ProfileDto
     public string Phone { get; set; } 
     public string Role { get; set; }
     public DateTime Created_at { get; set; }
-    public int Birth_year { get; set; }
+    public int? Birth_year { get; set; }
     public bool Active { get; set; }
 }
