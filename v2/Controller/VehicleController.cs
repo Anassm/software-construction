@@ -171,4 +171,30 @@ public class VehicleController : ControllerBase
             _ => StatusCode(StatusCodes.Status501NotImplemented, new { error = $"Unhandled statuscode: {result.statusCode}" })
         };
     }
+
+    //enpoint that uses StartSessionByEntryAsync
+    [HttpPost("{lid}/entry")]
+    public async Task<IActionResult> StartSessionByEntry([FromRoute] string lid, [FromBody] UpdateVehicleEntryDto dto)
+    {
+        var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (identityUserId == null)
+            return StatusCode(StatusCodes.Status401Unauthorized, new { error = "Unauthorized: Invalid or missing session token" });
+
+        if (dto == null)
+            return StatusCode(StatusCodes.Status400BadRequest, new { error = "Request must contain a body." });
+
+        if (dto.ParkingLotId == null || dto.ParkingLotId == string.Empty)
+            return StatusCode(StatusCodes.Status400BadRequest, new { error = "Required field missing, field: ParkingLoId" });
+
+        var result = await _vehicleService.StartSessionByEntryAsync(lid, dto.ParkingLotId, identityUserId);
+
+        return result.statusCode switch
+        {
+            201 => StatusCode(StatusCodes.Status201Created, result.message),
+            404 => StatusCode(StatusCodes.Status404NotFound, result.message),
+            409 => StatusCode(StatusCodes.Status409Conflict, result.message),
+            500 => StatusCode(StatusCodes.Status500InternalServerError, result.message),
+            _ => StatusCode(StatusCodes.Status501NotImplemented, new { error = $"Unhandled statuscode: {result.statusCode}" })
+        };
+    }
 }

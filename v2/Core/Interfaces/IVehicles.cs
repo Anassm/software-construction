@@ -18,4 +18,5 @@ public interface IVehicles
     Task<(IEnumerable<Reservation> data, int statusCode, object message)> GetReservationsByVehicleAsync(string vid, string identityUserId);
 
     Task<(IEnumerable<Session> data, int statusCode, object message)> GetVehicleHistoryAsync(string licensePlate, string identityUserId);
+    Task<(int statusCode, object message)> StartSessionByEntryAsync(string lid, string parkingLotId, string identityUserId);
 }
