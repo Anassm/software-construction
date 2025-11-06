@@ -75,7 +75,7 @@ jobs:
             exit 1
         fi
 
-    - name: Test with pytest
+    - name: Test vehicles 
       run: |
         cd testing/integratieTesting
         pytest test_vehicles.py
@@ -119,7 +119,7 @@ jobs:
         cd testing/UnitTesting
         dotnet restore
 
-    - name: Test with Xunit
+    - name: Test vehicles
       run: |
         cd testing/UnitTesting
         dotnet test
