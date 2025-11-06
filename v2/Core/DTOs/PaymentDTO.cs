@@ -14,7 +14,7 @@ public class CreatePaymentRequestDTO
     public string? TransactionMethod { get; set; }
     public string? TransactionIssuer { get; set; }
     public string? TransactionBank { get; set; }
-    public Guid SessionID { get; set; }
+    public Guid? SessionID { get; set; }
 }
 
 public class PaymentResponseDTO
@@ -30,7 +30,7 @@ public class PaymentResponseDTO
     public string TransactionMethod { get; set; }
     public string TransactionIssuer { get; set; }
     public string TransactionBank { get; set; }
-    public Guid SessionID { get; set; }
+    public Guid? SessionID { get; set; }
 }
 
 public class UpdatePaymentRequestDTO
