@@ -34,20 +34,15 @@ def _data():
 
 
 def register_and_login(base_url, user):
-    # De POST /register zal waarschijnlijk falen (409 Conflict), maar dat negeren we.
     requests.post(f"{base_url}/register", json=user)
-
-    # De POST /login moet slagen omdat de gebruiker al bestaat.
     r = requests.post(
-        f"{base_url}/login", json={"email": user["email"], "password": user["password"]}
+        f"{base_url}/login",
+        json={"username": user["username"], "password": user["password"]},
     )
-
-    if r.status_code != 200 or "accessToken" not in r.json():
-        pytest.fail(
-            f"Fout bij inloggen (401). Is gebruiker '{user['email']}' geregistreerd? Status: {r.status_code} - {r.text}"
-        )
-
-    return {"Authorization": f"Bearer {r.json()['accessToken']}"}
+    if r.status_code != 200 or "accesstoken" not in r.json():
+        pytest.fail(f"Fout bij inloggen (401): {r.status_code} - {r.text}")
+    body = r.json()
+    return {"Authorization": f"{body['tokentype']} {body['accesstoken']}"}
 
 
 @pytest.fixture
