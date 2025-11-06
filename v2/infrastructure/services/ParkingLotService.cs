@@ -1,6 +1,3 @@
-// File: ParkingLotService.cs
-// Mirrors VehicleService.cs style: tuple returns, EF Core, DI
-
 namespace v2.infrastructure.Services;
 
 using Microsoft.EntityFrameworkCore;
@@ -18,10 +15,6 @@ public class ParkingLotService : IParkingLots
         _db = db;
     }
 
-    /// <summary>
-    /// Create a new parking lot. Duplicate policy: same Name + Address = Conflict (409).
-    /// (server.py also restricts this to authenticated users; enforce role/admin in controller/middleware.)
-    /// </summary>
     public async Task<(int statusCode, object message)> CreateParkingLotAsync(ParkingLotCreateRequest dto)
     {
         try
@@ -83,9 +76,6 @@ public class ParkingLotService : IParkingLots
         }
     }
 
-    /// <summary>
-    /// Patch-like update. Enforces duplicate policy on (Name + Address).
-    /// </summary>
     public async Task<(int statusCode, object message)> UpdateParkingLotAsync(Guid id, ParkingLotCreateRequest dto)
     {
         try
@@ -146,9 +136,6 @@ public class ParkingLotService : IParkingLots
         }
     }
 
-    /// <summary>
-    /// Delete parking lot.
-    /// </summary>
     public async Task<(int statusCode, object message)> DeleteParkingLotAsync(Guid id)
     {
         try
@@ -168,9 +155,7 @@ public class ParkingLotService : IParkingLots
         }
     }
 
-    /// <summary>
-    /// Get single parking lot by ID.
-    /// </summary>
+
     public async Task<(int statusCode, object message)> GetParkingLotAsync(Guid id)
     {
         try
@@ -204,9 +189,6 @@ public class ParkingLotService : IParkingLots
         }
     }
 
-    /// <summary>
-    /// Get all parking lots.
-    /// </summary>
     public async Task<(int statusCode, object message)> GetAllParkingLotsAsync()
     {
         try
@@ -236,23 +218,189 @@ public class ParkingLotService : IParkingLots
         }
     }
 
-    // ==== Session endpoints (stubs) ====
-    // server.py exposes /parking-lots/{id}/sessions/start and /stop, with pricing/payment checks.
-    // Implement once your Session model + calculator are ready, then call from controller.
 
     public async Task<(int statusCode, object message)> StartSessionAsync(Guid parkingLotId, string licensePlate, Guid userId)
     {
-        // TODO: load lot, check capacity, create Session { StartTime, UserId, LicensePlate, ParkingLotId }, save
-        // TODO: mirror old pricing rules (if any) when starting.
-        await Task.CompletedTask;
-        return (501, new { error = "Not implemented yet: StartSessionAsync" });
+        try
+        {
+            
+            var lot = await _db.ParkingLots.FirstOrDefaultAsync(p => p.ID == parkingLotId);
+            if (lot == null)
+            {
+                return (404, new { error = "Parking lot not found" });
+            }
+
+          
+            var activeSessionsCount = await _db.Sessions.CountAsync(s => s.ParkingLotID == parkingLotId && s.EndTime == null);
+            if (activeSessionsCount >= lot.Capacity)
+            {
+                return (409, new { error = "Parking lot is full" });
+            }
+
+      
+            var existingActiveSession = await _db.Sessions.FirstOrDefaultAsync(s =>
+                s.ParkingLotID == parkingLotId &&
+                s.LicensePlate == licensePlate &&
+                s.EndTime == null);
+
+            if (existingActiveSession != null)
+            {
+                return (409, new { error = "An active session for this license plate already exists in this parking lot." });
+            }
+
+         
+            var newSession = new Session
+            {
+                ID = Guid.NewGuid(),
+                StartTime = DateTime.UtcNow,
+                EndTime = null,
+                LicensePlate = licensePlate,
+                ParkingLotID = parkingLotId,
+                UserID = userId,
+                PaymentStatus = PaymentStatus.Unpaid
+            };
+
+      
+            _db.Sessions.Add(newSession);
+            await _db.SaveChangesAsync();
+
+       
+            return (201, new { status = "Success", message = "Session started", session = newSession });
+        }
+        catch (Exception ex)
+        {
+        
+            return (500, new { error = "An unexpected error occurred while starting the session." });
+        }
     }
 
     public async Task<(int statusCode, object message)> StopSessionAsync(Guid parkingLotId, string licensePlate, Guid userId)
     {
-        // TODO: find active session by lot + licensePlate + user, set EndTime
-        // TODO: compute price (mirror server.py session_calculator), persist a Payment/Transaction if applicable
-        await Task.CompletedTask;
-        return (501, new { error = "Not implemented yet: StopSessionAsync" });
+        try
+        {
+            
+            var activeSession = await _db.Sessions
+                .Include(s => s.ParkingLot) 
+                .FirstOrDefaultAsync(s =>
+                    s.ParkingLotID == parkingLotId &&
+                    s.LicensePlate == licensePlate &&
+                    s.UserID == userId &&
+                    s.EndTime == null);
+
+            if (activeSession == null)
+            {
+                return (404, new { error = "No active session found for this license plate and user in this parking lot." });
+            }
+
+       
+            activeSession.EndTime = DateTime.UtcNow;
+
+         
+            var duration = activeSession.EndTime.Value - activeSession.StartTime;
+            double totalHours = duration.TotalHours;
+
+            float cost = (float)totalHours * activeSession.ParkingLot.Tariff;
+
+           
+            if (totalHours > (activeSession.ParkingLot.DayTariff / activeSession.ParkingLot.Tariff))
+            {
+                cost = activeSession.ParkingLot.DayTariff;
+            }
+
+            _db.Sessions.Update(activeSession);
+            await _db.SaveChangesAsync();
+
+          
+            return (200, new
+            {
+                status = "Success",
+                message = "Session stopped",
+                session = activeSession,
+                billing = new
+                {
+                    durationInMinutes = duration.TotalMinutes,
+                    calculatedCost = cost
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+        
+            return (500, new { error = "An unexpected error occurred while stopping the session." });
+        }
     }
+
+    public async Task<(int statusCode, object message)> GetAllSessionsForLotAsync(Guid parkingLotId)
+    {
+        try
+        {
+          
+            var lotExists = await _db.ParkingLots.AnyAsync(p => p.ID == parkingLotId);
+            if (!lotExists)
+            {
+                return (404, new { error = "Parking lot not found" });
+            }
+
+            var sessions = await _db.Sessions
+                .Where(s => s.ParkingLotID == parkingLotId)
+                .OrderByDescending(s => s.StartTime) 
+                .ToListAsync();
+
+            return (200, new { status = "Success", sessions });
+        }
+        catch (Exception ex)
+        {
+           
+            return (500, new { error = "An unexpected error occurred." });
+        }
+    }
+
+ 
+    public async Task<(int statusCode, object message)> GetSessionByIdAsync(Guid parkingLotId, Guid sessionId)
+    {
+        try
+        {
+            var session = await _db.Sessions
+                .FirstOrDefaultAsync(s => s.ParkingLotID == parkingLotId && s.ID == sessionId);
+
+            if (session == null)
+            {
+                return (404, new { error = "Session not found in this parking lot" });
+            }
+
+            return (200, new { status = "Success", session });
+        }
+        catch (Exception ex)
+        {
+           
+            return (500, new { error = "An unexpected error occurred." });
+        }
+    }
+
+    public async Task<(int statusCode, object message)> DeleteSessionAsync(Guid parkingLotId, Guid sessionId)
+    {
+        try
+        {
+            var session = await _db.Sessions
+                .FirstOrDefaultAsync(s => s.ParkingLotID == parkingLotId && s.ID == sessionId);
+
+            if (session == null)
+            {
+                return (404, new { error = "Session not found in this parking lot" });
+            }
+
+          
+
+            _db.Sessions.Remove(session);
+            await _db.SaveChangesAsync();
+
+            return (200, new { status = "Success", message = "Session deleted" });
+        }
+        catch (Exception ex)
+        {
+     
+            return (500, new { error = "An unexpected error occurred." });
+        }
+    }
+
 }
