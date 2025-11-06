@@ -6,7 +6,6 @@ public class CreatePaymentRequestDTO
 {
     public string? Transaction { get; set; }
 
-    [Required]
     public decimal Amount { get; set; }
 
     public decimal? TransactionAmount { get; set; }
