@@ -10,7 +10,7 @@ def _data():
 def test_register_success(_data):
     r = requests.post(_data["url"], json={
         "username": "new.user",
-        "password": "password123.",
+        "password": "Password123.",
         "name": "New User"
     })
     assert r.status_code in [200, 201]
