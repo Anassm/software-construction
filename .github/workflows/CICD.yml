@@ -153,3 +153,8 @@ jobs:
         run: |
           cd testing/UnitTesting
           dotnet test --filter "ReservationServiceTests"
+
+      - name: Test authentication
+        run: |
+          cd testing/UnitTesting
+          dotnet test --filter "AuthServiceTests"
