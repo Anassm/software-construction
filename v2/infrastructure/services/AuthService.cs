@@ -43,7 +43,7 @@ public class AuthService
                 Name = dto.Name,
                 PhoneNumber = null,
                 BirthYear = null,
-                Role = dto.Role,
+                Role = null,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow,
                 Vehicles = new List<Vehicle>(),

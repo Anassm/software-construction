@@ -4,16 +4,31 @@ namespace v2.Core.DTOs;
 
 public class CreatePaymentRequestDTO
 {
-    public string? Transaction { get; set; }
-
+    [Required]
+    [Range(0.01, double.MaxValue)]
     public decimal Amount { get; set; }
 
-    public decimal? TransactionAmount { get; set; }
-    public DateTime? TransactionDate { get; set; }
-    public string? TransactionMethod { get; set; }
-    public string? TransactionIssuer { get; set; }
-    public string? TransactionBank { get; set; }
-    public Guid? SessionID { get; set; }
+    [Required]
+    public string Initiator { get; set; }
+
+    [Required]
+    [Range(0.01, double.MaxValue)]
+    public decimal TransactionAmount { get; set; }
+
+    [Required]
+    public DateTime TransactionDate { get; set; }
+
+    [Required]
+    public string TransactionMethod { get; set; }
+
+    [Required]
+    public string TransactionIssuer { get; set; }
+
+    [Required]
+    public string TransactionBank { get; set; }
+
+    [Required]
+    public Guid SessionID { get; set; }
 }
 
 public class PaymentResponseDTO
@@ -29,7 +44,7 @@ public class PaymentResponseDTO
     public string TransactionMethod { get; set; }
     public string TransactionIssuer { get; set; }
     public string TransactionBank { get; set; }
-    public Guid? SessionID { get; set; }
+    public Guid SessionID { get; set; }
 }
 
 public class UpdatePaymentRequestDTO
@@ -47,7 +62,7 @@ public class UpdatePaymentRequestDTO
 public class ConfirmPaymentRequestDTO
 {
     [Required]
-    public object T_Data { get; set; }
+    public object T_Data { get; set; } // V1 gebruikt 't_data' als een generiek data object
     // Hash
     [Required]
     public string Validation { get; set; }

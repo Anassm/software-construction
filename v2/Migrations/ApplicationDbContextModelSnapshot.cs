@@ -292,7 +292,7 @@ namespace v2.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("SessionID")
+                    b.Property<Guid>("SessionID")
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("TransactionAmount")

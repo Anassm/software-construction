@@ -1,142 +1,141 @@
+using Microsoft.AspNetCore.Mvc;
 using v2.Core.DTOs;
 using v2.Core.Interfaces;
-using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
-namespace V2.Controllers
+namespace V2.Controllers;
+
+[ApiController]
+[Route("payments")]
+public class PaymentController : ControllerBase
 {
-    [ApiController]
-    [Route("payments")]
-    public class PaymentController : ControllerBase
+    private readonly IPayment _paymentService;
+
+    public PaymentController(IPayment paymentService)
     {
-        private readonly IPayment _paymentService;
+        _paymentService = paymentService;
+    }
 
-        public PaymentController(IPayment paymentService)
+    [HttpPost]
+    public async Task<IActionResult> CreatePayment([FromBody] CreatePaymentRequestDTO request)
+    {
+        if (!ModelState.IsValid)
         {
-            _paymentService = paymentService;
+            return BadRequest(ModelState);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreatePayment([FromBody] CreatePaymentRequestDTO request)
+        var result = await _paymentService.CreatePaymentAsync(request);
+
+        if (result is null)
         {
-            var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (identityUserId == null)
-                return StatusCode(StatusCodes.Status401Unauthorized, new { error = "Unauthorized: Invalid or missing session token" });
-
-            if (request == null)
-                 return StatusCode(StatusCodes.Status400BadRequest, new { error = "Request must contain a body." });
-
-            if (request.Amount <= 0)
-                 return StatusCode(StatusCodes.Status400BadRequest, new { error = "Required field missing, field: amount" });
-
-            var result = await _paymentService.CreatePaymentAsync(request, identityUserId);
-
-            return result.statusCode switch
-            {
-                201 => StatusCode(StatusCodes.Status201Created, result.data),
-                404 => StatusCode(StatusCodes.Status404NotFound, result.data),
-                _ => StatusCode(StatusCodes.Status500InternalServerError, result.data)
-            };
+            return StatusCode(StatusCodes.Status500InternalServerError, "Failed to create payment.");
         }
 
-        [HttpPut("{paymentId:guid}")]
-        public async Task<IActionResult> ConfirmPayment(Guid paymentId, [FromBody] ConfirmPaymentRequestDTO request)
+        var response = new { status = "Success", payment = result };
+
+        return StatusCode(StatusCodes.Status201Created, response);
+    }
+
+    [HttpPut("{paymentId}")]
+    public async Task<IActionResult> UpdatePayment(Guid paymentId, [FromBody] ConfirmPaymentRequestDTO confirmRequest)
+    {
+        if (!ModelState.IsValid)
         {
-            var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (identityUserId == null)
-                return StatusCode(StatusCodes.Status401Unauthorized, new { error = "Unauthorized: Invalid or missing session token" });
-            
-            if (request == null)
-                 return StatusCode(StatusCodes.Status400BadRequest, new { error = "Request must contain a body." });
-            
-            if (string.IsNullOrEmpty(request.Validation))
-                return StatusCode(StatusCodes.Status400BadRequest, new { error = "Required field missing, field: validation" });
-
-            var result = await _paymentService.ConfirmPaymentAsync(paymentId, request, identityUserId);
-
-            return result.statusCode switch
-            {
-                200 => StatusCode(StatusCodes.Status200OK, result.data),
-                401 => StatusCode(StatusCodes.Status401Unauthorized, result.data), 
-                403 => StatusCode(StatusCodes.Status403Forbidden, result.data),
-                404 => StatusCode(StatusCodes.Status404NotFound, result.data),
-                _ => StatusCode(StatusCodes.Status500InternalServerError, result.data)
-            };
+            return BadRequest(ModelState);
         }
 
-        [HttpPost("refund")]
-        public async Task<IActionResult> RefundPayment([FromBody] RefundPaymentRequestDTO request)
+        var confirmedPayment = await _paymentService.ConfirmPaymentAsync(paymentId, confirmRequest.Validation);
+
+        if (confirmedPayment != null)
         {
-            var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (identityUserId == null)
-                return StatusCode(StatusCodes.Status401Unauthorized, new { error = "Unauthorized: Invalid or missing session token" });
-
-            if (request == null || request.PaymentId == Guid.Empty)
-                return StatusCode(StatusCodes.Status400BadRequest, new { error = "Required field missing, field: paymentId" });
-            
-            var result = await _paymentService.RefundPaymentAsync(request, identityUserId);
-
-            return result.statusCode switch
-            {
-                201 => StatusCode(StatusCodes.Status201Created, result.data),
-                403 => StatusCode(StatusCodes.Status403Forbidden, result.data),
-                404 => StatusCode(StatusCodes.Status404NotFound, result.data),
-                409 => StatusCode(StatusCodes.Status409Conflict, result.data),
-                _ => StatusCode(StatusCodes.Status500InternalServerError, result.data)
-            };
+            var response = new { status = "Success", payment = confirmedPayment };
+            return Ok(response);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetPayments()
+        if (confirmedPayment == null)
         {
-            var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (identityUserId == null)
-                return StatusCode(StatusCodes.Status401Unauthorized, new { error = "Unauthorized: Invalid or missing session token" });
-
-            var result = await _paymentService.GetPaymentsByUserAsync(null, identityUserId); 
-
-            return result.statusCode switch
+            return StatusCode(StatusCodes.Status401Unauthorized, new
             {
-                200 => StatusCode(StatusCodes.Status200OK, result.data),
-                404 => StatusCode(StatusCodes.Status404NotFound, result.data),
-                _ => StatusCode(StatusCodes.Status500InternalServerError, result.data)
-            };
+                error = "Validation failed",
+                info = "The validation of the security hash could not be validated for this transaction."
+            });
         }
 
-        [HttpGet("{username}")]
-        public async Task<IActionResult> GetPaymentsByUsername(string username)
+        return NotFound($"Payment with ID {paymentId} not found.");
+    }
+
+    [HttpPost("refund")]
+    public async Task<IActionResult> RefundPayment([FromBody] RefundPaymentRequestDTO request)
+    {
+        if (!ModelState.IsValid)
         {
-            var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (identityUserId == null)
-                return StatusCode(StatusCodes.Status401Unauthorized, new { error = "Unauthorized: Invalid or missing session token" });
-
-            var result = await _paymentService.GetPaymentsByUserAsync(username, identityUserId); 
-
-            return result.statusCode switch
-            {
-                200 => StatusCode(StatusCodes.Status200OK, result.data),
-                403 => StatusCode(StatusCodes.Status403Forbidden, result.data),
-                404 => StatusCode(StatusCodes.Status404NotFound, result.data),
-                _ => StatusCode(StatusCodes.Status500InternalServerError, result.data)
-            };
+            return BadRequest(ModelState);
         }
 
-        [HttpPatch("{paymentId:guid}")]
-        public async Task<IActionResult> PartialUpdatePayment(Guid paymentId, [FromBody] UpdatePaymentRequestDTO dto)
+        var result = await _paymentService.RefundPaymentAsync(request.PaymentId, request.Reason);
+
+        if (result == null)
         {
-            var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (identityUserId == null)
-                return StatusCode(StatusCodes.Status401Unauthorized, new { error = "Unauthorized: Invalid or missing session token" });
+            return BadRequest("Refund failed (e.g., payment ID not found or already refunded).");
+        }
 
-            var result = await _paymentService.UpdatePaymentAsync(paymentId, dto, identityUserId);
+        var response = new { status = "Success", payment = result };
+        return StatusCode(StatusCodes.Status201Created, response);
+    }
 
-            return result.statusCode switch
+    [HttpGet]
+    public async Task<IActionResult> GetPaymentsForCurrentUser()
+    {
+        // TODO: Vervang dit met de geauthenticeerde gebruiker.
+        string initiator = "test_user_v2";
+
+        var payments = await _paymentService.GetPaymentsByUserAsync(initiator);
+
+        if (payments == null)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, "Failed to retrieve payments.");
+        }
+        return Ok(payments);
+    }
+
+    [HttpGet("{initiator}")]
+    public async Task<IActionResult> GetPaymentsByInitiator(string initiator)
+    {
+        var payments = await _paymentService.GetPaymentsByUserAsync(initiator);
+
+        if (payments == null)
+        {
+            return NotFound($"No payments found for initiator: {initiator}");
+        }
+
+        return Ok(payments);
+    }
+
+    [HttpPatch("{paymentId}")]
+    public async Task<IActionResult> PartialUpdatePayment(Guid paymentId, [FromBody] UpdatePaymentRequestDTO updateData)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            var updatedPayment = await _paymentService.UpdatePaymentAsync(paymentId, updateData);
+
+            if (updatedPayment == null)
             {
-                200 => StatusCode(StatusCodes.Status200OK, result.data),
-                403 => StatusCode(StatusCodes.Status403Forbidden, result.data),
-                404 => StatusCode(StatusCodes.Status404NotFound, result.data),
-                _ => StatusCode(StatusCodes.Status500InternalServerError, result.data)
-            };
+                return NotFound($"Payment with ID {paymentId} not found or update data was invalid.");
+            }
+
+            return Ok(new { status = "Success", payment = updatedPayment });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
         }
     }
 }
