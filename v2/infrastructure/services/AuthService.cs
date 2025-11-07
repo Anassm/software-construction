@@ -71,7 +71,7 @@ public class AuthService
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, dto.password, false);
             if (!result.Succeeded)
-                return (null!, 404, new { error = "Invalid credentials" });
+                return (null!, 401, new { error = "Invalid credentials" });
 
             // Generate JWT
             var claims = new[]
