@@ -63,7 +63,7 @@ namespace v2.Infrastructure.Services
                 return (404, new { error = "Payment not found" });
             }
 
-            var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.IdentityUserId == initiatorIdentityId);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.IdentityUserId == initiatorIdentityId);
             if (user == null)
             {
                 return (404, new { error = "User not found" });
@@ -91,7 +91,7 @@ namespace v2.Infrastructure.Services
 
         public async Task<(int statusCode, object data)> GetPaymentsByUserAsync(string? initiatorUsername, string identityId)
         {
-            var requestingUser = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.IdentityUserId == identityId);
+            var requestingUser = await _context.Users.FirstOrDefaultAsync(u => u.IdentityUserId == identityId);
             if (requestingUser == null)
             {
                 return (404, new { error = "Requesting user not found" });
@@ -113,7 +113,6 @@ namespace v2.Infrastructure.Services
             }
 
             var payments = await _context.Payments
-                .AsNoTracking()
                 .Where(p => p.Initiator == targetUsername)
                 .OrderByDescending(p => p.CreatedAt)
                 .Select(payment => MapPaymentToDto(payment))
@@ -138,7 +137,7 @@ namespace v2.Infrastructure.Services
         public async Task<(int statusCode, object data)> RefundPaymentAsync(RefundPaymentRequestDTO request, string adminIdentityId)
         {
             var adminUser = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.IdentityUserId == adminIdentityId);
-            if (adminUser == null || adminUser.Role != "Admin")
+            if (adminUser == null || adminUser.Role != "admin")
             {
                 return (403, new { error = "Access denied. Admin role required for refunds." });
             }

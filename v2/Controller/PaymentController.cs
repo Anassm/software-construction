@@ -28,13 +28,6 @@ namespace V2.Controllers
 
             if (request.Amount <= 0)
                  return StatusCode(StatusCodes.Status400BadRequest, new { error = "Required field missing, field: amount" });
-            
-            // // De V1-test (test_post_payment_missing_field) stuurt 'transaction'
-            // if (string.IsNullOrEmpty(request.Transaction))
-            // {
-            //      // De V1 DTO (aangepast in vorige stap) verwacht nu 'Transaction' (de V1 ID)
-            //      // Als je de strikte V2 DTO (met SessionID) wilt houden, moet je hier 'SessionID' valideren.
-            // }
 
             var result = await _paymentService.CreatePaymentAsync(request, identityUserId);
 
