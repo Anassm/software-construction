@@ -16,81 +16,76 @@ namespace v2.Controller;
 [ApiController]
 public class AuthController : ControllerBase
 {
-    private readonly SignInManager<IdentityUser> _signInManager;
-    private readonly UserManager<IdentityUser> _userManager;
-    private readonly ApplicationDbContext _dbContext;
+    private readonly AuthService _authService;
 
     public AuthController(SignInManager<IdentityUser> signInManager, UserManager<IdentityUser> userManager, ApplicationDbContext dbContext)
     {
-        _signInManager = signInManager;
-        _userManager = userManager;
-        _dbContext = dbContext;
+        
+        _authService = new AuthService(dbContext, signInManager, userManager);
     }
 
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto dto)
     {
-        var identityUser = new IdentityUser { UserName = dto.Email, Email = dto.Email };
-        var result = await _userManager.CreateAsync(identityUser, dto.Password);
-        if (!result.Succeeded)
-            return BadRequest(result.Errors);
+        var result = await _authService.RegisterUser(dto);
 
-        var appUser = new User
+        return result.statusCode switch
         {
-            IdentityUserId = identityUser.Id,
-            IdentityUser = identityUser, 
-            Username = dto.Username,
-            Email = dto.Email,
-            Name = dto.Name,
-            PhoneNumber = dto.PhoneNumber, 
-            BirthDate = DateTime.UtcNow, 
-            Role = dto.Role,
-            IsActive = true,
-            CreatedAt = DateTime.UtcNow,
-            Vehicles = new List<Vehicle>(),
-            Sessions = new List<Session>(),
-            Reservations = new List<Reservation>()
+            201 => StatusCode(StatusCodes.Status201Created, result.message),
+            404 => StatusCode(StatusCodes.Status404NotFound, result.message),
+            500 => StatusCode(StatusCodes.Status500InternalServerError, result.message),
+            _ => StatusCode(StatusCodes.Status501NotImplemented, new { error = $"Unhandled statuscode: {result.statusCode}" })
         };
-
-        _dbContext.Users.Add(appUser);
-        await _dbContext.SaveChangesAsync();
-
-        return Ok(new { message = "User registered successfully" });
     }
 
 
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
-        var user = await _userManager.FindByEmailAsync(dto.Email);
-        if (user == null)
-            return Unauthorized(new { error = "Invalid credentials" });
+        var result = await _authService.LoginUser(dto);
 
-        var result = await _signInManager.CheckPasswordSignInAsync(user, dto.Password, false);
-        if (!result.Succeeded)
-            return Unauthorized(new { error = "Invalid credentials" });
-
-        // Generate JWT
-        var claims = new[]
+        return result.statusCode switch
         {
-            new Claim(ClaimTypes.NameIdentifier, user.Id),
-            new Claim(ClaimTypes.Email, user.Email)
+            200 => StatusCode(StatusCodes.Status200OK, result.message),
+            404 => StatusCode(StatusCodes.Status404NotFound, result.message),
+            500 => StatusCode(StatusCodes.Status500InternalServerError, result.message),
+            _ => StatusCode(StatusCodes.Status501NotImplemented, new { error = $"Unhandled statuscode: {result.statusCode}" })
         };
+    }
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("yourSuperSecretKey"));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var token = new JwtSecurityToken(
-            issuer: "yourIssuer",
-            audience: "yourAudience",
-            claims: claims,
-            expires: DateTime.UtcNow.AddHours(1),
-            signingCredentials: creds
-        );
+    [HttpPut("profile")]
+    public async Task<IActionResult> Profile([FromBody] ProfileDto dto)
+    {
+        var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (identityUserId == null)
+            return StatusCode(StatusCodes.Status401Unauthorized, new { error = "Unauthorized: Invalid or missing session token" });
 
-        return Ok(new
+        var result = await _authService.UpdateProfile(dto, identityUserId);
+        
+        return result.statusCode switch
         {
-            tokenType = "Bearer",
-            accessToken = new JwtSecurityTokenHandler().WriteToken(token)
-        });
+            200 => StatusCode(StatusCodes.Status200OK, result.message),
+            404 => StatusCode(StatusCodes.Status404NotFound, result.message),
+            500 => StatusCode(StatusCodes.Status500InternalServerError, result.message),
+            _ => StatusCode(StatusCodes.Status501NotImplemented, new { error = $"Unhandled statuscode: {result.statusCode}" })
+        };
+    }
+    
+    [HttpGet("profile")]
+    public async Task<IActionResult> Profile()
+    {
+        var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (identityUserId == null)
+            return StatusCode(StatusCodes.Status401Unauthorized, new { error = "Unauthorized: Invalid or missing session token" });
+
+        var result = await _authService.GetProfile(identityUserId);
+
+        return result.statusCode switch
+        {
+            200 => StatusCode(StatusCodes.Status200OK, result.data),
+            404 => StatusCode(StatusCodes.Status404NotFound, result.message),
+            500 => StatusCode(StatusCodes.Status500InternalServerError, result.message),
+            _ => StatusCode(StatusCodes.Status501NotImplemented, new { error = $"Unhandled statuscode: {result.statusCode}" })
+        };
     }
 }

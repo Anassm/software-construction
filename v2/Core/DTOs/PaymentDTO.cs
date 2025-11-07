@@ -55,6 +55,23 @@ public class UpdatePaymentRequestDTO
     public string? TransactionMethod { get; set; }
     public string? TransactionIssuer { get; set; }
     public string? TransactionBank { get; set; }
-    public DateTime? CompletedAt { get; set; } // allow finalizing
-    public string? Hash { get; set; } // allow setting hash if needed
+    public DateTime? CompletedAt { get; set; }
+    public string? Hash { get; set; }
+}
+
+public class ConfirmPaymentRequestDTO
+{
+    [Required]
+    public object T_Data { get; set; } // V1 gebruikt 't_data' als een generiek data object
+    // Hash
+    [Required]
+    public string Validation { get; set; }
+}
+
+public class RefundPaymentRequestDTO
+{
+    [Required]
+    public Guid PaymentId { get; set; }
+
+    public string? Reason { get; set; }
 }
