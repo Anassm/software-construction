@@ -89,7 +89,7 @@ public class VehicleController : ControllerBase
         if (lid == null || lid == string.Empty)
             return StatusCode(StatusCodes.Status400BadRequest, new { error = "Required route parameter missing, parameter: lid" });
 
-        var result = await _vehicleService.DeleteVehicleAsync(lid.Replace("-", ""), identityUserId);
+        var result = await _vehicleService.DeleteVehicleAsync(lid, identityUserId);
 
         return result.statusCode switch
         {
@@ -172,7 +172,6 @@ public class VehicleController : ControllerBase
         };
     }
 
-    //enpoint that uses StartSessionByEntryAsync
     [HttpPost("{lid}/entry")]
     public async Task<IActionResult> StartSessionByEntry([FromRoute] string lid, [FromBody] UpdateVehicleEntryDto dto)
     {
