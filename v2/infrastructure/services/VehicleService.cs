@@ -31,7 +31,7 @@ public class VehicleService : IVehicles
 
             var vehicle = new Vehicle
             {
-                LicensePlate = dto.LicensePlate,
+                LicensePlate = licensePlate,
                 Make = dto.Make,
                 Model = dto.Model,
                 Color = dto.Color,
@@ -59,7 +59,7 @@ public class VehicleService : IVehicles
             if (user == null)
                 return (404, new { error = "User not found" });
 
-            var vehicle = await _dbContext.Vehicles.FirstOrDefaultAsync(v => v.ID.ToString() == lid && v.UserID == user.ID || v.LicensePlate == lid && v.UserID == user.ID || v.OldID == lid && v.UserID == user.ID);
+            var vehicle = await _dbContext.Vehicles.FirstOrDefaultAsync(v => v.ID.ToString() == lid && v.UserID == user.ID || v.LicensePlate.Replace("-", "") == lid.Replace("-", "") && v.UserID == user.ID || v.OldID == lid && v.UserID == user.ID);
             if (vehicle == null)
                 return (404, new { error = "Vehicle not found" });
 
@@ -103,7 +103,7 @@ public class VehicleService : IVehicles
             if (user == null)
                 return (404, new { error = "User not found" });
 
-            var vehicle = await _dbContext.Vehicles.FirstOrDefaultAsync(v => v.ID.ToString() == lid && v.UserID == user.ID || v.LicensePlate == lid && v.UserID == user.ID || v.OldID == lid && v.UserID == user.ID);
+            var vehicle = await _dbContext.Vehicles.FirstOrDefaultAsync(v => v.ID.ToString() == lid && v.UserID == user.ID || v.LicensePlate == lid.Replace("-", "") && v.UserID == user.ID || v.OldID == lid && v.UserID == user.ID);
             if (vehicle == null)
                 return (404, new { error = "Vehicle not found!" });
 
@@ -175,8 +175,8 @@ public class VehicleService : IVehicles
             if (user == null)
                 return (null!, 404, new { error = "User not found" });
 
-            var vehicle = _dbContext.Vehicles.Where(v => v.ID.ToString() == vid && v.UserID == user.ID || v.OldID == vid && v.UserID == user.ID).AsQueryable();
-            if (vehicle == null)
+            var vehicle = _dbContext.Vehicles.Where(v => v.ID.ToString().ToLower() == vid && v.UserID == user.ID || v.OldID == vid && v.UserID == user.ID).AsQueryable();
+            if (!vehicle.Any())
                 return (null!, 404, new { error = "Vehicle not found" });
 
             var reservations = await vehicle.SelectMany(v => v.Reservations).ToListAsync();
@@ -188,7 +188,7 @@ public class VehicleService : IVehicles
         }
     }
 
-    public async Task<(IEnumerable<Session> data, int statusCode, object message)> GetVehicleHistoryAsync(string licensePlate, string identityUserId)
+    public async Task<(IEnumerable<Session> data, int statusCode, object message)> GetVehicleHistoryAsync(string vid, string identityUserId)
     {
         try
         {
@@ -196,7 +196,7 @@ public class VehicleService : IVehicles
             if (user == null)
                 return (null!, 404, new { error = "User not found" });
 
-            var vehicle = await _dbContext.Vehicles.Where(v => v.LicensePlate == licensePlate && v.UserID == user.ID).FirstOrDefaultAsync();
+            var vehicle = await _dbContext.Vehicles.Where(v => v.ID.ToString().ToLower() == vid && v.UserID == user.ID).FirstOrDefaultAsync();
             if (vehicle == null)
                 return (null!, 404, new { error = "Vehicle not found" });
 
@@ -209,63 +209,60 @@ public class VehicleService : IVehicles
         }
     }
 
-    // public async Task<(int statusCode, object message)> StartSessionByEntryAsync(string lid, string parkingLotId, string identityUserId)
-    // {
-    //     try
-    //     {
-    //         var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.IdentityUserId == identityUserId);
-    //         if (user == null)
-    //             return (404, new { error = "User not found" });
+    public async Task<(int statusCode, object message)> StartSessionByEntryAsync(string lid, string parkingLotId, string identityUserId)
+    {
+        try
+        {
+            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.IdentityUserId == identityUserId);
+            if (user == null)
+                return (404, new { error = "User not found" });
 
-    //         Guid lidGuidId;
-    //         bool isGuid = Guid.TryParse(lid, out lidGuidId);
+            Guid lidGuidId;
+            bool isGuid = Guid.TryParse(lid, out lidGuidId);
 
-    //         Vehicle? vehicle;
-    //         if (isGuid)
-    //         {
-    //             vehicle = await _dbContext.Vehicles
-    //                 .FirstOrDefaultAsync(v => v.ID == lidGuidId);
-    //         }
-    //         else
-    //         {
-    //             vehicle = await _dbContext.Vehicles
-    //                 .FirstOrDefaultAsync(v => v.OldID == lid);
-    //         }
-    //         if (vehicle == null)
-    //             return (404, new { error = "Vehicle not found" });
+            Vehicle? vehicle;
+            if (isGuid)
+            {
+                vehicle = await _dbContext.Vehicles
+                    .FirstOrDefaultAsync(v => v.ID == lidGuidId);
+            }
+            else
+            {
+                vehicle = await _dbContext.Vehicles
+                    .FirstOrDefaultAsync(v => v.OldID == lid);
+            }
+            if (vehicle == null)
+                return (404, new { error = "Vehicle not found" });
 
-    //         Guid parkingLotGuidId;
-    //         bool isGuid2 = Guid.TryParse(parkingLotId, out parkingLotGuidId);
+            Guid parkingLotGuidId;
+            bool isGuid2 = Guid.TryParse(parkingLotId, out parkingLotGuidId);
 
-    //         ParkingLot? parkingLot;
-    //         if (isGuid2)
-    //         {
-    //             parkingLot = await _dbContext.ParkingLots.FirstOrDefaultAsync(p => p.ID == lidGuidId);
-    //         }
-    //         else
-    //         {
-    //             parkingLot = await _dbContext.ParkingLots.FirstOrDefaultAsync(p => p.OldID == parkingLotId);
-    //         }
-    //         if (parkingLot == null)
-    //             return (404, new { error = "Parkinglot not found" });
+            ParkingLot? parkingLot;
+            if (isGuid2)
+            {
+                parkingLot = await _dbContext.ParkingLots.FirstOrDefaultAsync(p => p.ID == lidGuidId);
+            }
+            else
+            {
+                parkingLot = await _dbContext.ParkingLots.FirstOrDefaultAsync(p => p.OldID == parkingLotId);
+            }
+            if (parkingLot == null)
+                return (404, new { error = "Parkinglot not found" });
 
-    //         Payment payment = new Payment
-    //         {
-    //             Initiator = user.Username,
+            Session session = new Session
+            {
+                LicensePlate = vehicle.LicensePlate,
+                UserID = user.ID,
+                ParkingLotID = parkingLot.ID,
 
-    //         }
-
-    //         Session session = new Session
-    //         {
-    //             LicensePlate = vehicle.LicensePlate,
-    //             UserID = user.ID,
-    //             ParkingLotID = parkingLot.ID,
-
-    //         }
-    //     }
-    //     catch
-    //     {
-    //         return (500, new { error = "An unexpected error occurred." });
-    //     }
-    // }
+            };
+            _dbContext.Sessions.Add(session);
+            await _dbContext.SaveChangesAsync();
+            return (201, new { status = "Success", session } );
+        }
+        catch
+        {
+            return (500, new { error = "An unexpected error occurred." });
+        }
+    }
 }

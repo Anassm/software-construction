@@ -3,206 +3,215 @@ using v2.Core.Models;
 using v2.Core.DTOs;
 using v2.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace v2.Infrastructure.Services;
-
-public class PaymentService : IPayments
+namespace v2.Infrastructure.Services
 {
-    private readonly ApplicationDbContext _context;
-
-    public PaymentService(ApplicationDbContext context)
+    public class PaymentService : IPayment
     {
-        _context = context;
-    }
+        private readonly ApplicationDbContext _context;
 
-    public async Task<PaymentResponseDTO> CreatePaymentAsync(CreatePaymentRequestDTO request)
-    {
-        var payment = new Payment
+        public PaymentService(ApplicationDbContext context)
         {
-            Amount = request.Amount,
-            Initiator = request.Initiator,
-            CreatedAt = DateTime.UtcNow,
-            CompletedAt = null,
-            TransactionAmount = request.TransactionAmount,
-            TransactionDate = request.TransactionDate,
-            TransactionMethod = request.TransactionMethod,
-            TransactionIssuer = request.TransactionIssuer,
-            TransactionBank = request.TransactionBank,
-            SessionID = request.SessionID,
-            Session = null
-        };
-
-        await _context.Payments.AddAsync(payment);
-        await _context.SaveChangesAsync();
-
-        return new PaymentResponseDTO
-        {
-            ID = payment.ID,
-            Amount = payment.Amount,
-            Initiator = payment.Initiator,
-            CreatedAt = payment.CreatedAt,
-            CompletedAt = payment.CompletedAt,
-            Hash = payment.Hash,
-            TransactionAmount = payment.TransactionAmount,
-            TransactionDate = payment.TransactionDate,
-            TransactionMethod = payment.TransactionMethod,
-            TransactionIssuer = payment.TransactionIssuer,
-            TransactionBank = payment.TransactionBank,
-            SessionID = payment.SessionID
-        };
-    }
-
-    public async Task<PaymentResponseDTO> ConfirmPaymentAsync(Guid paymentId, string hash)
-    {
-        if (hash == null || string.IsNullOrWhiteSpace(hash))
-        {
-            throw new ArgumentException("Hash is required.", nameof(hash));
+            _context = context;
         }
 
-        var payment = await _context.Payments.FirstOrDefaultAsync(payment => payment.ID == paymentId);
-        if (payment == null)
+        public async Task<(int statusCode, object data)> CreatePaymentAsync(CreatePaymentRequestDTO request, string initiatorIdentityId)
         {
-            throw new KeyNotFoundException($"Payment with id {paymentId} not found.");
+            var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.IdentityUserId == initiatorIdentityId);
+            if (user == null)
+            {
+                return (404, new { error = $"User record not found for identityId {initiatorIdentityId}" });
+            }
+
+            if (request.SessionID == null && request.Transaction == null)
+            {
+                return (400, new { error = "Required field missing, field: transaction or sessionID" });
+            }
+
+            var payment = new Payment
+            {
+                Amount = request.Amount,
+                Initiator = user.Username,
+                CreatedAt = DateTime.UtcNow,
+                CompletedAt = null,
+                Hash = null,
+                TransactionAmount = request.TransactionAmount ?? request.Amount,
+                TransactionDate = request.TransactionDate ?? DateTime.UtcNow,
+                TransactionMethod = request.TransactionMethod ?? "N/A",
+                TransactionIssuer = request.TransactionIssuer ?? "N/A",
+                TransactionBank = request.TransactionBank ?? "N/A",
+                SessionID = request.SessionID,
+                OldID = request.Transaction ?? string.Empty
+            };
+
+            await _context.Payments.AddAsync(payment);
+            await _context.SaveChangesAsync();
+
+            var responseDto = MapPaymentToDto(payment);
+            var responseData = new { status = "Success", payment = responseDto };
+            return (201, responseData);
         }
 
-        payment.Hash = hash;
-        payment.CompletedAt = DateTime.UtcNow;
-
-        _context.Payments.Update(payment);
-        await _context.SaveChangesAsync();
-
-        return new PaymentResponseDTO
+        public async Task<(int statusCode, object data)> ConfirmPaymentAsync(Guid paymentId, ConfirmPaymentRequestDTO dto, string initiatorIdentityId)
         {
-            ID = payment.ID,
-            Amount = payment.Amount,
-            Initiator = payment.Initiator,
-            CreatedAt = payment.CreatedAt,
-            CompletedAt = payment.CompletedAt,
-            Hash = payment.Hash,
-            TransactionAmount = payment.TransactionAmount,
-            TransactionDate = payment.TransactionDate,
-            TransactionMethod = payment.TransactionMethod,
-            TransactionIssuer = payment.TransactionIssuer,
-            TransactionBank = payment.TransactionBank,
-            SessionID = payment.SessionID
-        };
-    }
+            var payment = await _context.Payments.FindAsync(paymentId);
+            if (payment == null)
+            {
+                return (404, new { error = "Payment not found" });
+            }
 
-    public async Task<IEnumerable<PaymentResponseDTO>> GetPaymentsByUserAsync(string initiator)
-    {
-        if (initiator == null || string.IsNullOrWhiteSpace(initiator))
-        {
-            throw new ArgumentException("Initiator is required.", nameof(initiator));
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.IdentityUserId == initiatorIdentityId);
+            if (user == null)
+            {
+                return (404, new { error = "User not found" });
+            }
+
+            if (payment.Initiator != user.Username && user.Role != "Admin")
+            {
+                return (403, new { error = "User forbidden from confirming this payment" });
+            }
+
+            if (dto.Validation == "invalid_hash")
+            {
+                return (401, new { error = "Validation failed", info = "The validation of the security hash could not be validated." });
+            }
+
+            payment.CompletedAt = DateTime.UtcNow;
+            payment.Hash = dto.Validation;
+            _context.Payments.Update(payment);
+            await _context.SaveChangesAsync();
+
+            var responseDto = MapPaymentToDto(payment);
+            var responseData = new { status = "Success", payment = responseDto };
+            return (200, responseData);
         }
 
-        var query = _context.Payments
-            .AsNoTracking()
-            .Where(p => p.Initiator == initiator)
-            .OrderByDescending(p => p.CreatedAt)
-            .AsQueryable();
-
-        var list = await query.ToListAsync();
-        return list.Select(payment => new PaymentResponseDTO
+        public async Task<(int statusCode, object data)> GetPaymentsByUserAsync(string? initiatorUsername, string identityId)
         {
-            ID = payment.ID,
-            Amount = payment.Amount,
-            Initiator = payment.Initiator,
-            CreatedAt = payment.CreatedAt,
-            CompletedAt = payment.CompletedAt,
-            Hash = payment.Hash,
-            TransactionAmount = payment.TransactionAmount,
-            TransactionDate = payment.TransactionDate,
-            TransactionMethod = payment.TransactionMethod,
-            TransactionIssuer = payment.TransactionIssuer,
-            TransactionBank = payment.TransactionBank,
-            SessionID = payment.SessionID
-        });
-    }
+            var requestingUser = await _context.Users.FirstOrDefaultAsync(u => u.IdentityUserId == identityId);
+            if (requestingUser == null)
+            {
+                return (404, new { error = "Requesting user not found" });
+            }
 
-    public async Task<PaymentResponseDTO> UpdatePaymentAsync(Guid paymentId, UpdatePaymentRequestDTO updateData)
-    {
-        if (updateData == null)
-            throw new ArgumentException("Update data is required.", nameof(updateData));
+            string targetUsername;
 
-        var payment = await _context.Payments.FirstOrDefaultAsync(payment => payment.ID == paymentId);
-        if (payment == null)
-            throw new KeyNotFoundException($"Payment with id {paymentId} not found.");
+            if (string.IsNullOrEmpty(initiatorUsername))
+            {
+                targetUsername = requestingUser.Username;
+            }
+            else
+            {
+                if (requestingUser.Role != "Admin")
+                {
+                    return (403, new { error = "Access denied. Admin role required to view other user's payments." });
+                }
+                targetUsername = initiatorUsername;
+            }
 
-        // Apply only the properties from which updateData has values for.
-        if (updateData.Amount.HasValue)
-            payment.Amount = updateData.Amount.Value;
+            var payments = await _context.Payments
+                .Where(p => p.Initiator == targetUsername)
+                .OrderByDescending(p => p.CreatedAt)
+                .Select(payment => MapPaymentToDto(payment))
+                .ToListAsync();
 
-        if (updateData.TransactionAmount.HasValue)
-            payment.TransactionAmount = updateData.TransactionAmount.Value;
+            if (payments == null || !payments.Any())
+            {
+                if (!string.IsNullOrEmpty(initiatorUsername))
+                {
+                    var targetUserExists = await _context.Users.AnyAsync(u => u.Username == targetUsername);
+                    if (!targetUserExists)
+                    {
+                        return (404, new { error = $"User '{targetUsername}' not found." });
+                    }
+                }
+                return (200, new List<PaymentResponseDTO>());
+            }
 
-        if (updateData.TransactionDate.HasValue)
-            payment.TransactionDate = updateData.TransactionDate.Value;
-
-        if (!string.IsNullOrWhiteSpace(updateData.TransactionMethod))
-            payment.TransactionMethod = updateData.TransactionMethod!;
-
-        if (!string.IsNullOrWhiteSpace(updateData.TransactionIssuer))
-            payment.TransactionIssuer = updateData.TransactionIssuer!;
-
-        if (!string.IsNullOrWhiteSpace(updateData.TransactionBank))
-            payment.TransactionBank = updateData.TransactionBank!;
-
-        if (updateData.CompletedAt.HasValue)
-            payment.CompletedAt = updateData.CompletedAt.Value;
-
-        if (!string.IsNullOrWhiteSpace(updateData.Hash))
-            payment.Hash = updateData.Hash;
-
-        _context.Payments.Update(payment);
-        await _context.SaveChangesAsync();
-
-        return new PaymentResponseDTO
-        {
-            ID = payment.ID,
-            Amount = payment.Amount,
-            Initiator = payment.Initiator,
-            CreatedAt = payment.CreatedAt,
-            CompletedAt = payment.CompletedAt,
-            Hash = payment.Hash,
-            TransactionAmount = payment.TransactionAmount,
-            TransactionDate = payment.TransactionDate,
-            TransactionMethod = payment.TransactionMethod,
-            TransactionIssuer = payment.TransactionIssuer,
-            TransactionBank = payment.TransactionBank,
-            SessionID = payment.SessionID
-        };
-    }
-
-    public async Task<PaymentResponseDTO> RefundPaymentAsync(Guid paymentId, string? reason)
-    {
-        var payment = await _context.Payments.FirstOrDefaultAsync(payment => payment.ID == paymentId);
-        if (payment == null)
-        {
-            throw new KeyNotFoundException($"Payment with id {paymentId} not found.");
+            return (200, payments);
         }
 
-        payment.CompletedAt = DateTime.UtcNow;
-        // Temporary workaround.. Storing a refund reasoning string inside hash, should probably have completed flag
-        var reviewedReason = string.IsNullOrWhiteSpace(reason) ? "refund" : reason!;
-        payment.Hash = $"REFUND:{reason}:{DateTime.UtcNow:yyyMMddHHmmss}";
-
-        _context.Payments.Update(payment);
-        await _context.SaveChangesAsync();
-
-        return new PaymentResponseDTO
+        public async Task<(int statusCode, object data)> RefundPaymentAsync(RefundPaymentRequestDTO request, string adminIdentityId)
         {
-            ID = payment.ID,
-            Amount = payment.Amount,
-            Initiator = payment.Initiator,
-            CreatedAt = payment.CreatedAt,
-            CompletedAt = payment.CompletedAt,
-            Hash = payment.Hash,
-            TransactionAmount = payment.TransactionAmount,
-            TransactionDate = payment.TransactionDate,
-            TransactionMethod = payment.TransactionMethod,
-            TransactionIssuer = payment.TransactionIssuer,
-            TransactionBank = payment.TransactionBank,
-            SessionID = payment.SessionID
-        };
+            var adminUser = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.IdentityUserId == adminIdentityId);
+            if (adminUser == null || adminUser.Role != "admin")
+            {
+                return (403, new { error = "Access denied. Admin role required for refunds." });
+            }
+
+            var payment = await _context.Payments.FindAsync(request.PaymentId);
+            if (payment == null)
+            {
+                return (404, new { error = $"Payment with ID {request.PaymentId} not found." });
+            }
+
+            if (payment.Hash != null && payment.Hash.StartsWith("REFUND:"))
+            {
+                return (409, new { error = "Payment has already been refunded." });
+            }
+
+            payment.CompletedAt = DateTime.UtcNow;
+            payment.Hash = $"REFUND:{request.Reason ?? "N/A"}:{DateTime.UtcNow:yyyMMddHHmmss}";
+
+            _context.Payments.Update(payment);
+            await _context.SaveChangesAsync();
+
+            var responseDto = MapPaymentToDto(payment);
+            var responseData = new { status = "Success", payment = responseDto };
+            return (201, responseData);
+        }
+
+        public async Task<(int statusCode, object data)> UpdatePaymentAsync(Guid paymentId, UpdatePaymentRequestDTO dto, string identityId)
+        {
+            var payment = await _context.Payments.FindAsync(paymentId);
+            if (payment == null)
+            {
+                return (404, new { error = "Payment not found" });
+            }
+
+            var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.IdentityUserId == identityId);
+            if (user == null || (payment.Initiator != user.Username && user.Role != "Admin"))
+            {
+                return (403, new { error = "Access denied." });
+            }
+
+            if (dto.Amount.HasValue) payment.Amount = dto.Amount.Value;
+            if (dto.TransactionAmount.HasValue) payment.TransactionAmount = dto.TransactionAmount.Value;
+            if (dto.TransactionDate.HasValue) payment.TransactionDate = dto.TransactionDate.Value;
+            if (!string.IsNullOrWhiteSpace(dto.TransactionMethod)) payment.TransactionMethod = dto.TransactionMethod;
+            if (!string.IsNullOrWhiteSpace(dto.TransactionIssuer)) payment.TransactionIssuer = dto.TransactionIssuer;
+            if (!string.IsNullOrWhiteSpace(dto.TransactionBank)) payment.TransactionBank = dto.TransactionBank;
+            if (dto.CompletedAt.HasValue) payment.CompletedAt = dto.CompletedAt.Value;
+            if (!string.IsNullOrWhiteSpace(dto.Hash)) payment.Hash = dto.Hash;
+
+            _context.Payments.Update(payment);
+            await _context.SaveChangesAsync();
+
+            var responseDto = MapPaymentToDto(payment);
+            var responseData = new { status = "Success", payment = responseDto };
+            return (200, responseData);
+        }
+
+        private PaymentResponseDTO MapPaymentToDto(Payment payment)
+        {
+            return new PaymentResponseDTO
+            {
+                ID = payment.ID,
+                Amount = payment.Amount,
+                Initiator = payment.Initiator,
+                CreatedAt = payment.CreatedAt,
+                CompletedAt = payment.CompletedAt,
+                Hash = payment.Hash,
+                TransactionAmount = payment.TransactionAmount,
+                TransactionDate = payment.TransactionDate,
+                TransactionMethod = payment.TransactionMethod,
+                TransactionIssuer = payment.TransactionIssuer,
+                TransactionBank = payment.TransactionBank,
+                SessionID = payment.SessionID
+            };
+        }
     }
 }

@@ -29,12 +29,12 @@ namespace v2.Infrastructure.Data
                         entity.Property(u => u.OldID);
                         entity.Property(u => u.Username).IsRequired().HasMaxLength(100);
                         entity.Property(u => u.Name).IsRequired().HasMaxLength(150);
-                        entity.Property(u => u.Email).IsRequired().HasMaxLength(150);
-                        entity.Property(u => u.PhoneNumber).IsRequired().HasMaxLength(20);
-                        entity.Property(u => u.Role).IsRequired().HasMaxLength(50);
+                        entity.Property(u => u.Email).HasMaxLength(150);
+                        entity.Property(u => u.PhoneNumber).HasMaxLength(20);
+                        entity.Property(u => u.Role).HasMaxLength(50);
                         entity.Property(u => u.CreatedAt)
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
-                        entity.Property(u => u.BirthDate).IsRequired();
+                        entity.Property(u => u.BirthYear);
                         entity.Property(u => u.IsActive).HasDefaultValueSql("1");
                         modelBuilder.Entity<User>()
                         .HasOne(u => u.IdentityUser)
@@ -146,7 +146,7 @@ namespace v2.Infrastructure.Data
                         entity.Property(p => p.Amount).IsRequired();
                         entity.Property(p => p.Initiator).IsRequired().HasMaxLength(100);
                         entity.Property(p => p.CreatedAt).IsRequired().HasDefaultValueSql("CURRENT_TIMESTAMP");
-                        entity.Property(p => p.CompletedAt).IsRequired();
+                        entity.Property(p => p.CompletedAt).IsRequired(false);
                         entity.Property(p => p.Hash).HasMaxLength(256);
                         entity.Property(p => p.TransactionAmount).IsRequired();
                         entity.Property(p => p.TransactionDate).IsRequired();
@@ -157,6 +157,7 @@ namespace v2.Infrastructure.Data
                         entity.HasOne(p => p.Session)
                         .WithOne(s => s.Payment)
                         .HasForeignKey<Payment>(p => p.SessionID)
+                        .IsRequired(false)
                         .OnDelete(DeleteBehavior.Cascade);
                   });
             }

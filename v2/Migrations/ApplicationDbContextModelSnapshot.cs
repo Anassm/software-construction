@@ -271,7 +271,7 @@ namespace v2.Migrations
                     b.Property<decimal>("Amount")
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("CompletedAt")
+                    b.Property<DateTime?>("CompletedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
@@ -292,7 +292,7 @@ namespace v2.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("SessionID")
+                    b.Property<Guid?>("SessionID")
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("TransactionAmount")
@@ -397,7 +397,7 @@ namespace v2.Migrations
                     b.Property<Guid>("ParkingLotID")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("PaymentID")
+                    b.Property<Guid?>("PaymentID")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("PaymentStatus")
@@ -434,8 +434,8 @@ namespace v2.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("BirthDate")
-                        .HasColumnType("TEXT");
+                    b.Property<int?>("BirthYear")
+                        .HasColumnType("INTEGER");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -443,7 +443,6 @@ namespace v2.Migrations
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasMaxLength(150)
                         .HasColumnType("TEXT");
 
@@ -466,12 +465,10 @@ namespace v2.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PhoneNumber")
-                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Role")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("TEXT");
 
@@ -597,8 +594,7 @@ namespace v2.Migrations
                     b.HasOne("v2.Core.Models.Session", "Session")
                         .WithOne("Payment")
                         .HasForeignKey("v2.Core.Models.Payment", "SessionID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Session");
                 });

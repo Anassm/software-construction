@@ -18,3 +18,8 @@ public class UpdateVehicleDto
     public int Year { get; set; } = 0;
     public Guid UserId { get; set; } = Guid.Empty;
 }
+
+public class UpdateVehicleEntryDto
+{
+    public string ParkingLotId { get; set; } = "";
+}

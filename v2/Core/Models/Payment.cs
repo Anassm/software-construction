@@ -11,11 +11,12 @@ public class Payment
     public string? Hash { get; set; }
 
     public decimal TransactionAmount { get; set; } = 0;
-    public required DateTime TransactionDate { get; set; }
-    public required string TransactionMethod { get; set; }
-    public required string TransactionIssuer { get; set; }
-    public required string TransactionBank { get; set; }    
+    public DateTime TransactionDate { get; set; }
+    public string TransactionMethod { get; set; }
+    public string TransactionIssuer { get; set; }
+    public string TransactionBank { get; set; }    
 
-    public required Guid SessionID { get; set; }
+    public Guid? SessionID { get; set; }
+
     public Session? Session { get; set; }
 }
