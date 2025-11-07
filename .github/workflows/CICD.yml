@@ -54,7 +54,7 @@ jobs:
         run: |
           cd v2
           echo "Starting server..."
-          dotnet run --urls "http://0.0.0.0:8000" --launch-profile Testing > server.log 2>&1 &
+          dotnet run --urls "http://0.0.0.0:8000" --no-launch-profile > server.log 2>&1 &
 
           echo "Waiting for server to be ready..."
           for i in {1..30}; do

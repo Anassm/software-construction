@@ -19,19 +19,8 @@ var jwtIssuer = "yourIssuer";
 var jwtAudience = "yourAudience";
 
 // --- Database ---
-var isTest = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Testing";
-
-if (isTest)
-{
-    builder.Services.AddDbContext<ApplicationDbContext>(
-        options => options.UseInMemoryDatabase("TestDb"));
-}
-else
-{
-    builder.Services.AddDbContext<ApplicationDbContext>(
-        options => options.UseSqlite("Data Source=infrastructure/data/app.db"));
-
-}
+builder.Services.AddDbContext<ApplicationDbContext>(
+    options => options.UseSqlite("Data Source=infrastructure/data/app.db"));
 
 // --- Identity ---
 builder.Services.AddIdentity<IdentityUser, IdentityRole>()

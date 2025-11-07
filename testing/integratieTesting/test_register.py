@@ -10,10 +10,9 @@ def _data():
 def test_register_success(_data):
     r = requests.post(_data["url"], json={
         "username": "new.user",
-        "password": "Password123.",
+        "password": "password123",
         "name": "New User"
     })
-    print(f"hellol{r.text}")
     assert r.status_code in [200, 201]
 
 def test_register_missing_password(_data):
