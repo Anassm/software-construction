@@ -32,7 +32,6 @@ public class VehicleController : ControllerBase
         if (dto.LicensePlate == null || dto.LicensePlate == string.Empty)
             return StatusCode(StatusCodes.Status400BadRequest, new { error = "Required field missing, field: LicensePlate" });
 
-        dto.LicensePlate = dto.LicensePlate.Replace("-", "");
         var result = await _vehicleService.CreateVehicleAsync(dto, identityUserId);
 
         return result.statusCode switch
@@ -137,7 +136,7 @@ public class VehicleController : ControllerBase
     }
 
     [HttpGet("{vid}/reservations")]
-    public async Task<IActionResult> GetReservationsByVehicle([FromRoute] string vid)
+    public async Task<IActionResult> GetReservationsByVehicle([FromQuery] string vid)
     {
         var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (identityUserId == null)
@@ -155,13 +154,13 @@ public class VehicleController : ControllerBase
     }
 
     [HttpGet("{vid}/history")]
-    public async Task<IActionResult> GetVehicleHistory([FromRoute] string vid)
+    public async Task<IActionResult> GetVehicleHistory([FromQuery] string licensePlate)
     {
         var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (identityUserId == null)
             return StatusCode(StatusCodes.Status401Unauthorized, new { error = "Unauthorized: Invalid or missing session token" });
 
-        var result = await _vehicleService.GetVehicleHistoryAsync(vid, identityUserId);
+        var result = await _vehicleService.GetVehicleHistoryAsync(licensePlate, identityUserId);
 
         return result.statusCode switch
         {

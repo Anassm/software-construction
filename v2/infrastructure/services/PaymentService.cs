@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace v2.Infrastructure.Services;
 
-public class PaymentService : IPayment
+public class PaymentService : IPayments
 {
     private readonly ApplicationDbContext _context;
 
@@ -56,13 +56,13 @@ public class PaymentService : IPayment
     {
         if (hash == null || string.IsNullOrWhiteSpace(hash))
         {
-            return null;
+            throw new ArgumentException("Hash is required.", nameof(hash));
         }
 
         var payment = await _context.Payments.FirstOrDefaultAsync(payment => payment.ID == paymentId);
         if (payment == null)
         {
-            return null;
+            throw new KeyNotFoundException($"Payment with id {paymentId} not found.");
         }
 
         payment.Hash = hash;
@@ -92,7 +92,7 @@ public class PaymentService : IPayment
     {
         if (initiator == null || string.IsNullOrWhiteSpace(initiator))
         {
-            return Enumerable.Empty<PaymentResponseDTO>();
+            throw new ArgumentException("Initiator is required.", nameof(initiator));
         }
 
         var query = _context.Payments
@@ -122,11 +122,11 @@ public class PaymentService : IPayment
     public async Task<PaymentResponseDTO> UpdatePaymentAsync(Guid paymentId, UpdatePaymentRequestDTO updateData)
     {
         if (updateData == null)
-            return null;
+            throw new ArgumentException("Update data is required.", nameof(updateData));
 
         var payment = await _context.Payments.FirstOrDefaultAsync(payment => payment.ID == paymentId);
         if (payment == null)
-            return null;
+            throw new KeyNotFoundException($"Payment with id {paymentId} not found.");
 
         // Apply only the properties from which updateData has values for.
         if (updateData.Amount.HasValue)
@@ -176,10 +176,9 @@ public class PaymentService : IPayment
     public async Task<PaymentResponseDTO> RefundPaymentAsync(Guid paymentId, string? reason)
     {
         var payment = await _context.Payments.FirstOrDefaultAsync(payment => payment.ID == paymentId);
-
         if (payment == null)
         {
-            return null;
+            throw new KeyNotFoundException($"Payment with id {paymentId} not found.");
         }
 
         payment.CompletedAt = DateTime.UtcNow;
