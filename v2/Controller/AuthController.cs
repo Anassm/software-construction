@@ -46,6 +46,7 @@ public class AuthController : ControllerBase
 
         return result.statusCode switch
         {
+            401 => StatusCode(StatusCodes.Status401Unauthorized, result.message),
             200 => StatusCode(StatusCodes.Status200OK, result.message),
             404 => StatusCode(StatusCodes.Status404NotFound, result.message),
             500 => StatusCode(StatusCodes.Status500InternalServerError, result.message),

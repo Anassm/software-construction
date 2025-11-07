@@ -3,22 +3,33 @@ import requests
 
 BASE = "http://localhost:8000"
 
+
+@pytest.fixture(scope="session", autouse=True)
+def setup_module():
+    r = requests.post(f"{BASE}/register", json={"username": "login.user", "password": "Password123.", "name": "Regular User"})
+    print(f"Setup register response: {r.text}")
+    # Setup code if needed
+    yield
+    # Teardown code if needed
+
+
+def test_login_wrong_password():
+    r = requests.post(f"{BASE}/login", json={"username": "login.user", "password": "WRONG"})
+    print(f"Response text: {r.status_code}{r.text}")
+    assert r.status_code == 401
+
 @pytest.mark.xfail(reason="Known bug: /login valid creds -> 401", strict=False)
 def test_login_success():
-    r = requests.post(f"{BASE}/login", json={"username": "regular.user", "password": "password123"})
+    r = requests.post(f"{BASE}/login", json={"username": "login.user", "password": "Password123."})
     assert r.status_code == 200
     assert "session_token" in r.json()
-
-# def test_login_wrong_password():
-#     r = requests.post(f"{BASE}/login", json={"username": "regular.user", "password": "WRONG"})
-#     assert r.status_code == 401
 
 def test_login_unknown_user():
     r = requests.post(f"{BASE}/login", json={"username": "no.such.user", "password": "password123"})
     assert r.status_code in (401, 404)
 
 def test_login_missing_fields():
-    r = requests.post(f"{BASE}/login", json={"username": "regular.user"})
+    r = requests.post(f"{BASE}/login", json={"username": "login.user"})
     assert r.status_code in (400, 422)
 
 @pytest.mark.xfail(reason="Known bug: invalid JSON causes server to close connection", strict=False)
