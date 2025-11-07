@@ -78,7 +78,6 @@ def vehicle_url(_data, lid=None, suffix=None):
     return url
 
 # POST / vehicles
-
 def test_post_vehicle_no_auth(_data):
     response = requests.post(
         vehicle_url(_data),
