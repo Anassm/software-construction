@@ -84,6 +84,25 @@ jobs:
           cd testing/integratieTesting
           pytest test_payments.py
 
+      - name: Test login
+        run: |
+          cd testing/integratieTesting
+          pytest test_login.py
+      - name: Test profile
+        run: |
+          cd testing/integratieTesting
+          pytest test_profile.py
+          
+      - name: Test register
+        run: |
+          cd testing/integratieTesting
+          pytest test_register.py
+          
+      - name: Test billing
+        run: |
+          cd testing/integratieTesting
+          pytest test_billing.py
+
       - name: Debug server log if tests fail
         if: failure()
         run: |
@@ -129,3 +148,8 @@ jobs:
         run: |
           cd testing/UnitTesting
           dotnet test --filter "PaymentServiceTests"
+
+      - name: Test reservations
+        run: |
+          cd testing/UnitTesting
+          dotnet test --filter "ReservationServiceTests"
