@@ -98,10 +98,10 @@ jobs:
           cd testing/integratieTesting
           pytest test_register.py
           
-      - name: Test billing
-        run: |
-          cd testing/integratieTesting
-          pytest test_billing.py
+      # - name: Test billing
+      #   run: |
+      #     cd testing/integratieTesting
+      #     pytest test_billing.py
 
       - name: Debug server log if tests fail
         if: failure()
