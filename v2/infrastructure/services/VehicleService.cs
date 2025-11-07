@@ -103,7 +103,7 @@ public class VehicleService : IVehicles
             if (user == null)
                 return (404, new { error = "User not found" });
 
-            var vehicle = await _dbContext.Vehicles.FirstOrDefaultAsync(v => v.ID.ToString() == lid && v.UserID == user.ID || v.LicensePlate == lid && v.UserID == user.ID || v.OldID == lid && v.UserID == user.ID);
+            var vehicle = await _dbContext.Vehicles.FirstOrDefaultAsync(v => v.ID.ToString() == lid && v.UserID == user.ID || v.LicensePlate == lid.Replace("-", "") && v.UserID == user.ID || v.OldID == lid && v.UserID == user.ID);
             if (vehicle == null)
                 return (404, new { error = "Vehicle not found!" });
 
