@@ -54,7 +54,7 @@ jobs:
         run: |
           cd v2
           echo "Starting server..."
-          dotnet run --urls "http://0.0.0.0:8000" --no-launch-profile > server.log 2>&1 &
+          dotnet run --urls "http://0.0.0.0:8000" --launch-profile Testing > server.log 2>&1 &
 
           echo "Waiting for server to be ready..."
           for i in {1..30}; do
@@ -83,6 +83,25 @@ jobs:
         run: |
           cd testing/integratieTesting
           pytest test_payments.py
+
+      - name: Test login
+        run: |
+          cd testing/integratieTesting
+          pytest test_login.py
+      - name: Test profile
+        run: |
+          cd testing/integratieTesting
+          pytest test_profile.py
+          
+      - name: Test register
+        run: |
+          cd testing/integratieTesting
+          pytest test_register.py
+          
+      - name: Test billing
+        run: |
+          cd testing/integratieTesting
+          pytest test_billing.py
 
       - name: Debug server log if tests fail
         if: failure()
@@ -129,3 +148,8 @@ jobs:
         run: |
           cd testing/UnitTesting
           dotnet test --filter "PaymentServiceTests"
+
+      - name: Test reservations
+        run: |
+          cd testing/UnitTesting
+          dotnet test --filter "ReservationServiceTests"
