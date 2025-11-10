@@ -1,10 +1,10 @@
-using v2.Infrastructure.Data;         // ApplicationDbContext
-using Microsoft.EntityFrameworkCore;         // FirstOrDefaultAsync, Include
+using v2.Infrastructure.Data;
 using v2.core.Interfaces;
-using v2.Core.DTOs;
 using v2.Core.Models;
+using v2.Core.DTOs;
+using Microsoft.EntityFrameworkCore;
 
-namespace v2.infrastructure.Services;
+namespace v2.Infrastructure.Services;
 
 public class ReservationService : IReservation
 {
@@ -23,7 +23,7 @@ public class ReservationService : IReservation
             ?? throw new ArgumentException("Parking lot not found.");
 
         var vehicle = await _db.Vehicles
-            .FirstOrDefaultAsync(v => v.LicensePlate == request.LicensePlate)
+            .FirstOrDefaultAsync(v => v.LicensePlate == request.LicensePlate.Replace("-", ""))
             ?? throw new ArgumentException("Vehicle with given license plate not found.");
 
         var reservation = new Reservation
@@ -44,4 +44,18 @@ public class ReservationService : IReservation
         return reservation;
     }
 
+    public async Task<IEnumerable<Reservation>> GetReservationsForUserAsync(string identityUserId)
+    {
+        var user = await _db.Users
+            .FirstOrDefaultAsync(u => u.IdentityUserId == identityUserId)
+            ?? throw new ArgumentException("User not found.");
+
+        var reservations = await _db.Reservations
+            .Include(r => r.Vehicle)
+            .Include(r => r.ParkingLot)
+            .Where(r => r.UserID == user.ID)
+            .ToListAsync();
+
+        return reservations;
+    }
 }

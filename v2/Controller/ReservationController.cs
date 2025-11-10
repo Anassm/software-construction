@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using v2.core.Interfaces;
 using v2.Core.DTOs;
+using System.Security.Claims;
 
 namespace v2.Controllers;
 
@@ -39,6 +40,42 @@ public class ReservationController : ControllerBase
         catch (ArgumentException ex)
         {
             return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    /// <summary>Get all reservations for the authenticated user.</summary>
+    [HttpGet]
+    public async Task<IActionResult> GetForCurrentUser()
+    {
+        var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (identityUserId == null)
+            return StatusCode(StatusCodes.Status401Unauthorized, new { error = "Unauthorized: Invalid or missing session token" });
+
+        try
+        {
+            var reservations = await _reservationService.GetReservationsForUserAsync(identityUserId);
+
+            var response = reservations.Select(r => new ReservationResponse
+            {
+                Id = r.ID,
+                LicensePlate = r.Vehicle?.LicensePlate ?? "",
+                ParkingLotId = r.ParkingLotID,
+                StartDate = r.StartDate,
+                EndDate = r.EndDate,
+                Status = r.Status,
+                TotalPrice = r.TotalPrice,
+                CreatedAt = r.CreatedAt
+            });
+
+            return Ok(response);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { error = "An unexpected error occurred." });
         }
     }
 }
