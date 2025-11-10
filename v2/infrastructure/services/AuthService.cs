@@ -31,8 +31,18 @@ public class AuthService
             var identityUser = new IdentityUser { UserName = dto.Username };
             var result = await _userManager.CreateAsync(identityUser, dto.Password);
             if (!result.Succeeded)
-
-                return (null!, 500, new { error = "An unexpected error occurred.", details = result.Errors });
+            {
+                if (result.Errors.Any(e =>
+                    e.Code == "PasswordTooShort" ||
+                    e.Code == "PasswordRequiresNonAlphanumeric" ||
+                    e.Code == "PasswordRequiresDigit" ||
+                    e.Code == "PasswordRequiresUpper" ||
+                    e.Code == "PasswordRequiresLower"))
+                {
+                    return (null!, 400, new { error = "An unexpected error occurred.", details = result.Errors });
+                }
+                return (null!, 400, new { error = "An unexpected error occurred.", details = result.Errors });
+            }
             identityUser = await _userManager.FindByNameAsync(dto.Username);
             var appUser = new User
             {
@@ -57,7 +67,7 @@ public class AuthService
         }
         catch
         {
-            return (null!, 500, new { error = "An unexpected error occurred." });
+            return (null!, 502, new { error = "An unexpected error occurred." });
         }
     }
     
@@ -65,13 +75,17 @@ public class AuthService
     {
         try
         {
+            if(dto.username == "" || dto.password == "")
+            {
+                return (null!, 400, new { error = "Username and password are required." });
+            }
             var user = await _userManager.FindByNameAsync(dto.username);
             if (user == null)
                 return (null!, 404, new { error = "User not found" });
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, dto.password, false);
             if (!result.Succeeded)
-                return (null!, 404, new { error = "Invalid credentials" });
+                return (null!, 401, new { error = "Invalid credentials" });
 
             // Generate JWT
             var claims = new[]
@@ -138,12 +152,17 @@ public class AuthService
     {
         try
         {
-            
-            var user = _dbContext.Users.FirstOrDefault(u => u.ID == dto.Id);
 
-            var userASP = await _userManager.FindByIdAsync(user.IdentityUserId);
-            if (userASP == null)
+            var user = _dbContext.Users.FirstOrDefault(u => u.ID == dto.Id);
+            var userASP = null as IdentityUser;
+            try
+            {
+                userASP = await _userManager.FindByIdAsync(user.IdentityUserId);
+            }
+            catch
+            {
                 return (null!, 404, new { error = "User not found" });
+            }
 
 
 
@@ -193,9 +212,9 @@ public class AuthService
             }
             return (null!, 200, new { message = "Profile updated successfully." });
         }
-        catch
+        catch(Exception ex)
         {
-            return (null!, 500, new { error = "An unexpected error occurred." });
+            return (null!, 500, new { error = "An unexpected error occurred.", details = ex });
         }
     }
 }

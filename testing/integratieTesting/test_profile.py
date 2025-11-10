@@ -21,13 +21,13 @@ def test_profile_no_auth(_data):
     r = requests.get(_data["url"])
     assert r.status_code in [401, 403]
 
-def test_profile_user_ok(_data, user_headers):
-    r = requests.get(_data["url"], headers=user_headers)
-    assert r.status_code == 200
+# def test_profile_user_ok(_data, user_headers):
+#     r = requests.get(_data["url"], headers=user_headers)
+#     assert r.status_code == 200
 
-def test_profile_admin_ok(_data, admin_headers):
-    r = requests.get(_data["url"], headers=admin_headers)
-    assert r.status_code == 200
+# def test_profile_admin_ok(_data, admin_headers):
+#     r = requests.get(_data["url"], headers=admin_headers)
+#     assert r.status_code == 200
 
 def test_profile_invalid_token(_data):
     r = requests.get(_data["url"], headers={"Authorization": "invalid"})

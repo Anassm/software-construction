@@ -31,6 +31,7 @@ public class AuthController : ControllerBase
 
         return result.statusCode switch
         {
+            400 => StatusCode(StatusCodes.Status400BadRequest, result.message),
             201 => StatusCode(StatusCodes.Status201Created, result.message),
             404 => StatusCode(StatusCodes.Status404NotFound, result.message),
             500 => StatusCode(StatusCodes.Status500InternalServerError, result.message),
@@ -46,6 +47,8 @@ public class AuthController : ControllerBase
 
         return result.statusCode switch
         {
+            400 => StatusCode(StatusCodes.Status400BadRequest, result.message),
+            401 => StatusCode(StatusCodes.Status401Unauthorized, result.message),
             200 => StatusCode(StatusCodes.Status200OK, result.message),
             404 => StatusCode(StatusCodes.Status404NotFound, result.message),
             500 => StatusCode(StatusCodes.Status500InternalServerError, result.message),
