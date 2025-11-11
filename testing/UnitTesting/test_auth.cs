@@ -171,7 +171,7 @@ namespace v2.Tests.Services
 
             var result = await _authService.RegisterUser(registerDto);
 
-            Assert.Equal(500, result.statusCode);
+            Assert.Equal(400, result.statusCode);
             Assert.Null(result.data);
             Assert.Contains("error", result.message.ToString());
         }
@@ -188,7 +188,7 @@ namespace v2.Tests.Services
 
             var result = await _authService.LoginUser(new LoginDto { username = "testuser", password = "wrong" });
 
-            Assert.Equal(404, result.statusCode);
+            Assert.Equal(401, result.statusCode);
             Assert.Contains("Invalid credentials", result.message.ToString());
         }
 
@@ -200,8 +200,8 @@ namespace v2.Tests.Services
             Guid id = Guid.NewGuid();
             var profileDto = new ProfileDto { Id = id, Username = "ghost", Password = "pass" };
             var result = await _authService.UpdateProfile(profileDto, "nonexistent");
-
-            Assert.Equal(500, result.statusCode);
+            Console.WriteLine($"Hellol{result.message.ToString()}");
+            Assert.Equal(404, result.statusCode);
             Assert.Contains("error", result.message.ToString());
         }
         

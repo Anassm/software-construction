@@ -31,8 +31,18 @@ public class AuthService
             var identityUser = new IdentityUser { UserName = dto.Username };
             var result = await _userManager.CreateAsync(identityUser, dto.Password);
             if (!result.Succeeded)
-
-                return (null!, 500, new { error = "An unexpected error occurred.", details = result.Errors });
+            {
+                if (result.Errors.Any(e =>
+                    e.Code == "PasswordTooShort" ||
+                    e.Code == "PasswordRequiresNonAlphanumeric" ||
+                    e.Code == "PasswordRequiresDigit" ||
+                    e.Code == "PasswordRequiresUpper" ||
+                    e.Code == "PasswordRequiresLower"))
+                {
+                    return (null!, 400, new { error = "An unexpected error occurred.", details = result.Errors });
+                }
+                return (null!, 400, new { error = "An unexpected error occurred.", details = result.Errors });
+            }
             identityUser = await _userManager.FindByNameAsync(dto.Username);
             var appUser = new User
             {
@@ -57,7 +67,7 @@ public class AuthService
         }
         catch
         {
-            return (null!, 500, new { error = "An unexpected error occurred." });
+            return (null!, 502, new { error = "An unexpected error occurred." });
         }
     }
     
@@ -65,6 +75,10 @@ public class AuthService
     {
         try
         {
+            if(dto.username == "" || dto.password == "")
+            {
+                return (null!, 400, new { error = "Username and password are required." });
+            }
             var user = await _userManager.FindByNameAsync(dto.username);
             if (user == null)
                 return (null!, 404, new { error = "User not found" });
@@ -78,6 +92,8 @@ public class AuthService
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()) // Unique ID per token
+
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("thisIsASuperSecretKeyWithAtLeast32Bytes!"));
@@ -132,18 +148,23 @@ public class AuthService
         }
     }
 
-    
 
-    public async Task<(User data, int statusCode, object message)> UpdateProfile( ProfileDto dto, string identityUserId)
+
+    public async Task<(User data, int statusCode, object message)> UpdateProfile(ProfileDto dto, string identityUserId)
     {
         try
         {
-            
-            var user = _dbContext.Users.FirstOrDefault(u => u.ID == dto.Id);
 
-            var userASP = await _userManager.FindByIdAsync(user.IdentityUserId);
-            if (userASP == null)
+            var user = _dbContext.Users.FirstOrDefault(u => u.ID == dto.Id);
+            var userASP = null as IdentityUser;
+            try
+            {
+                userASP = await _userManager.FindByIdAsync(user.IdentityUserId);
+            }
+            catch
+            {
                 return (null!, 404, new { error = "User not found" });
+            }
 
 
 
@@ -193,9 +214,24 @@ public class AuthService
             }
             return (null!, 200, new { message = "Profile updated successfully." });
         }
-        catch
+        catch (Exception ex)
         {
-            return (null!, 500, new { error = "An unexpected error occurred." });
+            return (null!, 500, new { error = "An unexpected error occurred.", details = ex });
         }
     }
+    
+    public async Task<(User data, int statusCode, object message)> LogoutUser(string jti)
+    {
+
+        if (jti != null)
+        {
+            TokenBlacklist.Add(jti);
+            return (null!, 200, new { message = "User logged out" });
+        }else
+        {
+            return (null!, 400, new { error = "Invalid token" });
+        }
+        
+    }
+
 }
