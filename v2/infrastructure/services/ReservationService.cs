@@ -1,10 +1,10 @@
-using v2.Infrastructure.Data;         // ApplicationDbContext
-using Microsoft.EntityFrameworkCore;         // FirstOrDefaultAsync, Include
+using v2.Infrastructure.Data;
 using v2.core.Interfaces;
-using v2.Core.DTOs;
 using v2.Core.Models;
+using v2.Core.DTOs;
+using Microsoft.EntityFrameworkCore;
 
-namespace v2.infrastructure.Services;
+namespace v2.Infrastructure.Services;
 
 public class ReservationService : IReservation
 {
@@ -22,15 +22,19 @@ public class ReservationService : IReservation
         var lot = await _db.ParkingLots.FindAsync(request.ParkingLotId)
             ?? throw new ArgumentException("Parking lot not found.");
 
+        var rawPlate = request.LicensePlate;
+        var cleanedPlate = request.LicensePlate.Replace("-", "");
+
         var vehicle = await _db.Vehicles
-            .FirstOrDefaultAsync(v => v.LicensePlate == request.LicensePlate)
+            .FirstOrDefaultAsync(v =>
+                v.LicensePlate == rawPlate || v.LicensePlate == cleanedPlate)
             ?? throw new ArgumentException("Vehicle with given license plate not found.");
 
         var reservation = new Reservation
         {
             StartDate = request.StartDate,
             EndDate = request.EndDate,
-            Status = "Pending", // Vanwegen error nu alleen pending
+            Status = "Pending",
             TotalPrice = 0f,
             UserID = vehicle.UserID,
             ParkingLotID = lot.ID,
@@ -44,4 +48,37 @@ public class ReservationService : IReservation
         return reservation;
     }
 
+    public async Task<IEnumerable<Reservation>> GetReservationsForUserAsync(string identityUserId)
+    {
+        var user = await _db.Users
+            .FirstOrDefaultAsync(u => u.IdentityUserId == identityUserId)
+            ?? throw new ArgumentException("User not found.");
+
+        var reservations = await _db.Reservations
+            .Include(r => r.Vehicle)
+            .Include(r => r.ParkingLot)
+            .Where(r => r.UserID == user.ID)
+            .ToListAsync();
+
+        return reservations;
+    }
+
+    public async Task<bool> DeleteReservationForUserAsync(Guid reservationId, string identityUserId)
+    {
+        var user = await _db.Users
+            .FirstOrDefaultAsync(u => u.IdentityUserId == identityUserId)
+            ?? throw new ArgumentException("User not found.");
+
+        var reservation = await _db.Reservations
+            .FirstOrDefaultAsync(r => r.ID == reservationId && r.UserID == user.ID);
+
+        if (reservation == null)
+        {
+            return false;
+        }
+
+        _db.Reservations.Remove(reservation);
+        await _db.SaveChangesAsync();
+        return true;
+    }
 }

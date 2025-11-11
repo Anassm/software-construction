@@ -82,6 +82,7 @@ builder.Services.AddAuthorization();
 // --- Services ---
 builder.Services.AddScoped<IReservation, ReservationService>();
 builder.Services.AddScoped<IVehicles, VehicleService>();
+builder.Services.AddScoped<IParkingLots, ParkingLotService>();
 
 // --- Controllers & Swagger ---
 builder.Services.AddControllers();

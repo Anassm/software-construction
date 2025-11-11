@@ -6,4 +6,6 @@ namespace v2.core.Interfaces;
 public interface IReservation
 {
     Task<Reservation> CreateReservationAsync(ReservationCreateRequest request);
+    Task<IEnumerable<Reservation>> GetReservationsForUserAsync(string identityUserId);
+    Task<bool> DeleteReservationForUserAsync(Guid reservationId, string identityUserId);
 }

@@ -97,6 +97,11 @@ jobs:
         run: |
           cd testing/integratieTesting
           pytest test_register.py
+
+      - name: Test parkinglots
+        run: |
+          cd testing/integratieTesting
+          pytest test_parkinglots.py
           
       # - name: Test billing
       #   run: |
@@ -158,3 +163,11 @@ jobs:
         run: |
           cd testing/UnitTesting
           dotnet test --filter "AuthServiceTests"
+
+
+      - name: Test parkinglots
+        run: |
+          cd testing/UnitTesting
+          dotnet test --filter "ParkingLotServiceTests"
+    
+      
