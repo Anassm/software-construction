@@ -11,6 +11,7 @@ using v2.infrastructure.Services;
 using v2.Core.Interfaces;
 using v2.Infrastructure.Services;
 using v2.Core.DTOs;
+using System.IdentityModel.Tokens.Jwt;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,8 +20,19 @@ var jwtIssuer = "yourIssuer";
 var jwtAudience = "yourAudience";
 
 // --- Database ---
-builder.Services.AddDbContext<ApplicationDbContext>(
-    options => options.UseSqlite("Data Source=infrastructure/data/app.db"));
+var isTest = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Testing";
+
+if (isTest)
+{
+    builder.Services.AddDbContext<ApplicationDbContext>(
+        options => options.UseInMemoryDatabase("TestDb"));
+}
+else
+{
+    builder.Services.AddDbContext<ApplicationDbContext>(
+        options => options.UseSqlite("Data Source=infrastructure/data/app.db"));
+
+}
 
 // --- Identity ---
 builder.Services.AddIdentity<IdentityUser, IdentityRole>()
@@ -45,7 +57,24 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = jwtAudience,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
     };
+    options.Events = new JwtBearerEvents
+    {
+        OnTokenValidated = context =>
+        {
+            var jti = context.Principal.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
+
+            if (TokenBlacklist.Contains(jti))
+            {
+                // If token is revoked, fail authentication
+                context.Fail("Token has been revoked.");
+            }
+
+            return Task.CompletedTask;
+        }
+    };
 });
+
+
 
 // --- Authorization ---
 builder.Services.AddAuthorization();
