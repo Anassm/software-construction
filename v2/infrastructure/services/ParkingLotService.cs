@@ -248,7 +248,7 @@ public class ParkingLotService : IParkingLots
                 return (409, new { error = "An active session for this license plate already exists in this parking lot." });
             }
 
-         
+
             var newSession = new Session
             {
                 ID = Guid.NewGuid(),
@@ -256,22 +256,47 @@ public class ParkingLotService : IParkingLots
                 EndTime = null,
                 LicensePlate = licensePlate,
                 ParkingLotID = parkingLotId,
-                UserID = userId,
+                ParkingLot = lot,
+                // UserID = userId,
                 PaymentStatus = PaymentStatus.Unpaid
             };
+            
+             if (userId != Guid.Empty)
+            {
+                newSession.UserID = userId;
+            }
 
       
             _db.Sessions.Add(newSession);
             await _db.SaveChangesAsync();
 
        
-            return (201, new { status = "Success", message = "Session started", session = newSession });
+            return (201, new
+            {
+                status = "Success",
+                message = "Session started",
+                session = new
+                {
+                    id = newSession.ID,
+                    licensePlate = newSession.LicensePlate,
+                    startTime = newSession.StartTime,
+                    endTime = newSession.EndTime,
+                    parkingLotId = newSession.ParkingLotID,
+                    paymentStatus = newSession.PaymentStatus
+                }
+            });
         }
-        catch (Exception ex)
+       catch (Exception ex)
+    {
+        return (500, new
         {
-        
-            return (500, new { error = "An unexpected error occurred while starting the session." });
-        }
+            error = "An unexpected error occurred while starting the session.",
+            detail = ex.Message,
+            inner = ex.InnerException?.Message,
+            inner2 = ex.InnerException?.InnerException?.Message
+        });
+    }
+
     }
 
     public async Task<(int statusCode, object message)> StopSessionAsync(Guid parkingLotId, string licensePlate, Guid userId)
