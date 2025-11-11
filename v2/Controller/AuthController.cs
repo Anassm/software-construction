@@ -73,7 +73,7 @@ public class AuthController : ControllerBase
             _ => StatusCode(StatusCodes.Status501NotImplemented, new { error = $"Unhandled statuscode: {result.statusCode}" })
         };
     }
-    
+
     [HttpGet("profile")]
     public async Task<IActionResult> Profile()
     {
@@ -91,4 +91,19 @@ public class AuthController : ControllerBase
             _ => StatusCode(StatusCodes.Status501NotImplemented, new { error = $"Unhandled statuscode: {result.statusCode}" })
         };
     }
+
+    [HttpGet("logout")]
+    public async Task<IActionResult> Logout()
+    {
+        var jti = User.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
+        var result = await _authService.LogoutUser(jti);
+
+        return result.statusCode switch
+        {
+            200 => StatusCode(StatusCodes.Status200OK, result.message),
+            400 => StatusCode(StatusCodes.Status400BadRequest, result.message),
+            _ => StatusCode(StatusCodes.Status501NotImplemented, new { error = $"Unhandled statuscode: {result.statusCode}" })
+        };
+    }
+
 }
