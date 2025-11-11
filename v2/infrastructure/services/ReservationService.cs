@@ -58,4 +58,23 @@ public class ReservationService : IReservation
 
         return reservations;
     }
+
+    public async Task<bool> DeleteReservationForUserAsync(Guid reservationId, string identityUserId)
+    {
+        var user = await _db.Users
+            .FirstOrDefaultAsync(u => u.IdentityUserId == identityUserId)
+            ?? throw new ArgumentException("User not found.");
+
+        var reservation = await _db.Reservations
+            .FirstOrDefaultAsync(r => r.ID == reservationId && r.UserID == user.ID);
+
+        if (reservation == null)
+        {
+            return false;
+        }
+
+        _db.Reservations.Remove(reservation);
+        await _db.SaveChangesAsync();
+        return true;
+    }
 }

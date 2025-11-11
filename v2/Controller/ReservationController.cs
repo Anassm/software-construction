@@ -78,4 +78,33 @@ public class ReservationController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError, new { error = "An unexpected error occurred." });
         }
     }
+
+    /// <summary>Delete a reservation of the authenticated user.</summary>
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete([FromRoute] Guid id)
+    {
+        var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (identityUserId == null)
+            return StatusCode(StatusCodes.Status401Unauthorized, new { error = "Unauthorized: Invalid or missing session token" });
+
+        try
+        {
+            var deleted = await _reservationService.DeleteReservationForUserAsync(id, identityUserId);
+
+            if (!deleted)
+            {
+                return NotFound(new { error = "Reservation not found or does not belong to the authenticated user." });
+            }
+
+            return NoContent();
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { error = "An unexpected error occurred." });
+        }
+    }
 }
