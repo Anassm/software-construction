@@ -9,6 +9,8 @@ using v2.Core.Models;
 using v2.infrastructure.Services;
 using v2.Core.DTOs;
 
+namespace v2.Infrastructure.Services;
+
 public class ReservationServiceTests
 {
     private readonly ApplicationDbContext _context;

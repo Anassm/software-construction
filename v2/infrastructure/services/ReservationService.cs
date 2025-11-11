@@ -22,15 +22,19 @@ public class ReservationService : IReservation
         var lot = await _db.ParkingLots.FindAsync(request.ParkingLotId)
             ?? throw new ArgumentException("Parking lot not found.");
 
+        var rawPlate = request.LicensePlate;
+        var cleanedPlate = request.LicensePlate.Replace("-", "");
+
         var vehicle = await _db.Vehicles
-            .FirstOrDefaultAsync(v => v.LicensePlate == request.LicensePlate.Replace("-", ""))
+            .FirstOrDefaultAsync(v =>
+                v.LicensePlate == rawPlate || v.LicensePlate == cleanedPlate)
             ?? throw new ArgumentException("Vehicle with given license plate not found.");
 
         var reservation = new Reservation
         {
             StartDate = request.StartDate,
             EndDate = request.EndDate,
-            Status = "Pending", // Vanwegen error nu alleen pending
+            Status = "Pending",
             TotalPrice = 0f,
             UserID = vehicle.UserID,
             ParkingLotID = lot.ID,
