@@ -92,6 +92,8 @@ public class AuthService
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()) // Unique ID per token
+
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("thisIsASuperSecretKeyWithAtLeast32Bytes!"));
@@ -146,9 +148,9 @@ public class AuthService
         }
     }
 
-    
 
-    public async Task<(User data, int statusCode, object message)> UpdateProfile( ProfileDto dto, string identityUserId)
+
+    public async Task<(User data, int statusCode, object message)> UpdateProfile(ProfileDto dto, string identityUserId)
     {
         try
         {
@@ -212,9 +214,24 @@ public class AuthService
             }
             return (null!, 200, new { message = "Profile updated successfully." });
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             return (null!, 500, new { error = "An unexpected error occurred.", details = ex });
         }
     }
+    
+    public async Task<(User data, int statusCode, object message)> LogoutUser(string jti)
+    {
+
+        if (jti != null)
+        {
+            TokenBlacklist.Add(jti);
+            return (null!, 200, new { message = "User logged out" });
+        }else
+        {
+            return (null!, 400, new { error = "Invalid token" });
+        }
+        
+    }
+
 }

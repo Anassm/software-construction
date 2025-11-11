@@ -55,30 +55,30 @@ def _login_or_skip(u, p):
     r = requests.post(f"{BASE}/login", json={"username": u, "password": p})
     if r.status_code != 200:
         pytest.skip("Skipping: cannot obtain token due to /login bug")
-    return r.json()["session_token"]
+    return r.json()["accesstoken"]
 
-# def test_logout_requires_auth():
-#     r = requests.get(f"{BASE}/logout")
-#     assert r.status_code in (401, 403)
+def test_logout_requires_auth():
+    r = requests.get(f"{BASE}/logout")
+    assert r.status_code in (400, 403)
 
-# def test_logout_success():
-#     token = _login_or_skip("regular.user", "password123")
-#     r = requests.get(f"{BASE}/logout", headers={"Authorization": token})
-#     assert r.status_code in (200, 204)
+def test_logout_success():
+    token = _login_or_skip("login.user", "Password123.")
+    r = requests.get(f"{BASE}/logout", headers={"Authorization": f"Bearer {token}"})
+    assert r.status_code in (200, 204)
 
-# def test_logout_invalid_token():
-#     r = requests.get(f"{BASE}/logout", headers={"Authorization": "invalid"})
-#     assert r.status_code in (400, 401, 403)
+def test_logout_invalid_token():
+    r = requests.get(f"{BASE}/logout", headers={"Authorization": "invalid"})
+    assert r.status_code in (400, 401, 403)
 
-# def test_logout_twice_idempotent():
-#     token = _login_or_skip("regular.user", "password123")
-#     r1 = requests.get(f"{BASE}/logout", headers={"Authorization": token})
-#     assert r1.status_code in (200, 204)
-#     r2 = requests.get(f"{BASE}/logout", headers={"Authorization": token})
-#     assert r2.status_code in (200, 204, 401, 403)
+def test_logout_twice_idempotent():
+    token = _login_or_skip("login.user", "Password123.")
+    r1 = requests.get(f"{BASE}/logout", headers={"Authorization": f"Bearer {token}"})
+    assert r1.status_code in (200, 204)
+    r2 = requests.get(f"{BASE}/logout", headers={"Authorization": f"Bearer {token}"})
+    assert r2.status_code in (200, 204, 400, 403)
 
-# def test_token_invalid_after_logout():
-#     token = _login_or_skip("regular.user", "password123")
-#     requests.get(f"{BASE}/logout", headers={"Authorization": token})
-#     r = requests.get(f"{BASE}/profile", headers={"Authorization": token})
-#     assert r.status_code in (200, 401, 403)
+def test_token_invalid_after_logout():
+    token = _login_or_skip("login.user", "Password123.")
+    requests.get(f"{BASE}/logout", headers={"Authorization": token})
+    r = requests.get(f"{BASE}/profile", headers={"Authorization": token})
+    assert r.status_code in (200, 401, 403)
