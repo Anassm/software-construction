@@ -300,60 +300,76 @@ public class ParkingLotService : IParkingLots
     }
 
     public async Task<(int statusCode, object message)> StopSessionAsync(Guid parkingLotId, string licensePlate, Guid userId)
+{
+    try
     {
-        try
-        {
-            
-            var activeSession = await _db.Sessions
-                .Include(s => s.ParkingLot) 
-                .FirstOrDefaultAsync(s =>
-                    s.ParkingLotID == parkingLotId &&
-                    s.LicensePlate == licensePlate &&
-                    s.UserID == userId &&
-                    s.EndTime == null);
-
-            if (activeSession == null)
-            {
-                return (404, new { error = "No active session found for this license plate and user in this parking lot." });
-            }
+        
+        var query = _db.Sessions
+            .Include(s => s.ParkingLot)
+            .Where(s =>
+                s.ParkingLotID == parkingLotId &&
+                s.LicensePlate == licensePlate &&
+                s.EndTime == null);
 
        
-            activeSession.EndTime = DateTime.UtcNow;
-
-         
-            var duration = activeSession.EndTime.Value - activeSession.StartTime;
-            double totalHours = duration.TotalHours;
-
-            float cost = (float)totalHours * activeSession.ParkingLot.Tariff;
-
-           
-            if (totalHours > (activeSession.ParkingLot.DayTariff / activeSession.ParkingLot.Tariff))
-            {
-                cost = activeSession.ParkingLot.DayTariff;
-            }
-
-            _db.Sessions.Update(activeSession);
-            await _db.SaveChangesAsync();
-
-          
-            return (200, new
-            {
-                status = "Success",
-                message = "Session stopped",
-                session = activeSession,
-                billing = new
-                {
-                    durationInMinutes = duration.TotalMinutes,
-                    calculatedCost = cost
-                }
-            });
-        }
-        catch (Exception ex)
+        if (userId != Guid.Empty)
         {
-        
-            return (500, new { error = "An unexpected error occurred while stopping the session." });
+            query = query.Where(s => s.UserID == userId);
         }
+
+        var activeSession = await query.FirstOrDefaultAsync();
+
+        if (activeSession == null)
+        {
+            return (404, new { error = "No active session found for this license plate and user in this parking lot." });
+        }
+
+       
+        activeSession.EndTime = DateTime.UtcNow;
+
+        
+        var duration = activeSession.EndTime.Value - activeSession.StartTime;
+        double totalHours = duration.TotalHours;
+
+        float cost = (float)totalHours * activeSession.ParkingLot.Tariff;
+
+        
+        if (totalHours > (activeSession.ParkingLot.DayTariff / activeSession.ParkingLot.Tariff))
+        {
+            cost = activeSession.ParkingLot.DayTariff;
+        }
+
+        _db.Sessions.Update(activeSession);
+        await _db.SaveChangesAsync();
+
+        
+        return (200, new
+        {
+            status = "Success",
+            message = "Session stopped",
+            session = new
+            {
+                id = activeSession.ID,
+                licensePlate = activeSession.LicensePlate,
+                startTime = activeSession.StartTime,
+                endTime = activeSession.EndTime,
+                parkingLotId = activeSession.ParkingLotID,
+                paymentStatus = activeSession.PaymentStatus,
+                price = activeSession.Price,
+            },
+            billing = new
+            {
+                durationInMinutes = duration.TotalMinutes,
+                calculatedCost = cost
+            }
+        });
     }
+    catch (Exception)
+    {
+        return (500, new { error = "An unexpected error occurred while stopping the session." });
+    }
+}
+
 
     public async Task<(int statusCode, object message)> GetAllSessionsForLotAsync(Guid parkingLotId)
     {
