@@ -1,7 +1,7 @@
 name: MobiParkV2
 
 on:
-  push:
+  pull:
     branches: ["development", "main"]
 
 # permissions:
