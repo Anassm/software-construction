@@ -165,7 +165,7 @@ jobs:
           project: "./testing/UnitTesting"
           # exclude-files: '**/Migrations/*.cs'
           threshold: 80
-          dotnet-version: "9.0.x"
+          dotnet-version: "8.0.x"
 
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v4
