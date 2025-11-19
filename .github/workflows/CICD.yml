@@ -3,8 +3,6 @@ name: MobiParkV2_push
 on:
   pull_request:
     branches: ["development", "main"]
-  push:
-    branches: ["coverage"]
 
 # permissions:
 #   contents: read
@@ -170,7 +168,7 @@ jobs:
           dotnet-version: "9.0.x"
 
       - name: Upload Coverage Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-Report
           path: ${{ steps.run-tests.outputs.coverage-report-path }}
