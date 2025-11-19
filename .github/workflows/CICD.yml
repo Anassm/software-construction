@@ -130,7 +130,7 @@ jobs:
           echo "---- LAST 100 LINES OF SERVER LOG ----"
           tail -n 100 v2/server.log || true
 
-  Unit-tests and Coverage:
+  Unit-tests-and-Coverage:
     needs: Build
     runs-on: ubuntu-latest
     steps:
@@ -167,7 +167,7 @@ jobs:
           project: "./testing/UnitTesting"
           # exclude-files: '**/Migrations/*.cs'
           threshold: 80
-          dotnet-version: "8.0.x"
+          dotnet-version: "9.0.x"
 
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v3
