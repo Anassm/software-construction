@@ -19,12 +19,13 @@ jobs:
       - name: Build
         run: cd v2 && dotnet build --configuration Release --no-restore
 
-<<<<<<< Updated upstream
   Integratie-tests:
+    needs: build
+  Integration-tests:
     needs: build
 =======
   Integration-tests:
-    needs: Build
+    needs: build
 >>>>>>> Stashed changes
     runs-on: ubuntu-latest
     steps:
