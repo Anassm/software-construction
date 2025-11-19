@@ -68,7 +68,6 @@ namespace UnitTesting
         [Fact]
         public async Task CreateReservation_Should_Fail_When_EndDate_Not_After_StartDate()
         {
-            // Arrange
             using var db = CreateInMemoryDbContext();
             var lotId = Guid.NewGuid();
             var userId = Guid.NewGuid();
@@ -86,10 +85,9 @@ namespace UnitTesting
                 LicensePlate = "TEST-123",
                 ParkingLotId = lotId,
                 StartDate = now,
-                EndDate = now // gelijk, fout
+                EndDate = now
             };
 
-            // Act + Assert
             var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
                 service.CreateReservationAsync(req));
 
@@ -99,25 +97,23 @@ namespace UnitTesting
         [Fact]
         public async Task CreateReservation_Should_Fail_When_ParkingLot_NotFound()
         {
-            // Arrange
             using var db = CreateInMemoryDbContext();
             var userId = Guid.NewGuid();
             var vehicleId = Guid.NewGuid();
 
-            db.Vehicles.Add(CreateTestVehicle(vehicleId, userId, "TEST-123"));
+            db.Vehicles.Add(CreateTestVehicle(vehicleId, userId, "TEST123")); 
             await db.SaveChangesAsync();
 
             var service = new ReservationService(db);
 
             var req = new ReservationCreateRequest
             {
-                LicensePlate = "TEST-123",
+                LicensePlate = "TEST-123", 
                 StartDate = DateTime.UtcNow.AddHours(1),
                 EndDate = DateTime.UtcNow.AddHours(2),
-                ParkingLotId = Guid.NewGuid() // bestaat niet
+                ParkingLotId = Guid.NewGuid()
             };
 
-            // Act + Assert
             var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
                 service.CreateReservationAsync(req));
 
@@ -127,7 +123,6 @@ namespace UnitTesting
         [Fact]
         public async Task CreateReservation_Should_Fail_When_Vehicle_NotFound()
         {
-            // Arrange
             using var db = CreateInMemoryDbContext();
             var lotId = Guid.NewGuid();
 
@@ -144,7 +139,6 @@ namespace UnitTesting
                 ParkingLotId = lotId
             };
 
-            // Act + Assert
             var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
                 service.CreateReservationAsync(req));
 
@@ -154,12 +148,12 @@ namespace UnitTesting
         [Fact]
         public async Task CreateReservation_Should_Create_When_Valid()
         {
-            // Arrange
             using var db = CreateInMemoryDbContext();
             var lotId = Guid.NewGuid();
             var userId = Guid.NewGuid();
             var vehicleId = Guid.NewGuid();
-            const string plate = "VALID-1";
+            
+            const string plate = "VALID1"; 
 
             db.ParkingLots.Add(CreateTestParkingLot(lotId));
             db.Vehicles.Add(CreateTestVehicle(vehicleId, userId, plate));
@@ -177,11 +171,9 @@ namespace UnitTesting
                 ParkingLotId = lotId
             };
 
-            // Act
             var created = await service.CreateReservationAsync(req);
             var saved = await db.Reservations.SingleAsync(r => r.ID == created.ID);
 
-            // Assert
             Assert.Equal("Pending", saved.Status);
             Assert.Equal(vehicleId, saved.VehicleID);
             Assert.Equal(lotId, saved.ParkingLotID);
@@ -189,14 +181,12 @@ namespace UnitTesting
             Assert.Equal(start, saved.StartDate);
             Assert.Equal(end, saved.EndDate);
         }
-    }
 
     public class ReservationControllerTests
     {
         [Fact]
         public async Task Create_ValidRequest_ReturnsCreatedWithReservationResponse()
         {
-            // Arrange
             var mockService = new Mock<IReservation>();
 
             var request = new ReservationCreateRequest
@@ -226,10 +216,8 @@ namespace UnitTesting
 
             var controller = new ReservationController(mockService.Object);
 
-            // Act
             var result = await controller.Create(request);
 
-            // Assert
             var created = Assert.IsType<CreatedResult>(result);
             Assert.Equal(201, created.StatusCode);
 
@@ -243,7 +231,6 @@ namespace UnitTesting
         [Fact]
         public async Task Create_ModelStateInvalid_ReturnsBadRequest()
         {
-            // Arrange
             var mockService = new Mock<IReservation>();
             var controller = new ReservationController(mockService.Object);
 
@@ -257,10 +244,8 @@ namespace UnitTesting
                 ParkingLotId = Guid.NewGuid()
             };
 
-            // Act
             var result = await controller.Create(request);
 
-            // Assert
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
             Assert.Equal(400, badRequest.StatusCode);
         }
@@ -268,7 +253,6 @@ namespace UnitTesting
         [Fact]
         public async Task Create_ServiceThrowsArgumentException_ReturnsBadRequest()
         {
-            // Arrange
             var mockService = new Mock<IReservation>();
 
             var request = new ReservationCreateRequest
@@ -285,11 +269,11 @@ namespace UnitTesting
 
             var controller = new ReservationController(mockService.Object);
 
-            // Act
             var result = await controller.Create(request);
 
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
             Assert.Equal(400, badRequest.StatusCode);
         }
     }
+}
 }
