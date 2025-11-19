@@ -10,7 +10,7 @@ on:
 #   contents: read
 
 jobs:
-  Dependancy-check:
+  Dependency-check:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout Repository"
@@ -21,7 +21,7 @@ jobs:
           fail-on-severity: moderate
 
   Build:
-    needs: Dependancy-check
+    needs: Dependency-check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -36,7 +36,7 @@ jobs:
         run: cd v2 && dotnet build --configuration Release --no-restore
 
   Integration-tests:
-    needs: build
+    needs: Build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -130,8 +130,8 @@ jobs:
           echo "---- LAST 100 LINES OF SERVER LOG ----"
           tail -n 100 v2/server.log || true
 
-  Unit-tests & Coverage:
-    needs: build
+  Unit-tests and Coverage:
+    needs: Build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -167,10 +167,10 @@ jobs:
           project: "./testing/UnitTesting"
           # exclude-files: '**/Migrations/*.cs'
           threshold: 80
-          dotnet-version: "9.0.x"
+          dotnet-version: "8.0.x"
 
       - name: Upload Coverage Report
-      - uses: actions/upload-artifact@v3
-      - with:
+        uses: actions/upload-artifact@v3
+        with:
           name: coverage-Report
           path: ${{ steps.run-tests.outputs.coverage-report-path }}
