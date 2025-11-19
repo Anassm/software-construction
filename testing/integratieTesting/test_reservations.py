@@ -22,11 +22,11 @@ def _data():
 
 @pytest.fixture
 def auth_headers(_data):
-    return {"Authorization": _data["users"]["user_a"]["token"]}
+    return {"Authorization": f"Bearer {_data['users']['user_a']['token']}"}
 
 @pytest.fixture
 def other_headers(_data):
-    return {"Authorization": _data["users"]["user_b"]["token"]}
+    return {"Authorization": f"Bearer {_data['users']['user_b']['token']}"}
 
 @pytest.fixture
 def reservations_url(_data):
