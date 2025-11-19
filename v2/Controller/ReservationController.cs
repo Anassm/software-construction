@@ -24,15 +24,15 @@ public class ReservationController : ControllerBase
 
             var response = new ReservationResponse
             {
-                Id          = created.ID,
+                Id           = created.ID,
                 LicensePlate = request.LicensePlate,
-                VehicleId   = created.VehicleID,
+                VehicleId    = created.VehicleID,
                 ParkingLotId = created.ParkingLotID,
-                StartDate   = created.StartDate,
-                EndDate     = created.EndDate,
-                Status      = created.Status,
-                TotalPrice  = created.TotalPrice,
-                CreatedAt   = created.CreatedAt
+                StartDate    = created.StartDate,
+                EndDate      = created.EndDate,
+                Status       = created.Status,
+                TotalPrice   = created.TotalPrice,
+                CreatedAt    = created.CreatedAt
             };
 
             return Created($"/reservations/{response.Id}", response);
@@ -57,15 +57,15 @@ public class ReservationController : ControllerBase
 
             var result = reservations.Select(r => new ReservationResponse
             {
-                Id          = r.ID,
+                Id           = r.ID,
                 LicensePlate = r.Vehicle?.LicensePlate ?? string.Empty,
-                VehicleId   = r.VehicleID,
+                VehicleId    = r.VehicleID,
                 ParkingLotId = r.ParkingLotID,
-                StartDate   = r.StartDate,
-                EndDate     = r.EndDate,
-                Status      = r.Status,
-                TotalPrice  = r.TotalPrice,
-                CreatedAt   = r.CreatedAt
+                StartDate    = r.StartDate,
+                EndDate      = r.EndDate,
+                Status       = r.Status,
+                TotalPrice   = r.TotalPrice,
+                CreatedAt    = r.CreatedAt
             });
 
             return Ok(result);
@@ -74,6 +74,41 @@ public class ReservationController : ControllerBase
         {
             return BadRequest(new { error = ex.Message });
         }
+    }
+
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> Update(Guid id, [FromBody] ReservationUpdateRequest request)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(new { error = "Invalid request body." });
+
+        var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (identityUserId == null)
+            return StatusCode(StatusCodes.Status401Unauthorized,
+                new { error = "Unauthorized: Invalid or missing session token" });
+
+        var result = await _reservationService.UpdateReservationForUserAsync(id, identityUserId, request);
+
+        return result.statusCode switch
+        {
+            200 when result.reservation != null => Ok(new ReservationResponse
+            {
+                Id           = result.reservation.ID,
+                LicensePlate = result.reservation.Vehicle?.LicensePlate ?? string.Empty,
+                VehicleId    = result.reservation.VehicleID,
+                ParkingLotId = result.reservation.ParkingLotID,
+                StartDate    = result.reservation.StartDate,
+                EndDate      = result.reservation.EndDate,
+                Status       = result.reservation.Status,
+                TotalPrice   = result.reservation.TotalPrice,
+                CreatedAt    = result.reservation.CreatedAt
+            }),
+            400 => StatusCode(StatusCodes.Status400BadRequest, result.message),
+            404 => StatusCode(StatusCodes.Status404NotFound, result.message),
+            500 => StatusCode(StatusCodes.Status500InternalServerError, result.message),
+            _   => StatusCode(StatusCodes.Status501NotImplemented,
+                    new { error = $"Unhandled statuscode: {result.statusCode}" })
+        };
     }
 
     [HttpDelete("{id:guid}")]

@@ -8,4 +8,9 @@ public interface IReservation
     Task<Reservation> CreateReservationAsync(ReservationCreateRequest request);
     Task<IEnumerable<Reservation>> GetReservationsForUserAsync(string identityUserId);
     Task<bool> DeleteReservationForUserAsync(Guid reservationId, string identityUserId);
+        Task<(Reservation? data, int statusCode, object? message)> UpdateReservationAsync(
+        Guid id,
+        ReservationUpdateRequest request,
+        string identityUserId
+    );
 }
