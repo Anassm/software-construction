@@ -161,11 +161,10 @@ jobs:
       - name: Run Unit Tests and Generate Coverage
         id: run-tests
         uses: alsi-lawr/dotnet-test-coverlet@v1
-        with:
-          project: "./testing/UnitTesting"
-          # exclude-files: '**/Migrations/*.cs'
-          threshold: 80
-          dotnet-version: "9.0.100-preview.1"
+        with: "testing/UnitTesting"
+        # exclude-files: '**/Migrations/*.cs'
+        threshold: 80
+        dotnet-version: "9.0.x"
 
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v4
