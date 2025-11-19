@@ -108,6 +108,11 @@ jobs:
         run: |
           cd testing/integratieTesting
           pytest test_parkinglots.py
+
+      - name: Test reservations
+        run: |
+          cd testing/integratieTesting
+          pytest test_reservations.py
           
       # - name: Test billing
       #   run: |
