@@ -149,19 +149,14 @@ jobs:
           cd testing/UnitTesting
           dotnet restore
 
-      - name: Run unit tests and generate coverage
+      - name: Create coverage summary
         run: |
-          cd testing/UnitTesting
-          dotnet test \
-            --configuration Release \
-            --collect:"XPlat Code Coverage" \
-            --results-directory coverage
+          reportgenerator \
+            -reports:"TestResults/**/*.xml" \
+            -targetdir:"coveragereport" \
+            -reporttypes:"MarkdownSummary"
 
-      - name: Debug coverage folder
-        run: ls -R testing/UnitTesting/coverage
-
-      - name: Upload Coverage Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: testing/UnitTesting/coverage
+      - name: Upload coverage to summary
+        run: |
+          echo "### Code Coverage Summary" >> $GITHUB_STEP_SUMMARY
+          cat coveragereport/Summary.md >> $GITHUB_STEP_SUMMARY
