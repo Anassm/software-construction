@@ -144,6 +144,10 @@ jobs:
         with:
           dotnet-version: "9.0.x"
 
+      - name: Install ReportGenerator tool
+        run: |
+          dotnet tool install dotnet-reportgenerator-globaltool
+
       - name: Restore test project
         run: |
           cd testing/UnitTesting
