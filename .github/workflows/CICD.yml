@@ -121,7 +121,7 @@ jobs:
         run: |
           cd testing/integratieTesting
           pytest test_reservations.py
-          
+
       # - name: Test billing
       #   run: |
       #     cd testing/integratieTesting
@@ -138,41 +138,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "9.0.x"
 
-      - name: Install dotnet-ef
-        run: |
-          dotnet tool install --global dotnet-ef --version 9.0.10
-          export PATH="$PATH:$HOME/.dotnet/tools"
-
-      - name: Install dotnet NuGet packages
-        run: |
-          cd v2
-          dotnet restore
-
-      - name: Apply EF Core migrations
-        run: |
-          cd v2
-          dotnet ef database update
-
-      - name: Install test packages
+      - name: Restore test project
         run: |
           cd testing/UnitTesting
           dotnet restore
 
-      - name: Run unit tests with coverage
+      - name: Run unit tests and generate coverage
         run: |
           cd testing/UnitTesting
           dotnet test \
             --configuration Release \
             --collect:"XPlat Code Coverage" \
-            --results-directory ../..coverage
+            --results-directory coverage
+
+      - name: Debug coverage folder
+        run: ls -R testing/UnitTesting/coverage
 
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-Report
-          path: coverage
+          name: coverage-report
+          path: testing/UnitTesting/coverage
