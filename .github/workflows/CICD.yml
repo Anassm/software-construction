@@ -158,15 +158,16 @@ jobs:
           cd testing/UnitTesting
           dotnet restore
 
-      - name: Run Unit Tests and Generate Coverage
-        id: run-tests
-        uses: alsi-lawr/dotnet-test-coverlet@v1
-        with:
-          project: "testing/UnitTesting"
-          # exclude-files: '**/Migrations/*.cs'
+      - name: Run unit tests with coverage
+        run: |
+          cd testing/UnitTesting
+          dotnet test \
+            --configuration Release \
+            --collect:"XPlat Code Coverage" \
+            --results-directory ../coverage
 
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-Report
-          path: ${{ steps.run-tests.outputs.coverage-report-path }}
+          path: testing/UnitTesting/coverage
