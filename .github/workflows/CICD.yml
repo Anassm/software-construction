@@ -146,7 +146,7 @@ jobs:
 
       - name: Install ReportGenerator tool
         run: |
-          dotnet tool install dotnet-reportgenerator-globaltool
+          dotnet tool install -g dotnet-reportgenerator-globaltool
 
       - name: Restore test project
         run: |
