@@ -12,7 +12,7 @@ public class Reservation
     public required DateTime CreatedAt { get; set; }
     public required float TotalPrice { get; set; }
     public string? CompanyName { get; set; }
-
+    public Guid? DiscountID { get; set; }
     public required Guid UserID { get; set; }
     public required Guid ParkingLotID { get; set; }
     public required Guid VehicleID { get; set; }
