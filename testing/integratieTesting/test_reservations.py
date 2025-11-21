@@ -30,44 +30,9 @@ def auth_headers(_data):
 def other_headers(_data):
     return {"Authorization": _data["users"]["user_b"]["token"]}
 
-@pytest.fixture
-def reservations_url(_data):
-    return f"{_data['base']}/reservations"
-
-# --- SETUP: Data aanmaken om 404's te voorkomen ---
-@pytest.fixture(autouse=True)
-def setup_data(_data, auth_headers):
-    base = _data["base"]
-    
-    # Maak het voertuig aan dat we in de tests gebruiken
-    veh_payload = {
-        "licensePlate": _data["licensePlate"],
-        "make": "TestMake",
-        "model": "TestModel",
-        "color": "Red",
-        "year": 2020
-    }
-    # We negeren de response hier (mag falen als hij al bestaat)
-    requests.post(f"{base}/vehicles", json=veh_payload, headers=auth_headers)
-
-# --- TESTEN ---
-
-def test_create_reservation_with_license_plate(reservations_url, auth_headers, _data):
-    # Maak een ParkingLot aan om een geldig ID te krijgen
-    pl_resp = requests.post("http://localhost:8000/parkinglots", json={
-        "name": "Res Lot", "location": "Loc", "address": "Addr",
-        "capacity": 50, "tariff": 1.0, "dayTariff": 5.0,
-        "latitude": 0, "longitude": 0
-    })
-
-    if pl_resp.status_code == 201:
-        pl_id = pl_resp.json().get("id")
-    else:
-        pl_id = _data["parkingLotId"] 
-
-    # FIX: Gebruik datetime.now(timezone.utc)
-    start = (datetime.now(timezone.utc) + timedelta(days=1)).isoformat()
-    end = (datetime.now(timezone.utc) + timedelta(days=1, hours=2)).isoformat()
+def create_dummy_reservation(headers):
+    start = (datetime.now(timezone.utc) + timedelta(hours=1)).isoformat()
+    end = (datetime.now(timezone.utc) + timedelta(hours=3)).isoformat()
     
     payload = {
         "licensePlate": _data["licensePlate"],
@@ -75,13 +40,21 @@ def test_create_reservation_with_license_plate(reservations_url, auth_headers, _
         "startDate": start,
         "endDate": end
     }
-    r = requests.post(reservations_url, json=payload, headers=auth_headers)
+    r = requests.post(BASE_URL, json=payload, headers=headers)
+    if r.status_code == 201:
+        return r.json()
+    return None
+
+
+def test_create_reservation_with_license_plate(auth_headers):
+    start = (datetime.now(timezone.utc) + timedelta(days=1)).isoformat()
+    end = (datetime.now(timezone.utc) + timedelta(days=1, hours=2)).isoformat()
     
     assert r.status_code == 201
     data = r.json()
     assert data["licensePlate"] == "TEST123"
 
-def test_create_reservation_vehicle_not_found(reservations_url, auth_headers, _data):
+def test_create_reservation_vehicle_not_found(auth_headers):
     start = (datetime.now(timezone.utc) + timedelta(days=1)).isoformat()
     end = (datetime.now(timezone.utc) + timedelta(days=1, hours=2)).isoformat()
     
@@ -109,27 +82,7 @@ def test_update_reservation_success(reservations_url, auth_headers):
     start = (datetime.now(timezone.utc) + timedelta(days=1)).isoformat()
     end = (datetime.now(timezone.utc) + timedelta(days=1, hours=2)).isoformat()
     
-    # Zorg voor valide parkinglot ID
-    pl_resp = requests.post("http://localhost:8000/parkinglots", json={
-        "name": "Res Lot Update", "location": "Loc", "address": "Addr",
-        "capacity": 50, "tariff": 1.0, "dayTariff": 5.0,
-        "latitude": 0, "longitude": 0
-    })
-    pl_id = pl_resp.json().get("id") if pl_resp.status_code == 201 else "11111111-1111-1111-1111-111111111111"
-
-    create_payload = {
-        "licensePlate": "TEST-123",
-        "parkingLotId": pl_id,
-        "startDate": start,
-        "endDate": end
-    }
-    res = requests.post(reservations_url, json=create_payload, headers=auth_headers)
-    
-    if res.status_code != 201:
-        pytest.skip("Kon geen reservering aanmaken")
-    
-    res_id = res.json()["id"]
-    
+    res_id = res["id"]
     new_start = (datetime.now(timezone.utc) + timedelta(days=2)).isoformat()
     new_end = (datetime.now(timezone.utc) + timedelta(days=2, hours=4)).isoformat()
     
@@ -148,21 +101,8 @@ def test_update_reservation_not_found_or_owned(reservations_url, other_headers, 
     start = (datetime.now(timezone.utc) + timedelta(days=1)).isoformat()
     end = (datetime.now(timezone.utc) + timedelta(days=1, hours=2)).isoformat()
     
-    create_payload = {
-        "licensePlate": "TEST-123",
-        "parkingLotId": "11111111-1111-1111-1111-111111111111",
-        "startDate": start,
-        "endDate": end
-    }
-    res = requests.post(reservations_url, json=create_payload, headers=auth_headers)
-    
-    if res.status_code != 201:
-        pytest.skip("Setup failed")
-        
-    res_id = res.json()["id"]
-    
     payload = {"startDate": (datetime.now(timezone.utc) + timedelta(days=5)).isoformat()}
-    r = requests.put(f"{reservations_url}/{res_id}", json=payload, headers=other_headers)
+    r = requests.put(f"{BASE_URL}/{res_id}", json=payload, headers=other_headers)
     
     assert r.status_code == 404
 
