@@ -34,8 +34,6 @@ jobs:
 
   Integration-tests:
     needs: build
-  Integration-tests:
-    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
