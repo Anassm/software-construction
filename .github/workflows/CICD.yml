@@ -68,7 +68,7 @@ jobs:
         run: |
           cd v2
           echo "Starting server..."
-          dotnet run --urls "http://0.0.0.0:8000" --launch-profile Testing > server.log 2>&1 &
+          dotnet run --urls "http://localhost:8000" --launch-profile Testing > server.log 2>&1 &
 
           echo "Waiting for server to be ready..."
           for i in {1..30}; do
@@ -117,6 +117,11 @@ jobs:
           cd testing/integratieTesting
           pytest test_parkinglots.py
 
+      - name: Test reservations
+        run: |
+          cd testing/integratieTesting
+          pytest test_reservations.py
+          
       # - name: Test billing
       #   run: |
       #     cd testing/integratieTesting
