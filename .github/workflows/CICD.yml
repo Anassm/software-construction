@@ -153,6 +153,11 @@ jobs:
           cd testing/UnitTesting
           dotnet restore
 
+      - name: Run unit tests with coverage
+        run: |
+          cd testing/UnitTesting
+          dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=../TestResults/
+
       - name: Create coverage summary
         run: |
           reportgenerator \
@@ -160,7 +165,7 @@ jobs:
             -targetdir:"coveragereport" \
             -reporttypes:"MarkdownSummary"
 
-      - name: Upload coverage to summary
+      - name: Display coverage summary
         run: |
           echo "### Code Coverage Summary" >> $GITHUB_STEP_SUMMARY
           cat coveragereport/Summary.md >> $GITHUB_STEP_SUMMARY
