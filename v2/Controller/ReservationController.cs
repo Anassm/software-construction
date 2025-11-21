@@ -32,6 +32,7 @@ public class ReservationController : ControllerBase
                 EndDate      = created.EndDate,
                 Status       = created.Status,
                 TotalPrice   = created.TotalPrice,
+                DiscountId   = created.DiscountID,
                 CreatedAt    = created.CreatedAt
             };
 
@@ -65,6 +66,7 @@ public class ReservationController : ControllerBase
                 EndDate      = r.EndDate,
                 Status       = r.Status,
                 TotalPrice   = r.TotalPrice,
+                DiscountId   = r.DiscountID,
                 CreatedAt    = r.CreatedAt
             });
 
@@ -101,6 +103,7 @@ public class ReservationController : ControllerBase
                 EndDate      = result.reservation.EndDate,
                 Status       = result.reservation.Status,
                 TotalPrice   = result.reservation.TotalPrice,
+                DiscountId   = result.reservation.DiscountID,
                 CreatedAt    = result.reservation.CreatedAt
             }),
             400 => StatusCode(StatusCodes.Status400BadRequest, result.message),
