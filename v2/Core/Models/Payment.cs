@@ -9,7 +9,7 @@ public class Payment
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? CompletedAt { get; set; } = null;
     public string? Hash { get; set; }
-    public Guid? DiscountID { get; set; }
+    public string? DiscountCode { get; set; }
     public decimal TransactionAmount { get; set; } = 0;
     public DateTime TransactionDate { get; set; }
     public string TransactionMethod { get; set; }
