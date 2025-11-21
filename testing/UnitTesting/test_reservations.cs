@@ -64,7 +64,6 @@ namespace UnitTesting
             };
         }
 
-
         [Fact]
         public async Task CreateReservation_Should_Fail_When_EndDate_Not_After_StartDate()
         {
@@ -181,6 +180,7 @@ namespace UnitTesting
             Assert.Equal(start, saved.StartDate);
             Assert.Equal(end, saved.EndDate);
         }
+    }
 
     public class ReservationControllerTests
     {
@@ -275,5 +275,4 @@ namespace UnitTesting
             Assert.Equal(400, badRequest.StatusCode);
         }
     }
-}
 }
