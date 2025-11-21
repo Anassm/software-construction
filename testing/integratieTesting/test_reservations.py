@@ -1,6 +1,6 @@
 import pytest
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 
 @pytest.fixture
