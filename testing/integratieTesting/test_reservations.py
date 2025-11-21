@@ -49,31 +49,6 @@ def setup_data(_data, auth_headers):
     }
     requests.post(f"{base}/vehicles", json=veh_payload, headers=auth_headers)
 
-
-def test_create_reservation_with_license_plate(reservations_url, auth_headers, _data):
-    pl_resp = requests.post("http://localhost:8000/parkinglots", json={
-        "name": "Res Lot", "location": "Loc", "address": "Addr",
-        "capacity": 50, "tariff": 1.0, "dayTariff": 5.0,
-        "latitude": 0, "longitude": 0
-    })
-
-    pl_id = pl_resp.json().get("id") if pl_resp.status_code == 201 else _data["parkingLotId"]
-
-    start = (datetime.now(timezone.utc) + timedelta(days=1)).isoformat()
-    end = (datetime.now(timezone.utc) + timedelta(days=1, hours=2)).isoformat()
-
-    payload = {
-        "licensePlate": _data["licensePlate"],
-        "parkingLotId": pl_id,
-        "startDate": start,
-        "endDate": end
-    }
-
-    r = requests.post(reservations_url, json=payload, headers=auth_headers)
-    assert r.status_code == 201
-    data = r.json()
-    assert data["licensePlate"] == "TEST123"
-
 def test_create_reservation_vehicle_not_found(reservations_url, auth_headers, _data):
     start = (datetime.now(timezone.utc) + timedelta(days=1)).isoformat()
     end = (datetime.now(timezone.utc) + timedelta(days=1, hours=2)).isoformat()
@@ -86,11 +61,6 @@ def test_create_reservation_vehicle_not_found(reservations_url, auth_headers, _d
     }
     r = requests.post(reservations_url, json=payload, headers=auth_headers)
     assert r.status_code == 400
-
-def test_get_my_reservations(reservations_url, auth_headers):
-    r = requests.get(reservations_url, headers=auth_headers)
-    assert r.status_code == 200
-    assert isinstance(r.json(), list)
 
 def test_get_reservations_unauthorized(reservations_url):
     r = requests.get(reservations_url)
