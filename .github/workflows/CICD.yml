@@ -164,10 +164,10 @@ jobs:
           dotnet test \
             --configuration Release \
             --collect:"XPlat Code Coverage" \
-            --results-directory ../coverage
+            --results-directory ../..coverage
 
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-Report
-          path: testing/UnitTesting/coverage
+          path: coverage
