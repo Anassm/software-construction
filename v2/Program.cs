@@ -113,6 +113,7 @@ builder.Services.AddSwaggerGen(c => {
     });
 });
 
+builder.Services.AddScoped<IDiscounts, DiscountService>();
 // --- App ---
 var app = builder.Build();
 
