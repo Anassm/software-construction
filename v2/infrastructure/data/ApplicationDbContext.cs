@@ -19,6 +19,8 @@ namespace v2.Infrastructure.Data
             public virtual DbSet<Payment> Payments { get; set; }
             public virtual DbSet<ParkingLot> ParkingLots { get; set; }
 
+            public virtual DbSet<Invoice> Invoices { get; set; }
+
             protected override void OnModelCreating(ModelBuilder modelBuilder)
             {
                   base.OnModelCreating(modelBuilder);

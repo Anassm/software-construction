@@ -22,6 +22,7 @@ namespace V2.Controllers
         [Authorize]
         public async Task<IActionResult> GetPaymentHistory()
         {
+            
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrWhiteSpace(userIdStr))
                 return Unauthorized(new { error = "User not logged in" });
