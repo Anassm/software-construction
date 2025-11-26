@@ -20,19 +20,18 @@ namespace V2.Controllers
 
         [HttpGet("history")]
         [Authorize]
-        public async Task<IActionResult> GetPaymentHistory()
+        public async Task<IActionResult> GetInvoiceHistory()
         {
-            
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrWhiteSpace(userIdStr))
                 return Unauthorized(new { error = "User not logged in" });
 
             var userId = Guid.Parse(userIdStr);
 
-            var (statusCode, data) = await _billingService.GetPaymentHistoryAsync(userId);
+            var (statusCode, data) = await _billingService.GetInvoiceHistoryAsync(userId);
             return StatusCode(statusCode, data);
-
         }
+
        
     }
         

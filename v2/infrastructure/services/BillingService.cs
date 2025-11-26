@@ -14,31 +14,24 @@ public class BillingService: IBilling
         _db = db; 
     }
 
-  public async Task<(int statusCode, object data)> GetPaymentHistoryAsync(Guid userId)
+  public async Task<(int statusCode, object data)> GetInvoiceHistoryAsync(Guid userId)
 {
     try
     {
-        var items = await _db.Payments
-            .Where(p => p.Initiator == userId.ToString()) 
-            .OrderByDescending(p => p.CreatedAt)
-            .Select(p => new PaymentResponseDTO
+        var invoices = await _db.Invoices
+            .Where(i => i.UserID == userId)               
+            .OrderByDescending(i => i.CreatedAt)
+            .Select(i => new InvoiceSummaryDto
             {
-                ID                = p.ID,
-                Amount            = p.Amount,
-                Initiator         = p.Initiator,      
-                CreatedAt         = p.CreatedAt,
-                CompletedAt       = p.CompletedAt,
-                Hash              = p.Hash,
-                TransactionAmount = p.TransactionAmount,
-                TransactionDate   = p.TransactionDate,
-                TransactionMethod = p.TransactionMethod,
-                TransactionIssuer = p.TransactionIssuer,
-                TransactionBank   = p.TransactionBank,
-                SessionID         = p.SessionID
+                Id            = i.ID,
+                InvoiceNumber = i.InvoiceNumber,
+                TotalAmount   = i.TotalAmount,
+                DueDate       = i.DueDate,
+                Status        = i.Status.ToString()
             })
             .ToListAsync();
 
-        return (200, new { items });
+        return (200, new { invoices });
     }
     catch
     {

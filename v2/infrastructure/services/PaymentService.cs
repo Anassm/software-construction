@@ -31,6 +31,7 @@ namespace v2.Infrastructure.Services
                 return (400, new { error = "Required field missing, field: transaction or sessionID" });
             }
 
+           
             var payment = new Payment
             {
                 Amount = request.Amount,
@@ -48,12 +49,39 @@ namespace v2.Infrastructure.Services
             };
 
             await _context.Payments.AddAsync(payment);
+
+            
+            var invoice = new Invoice
+            {
+                InvoiceNumber = GenerateInvoiceNumber(),
+                TotalAmount   = (float)payment.Amount,          
+                CreatedAt     = DateTime.UtcNow,
+                DueDate       = DateTime.UtcNow.AddDays(14),    
+                Status        = InvoiceStatus.Paid,             
+                UserID        = user.ID
+            };
+
+           
+            if (request.SessionID.HasValue)
+            {
+                var session = await _context.Sessions.FindAsync(request.SessionID.Value);
+                if (session != null)
+                {
+                    invoice.Sessions.Add(session);
+                }
+            }
+
+            await _context.Invoices.AddAsync(invoice);
+
+           
             await _context.SaveChangesAsync();
 
             var responseDto = MapPaymentToDto(payment);
             var responseData = new { status = "Success", payment = responseDto };
             return (201, responseData);
         }
+
+
 
         public async Task<(int statusCode, object data)> ConfirmPaymentAsync(Guid paymentId, ConfirmPaymentRequestDTO dto, string initiatorIdentityId)
         {
@@ -213,5 +241,15 @@ namespace v2.Infrastructure.Services
                 SessionID = payment.SessionID
             };
         }
+
+    private string GenerateInvoiceNumber()
+    {
+        
+        return $"INV-{DateTime.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid().ToString("N")[..6]}";
+    }
+
+    
+
+
     }
 }
