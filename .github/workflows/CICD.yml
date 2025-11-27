@@ -1,11 +1,24 @@
 name: MobiParkV2
 
 on:
-  push:
+  pull_request:
     branches: ["development", "main"]
 
+# permissions:
+#   contents: read
+
 jobs:
-  build:
+  Dependancy-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout Repository"
+        uses: actions/checkout@v4
+      - name: "Dependency Review"
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: moderate
+
+  Build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -19,7 +32,7 @@ jobs:
       - name: Build
         run: cd v2 && dotnet build --configuration Release --no-restore
 
-  Integratie-tests:
+  Integration-tests:
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -54,7 +67,7 @@ jobs:
         run: |
           cd v2
           echo "Starting server..."
-          dotnet run --urls "http://0.0.0.0:8000" --launch-profile Testing > server.log 2>&1 &
+          dotnet run --urls "http://localhost:8000" --launch-profile Testing > server.log 2>&1 &
 
           echo "Waiting for server to be ready..."
           for i in {1..30}; do
@@ -92,7 +105,7 @@ jobs:
         run: |
           cd testing/integratieTesting
           pytest test_profile.py
-          
+
       - name: Test register
         run: |
           cd testing/integratieTesting
@@ -102,6 +115,11 @@ jobs:
         run: |
           cd testing/integratieTesting
           pytest test_parkinglots.py
+
+      - name: Test reservations
+        run: |
+          cd testing/integratieTesting
+          pytest test_reservations.py
           
       # - name: Test billing
       #   run: |
@@ -115,7 +133,7 @@ jobs:
           tail -n 100 v2/server.log || true
 
   Unit-tests:
-    needs: build
+    needs: Build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -164,10 +182,7 @@ jobs:
           cd testing/UnitTesting
           dotnet test --filter "AuthServiceTests"
 
-
       - name: Test parkinglots
         run: |
           cd testing/UnitTesting
           dotnet test --filter "ParkingLotServiceTests"
-    
-      
