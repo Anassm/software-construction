@@ -18,6 +18,8 @@ namespace v2.Infrastructure.Data
             public virtual DbSet<Reservation> Reservations { get; set; }
             public virtual DbSet<Payment> Payments { get; set; }
             public virtual DbSet<ParkingLot> ParkingLots { get; set; }
+            public virtual DbSet<DiscountCode> DiscountCodes { get; set; }
+            public virtual DbSet<DiscountCodeUser> DiscountCodeUsers { get; set; }
 
             protected override void OnModelCreating(ModelBuilder modelBuilder)
             {
@@ -160,6 +162,50 @@ namespace v2.Infrastructure.Data
                         .IsRequired(false)
                         .OnDelete(DeleteBehavior.Cascade);
                   });
+                  
+                  modelBuilder.Entity<DiscountCode>(entity =>
+                  {
+                  entity.HasKey(d => d.ID);
+                  entity.Property(d => d.Code)
+                        .IsRequired()
+                        .HasMaxLength(50);
+
+                  entity.HasIndex(d => d.Code)
+                        .IsUnique();
+
+                  entity.Property(d => d.IsActive)
+                        .IsRequired()
+                        .HasDefaultValue(true);
+
+                  entity.Property(d => d.Percentage)
+                        .IsRequired()
+                        .HasDefaultValue(0);
+
+                  entity.Property(d => d.FixedAmount)
+                        .IsRequired(false);
+
+                  entity.Property(d => d.AllowedLocation)
+                        .HasMaxLength(150);
+                  });
+
+                  modelBuilder.Entity<DiscountCodeUser>(entity =>
+                  {
+                  entity.HasKey(l => l.Id);
+
+                  entity.Property(l => l.GroupName)
+                        .HasMaxLength(100);
+
+                  entity.HasOne(l => l.DiscountCode)
+                        .WithMany(d => d.UserLinks)
+                        .HasForeignKey(l => l.DiscountCodeId)
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                  entity.HasOne(l => l.User)
+                        .WithMany()
+                        .HasForeignKey(l => l.UserId)
+                        .OnDelete(DeleteBehavior.Cascade);
+                  });
+
             }
       }
 }

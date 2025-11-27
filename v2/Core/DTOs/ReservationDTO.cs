@@ -7,6 +7,7 @@ public class ReservationCreateRequest
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public Guid ParkingLotId { get; set; }
+    public string? DiscountCode { get; set; }
 }
 
 public class ReservationResponse
@@ -22,6 +23,7 @@ public class ReservationResponse
 
     public string Status { get; set; } = string.Empty;
     public float TotalPrice { get; set; }
+    public string? DiscountCode { get; set; }
     public DateTime CreatedAt { get; set; }
 }
 

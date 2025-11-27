@@ -47,6 +47,7 @@ public class ReservationService : IReservation
             EndDate     = request.EndDate,
             Status      = "Pending",
             TotalPrice  = 0f,
+            DiscountCode  = request.DiscountCode,
             UserID      = vehicle.UserID,
             ParkingLotID = lot.ID,
             VehicleID   = vehicle.ID,
