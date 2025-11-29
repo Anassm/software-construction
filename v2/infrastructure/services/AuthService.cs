@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using v2.core.Interfaces;
+using v2.Core.Interfaces;
 using v2.Core.Models;
 using v2.Infrastructure.Data;
 using v2.Core.DTOs;
@@ -11,7 +12,7 @@ using System.Text;
 
 namespace v2.infrastructure.Services;
 
-public class AuthService
+public class AuthService : IAuth
 {
     private readonly SignInManager<IdentityUser> _signInManager;
     private readonly UserManager<IdentityUser> _userManager;
@@ -232,6 +233,13 @@ public class AuthService
             return (null!, 400, new { error = "Invalid token" });
         }
         
+    }
+
+    
+    public async Task<User?> GetUserByIdentityIdAsync(string identityUserId)
+    {
+        
+        return await _dbContext.Users.FirstOrDefaultAsync(u => u.IdentityUserId == identityUserId);
     }
 
 }
