@@ -161,6 +161,7 @@ jobs:
 
       - name: Create coverage summary
         run: |
+          cd testing/UnitTesting
           reportgenerator \
             -reports:"TestResults/*/coverage.cobertura.xml" \
             -targetdir:"coveragereport" \
