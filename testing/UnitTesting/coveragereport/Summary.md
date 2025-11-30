@@ -2,9 +2,9 @@
 
 |||
 |:---|:---|
-| Generated on: | 21-11-2025 - 12:10:01 |
-| Coverage date: | 21-11-2025 - 11:47:16 - 21-11-2025 - 11:54:12 |
-| Parser: | MultiReport (3x Cobertura) |
+| Generated on: | 30/11/2025 - 20:58:08 |
+| Coverage date: | 30/11/2025 - 20:57:57 |
+| Parser: | Cobertura |
 | Assemblies: | 1 |
 | Classes: | 40 |
 | Files: | 33 |
