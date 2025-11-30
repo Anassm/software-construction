@@ -236,10 +236,6 @@ public class AuthService : IAuth
     }
 
     
-    public async Task<User?> GetUserByIdentityIdAsync(string identityUserId)
-    {
-        
-        return await _dbContext.Users.FirstOrDefaultAsync(u => u.IdentityUserId == identityUserId);
-    }
+
 
 }

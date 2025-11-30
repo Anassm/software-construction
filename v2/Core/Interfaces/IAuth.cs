@@ -17,5 +17,5 @@ public interface IAuth
     
     Task<(User? data, int statusCode, object message)> LogoutUser(string jti);
 
-    Task<User?> GetUserByIdentityIdAsync(string identityUserId);
+
 }
