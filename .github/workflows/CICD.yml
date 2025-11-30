@@ -147,6 +147,7 @@ jobs:
       - name: Install ReportGenerator tool
         run: |
           dotnet tool install -g dotnet-reportgenerator-globaltool
+          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
       - name: Restore test project
         run: |
@@ -156,21 +157,21 @@ jobs:
       - name: Run unit tests with coverage
         run: |
           cd testing/UnitTesting
-          dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=../TestResults/
+          dotnet test --collect:"XPlat Code Coverage"
 
-      - name: Debug coverage file
+      - name: Debug coverage files
         run: |
           echo "Listing all coverage files:"
-          find . -name "*.xml"
+          find TestResults -type f
 
       - name: Create coverage summary
         run: |
           reportgenerator \
-            -reports:"TestResults/**/*.xml" \
+            -reports:"TestResults/*/coverage.cobertura.xml" \
             -targetdir:"coveragereport" \
             -reporttypes:"MarkdownSummary"
 
       - name: Display coverage summary
         run: |
           echo "### Code Coverage Summary" >> $GITHUB_STEP_SUMMARY
-          cat coveragereport/Summary.md >> $GITHUB_STEP_SUMMARY
+          cat testing/UnitTesting/coveragereport/Summary.md >> $GITHUB_STEP_SUMMARY
