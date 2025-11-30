@@ -158,6 +158,11 @@ jobs:
           cd testing/UnitTesting
           dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=../TestResults/
 
+      - name: Debug coverage file
+        run: |
+          echo "Listing all coverage files:"
+          find . -name "*.xml"
+
       - name: Create coverage summary
         run: |
           reportgenerator \
