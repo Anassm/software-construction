@@ -159,11 +159,6 @@ jobs:
           cd testing/UnitTesting
           dotnet test --collect:"XPlat Code Coverage"
 
-      - name: Debug coverage files
-        run: |
-          echo "Listing all coverage files:"
-          find TestResults -type f
-
       - name: Create coverage summary
         run: |
           reportgenerator \
