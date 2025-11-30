@@ -88,21 +88,28 @@ public class AuthService : IAuth
             if (!result.Succeeded)
                 return (null!, 401, new { error = "Invalid credentials" });
 
-            // Generate JWT
-            var claims = new[]
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Name, user.UserName),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()) // Unique ID per token
+            var appUser = await _dbContext.Users
+            .FirstOrDefaultAsync(u => u.IdentityUserId == user.Id);
 
-            };
+            // Generate JWT
+            var claimsList = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.Id),
+            new Claim(ClaimTypes.Name, user.UserName),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+        };
+
+              if (appUser != null && !string.IsNullOrEmpty(appUser.Role))
+            {
+                claimsList.Add(new Claim(ClaimTypes.Role, appUser.Role));
+            }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("thisIsASuperSecretKeyWithAtLeast32Bytes!"));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             var token = new JwtSecurityToken(
                 issuer: "yourIssuer",
                 audience: "yourAudience",
-                claims: claims,
+                claims: claimsList,
                 expires: DateTime.UtcNow.AddHours(1),
                 signingCredentials: creds
             );

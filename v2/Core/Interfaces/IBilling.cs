@@ -6,4 +6,6 @@ public interface IBilling
 {
    
     Task<(int statusCode, object data)> GetMyInvoiceHistoryAsync(string identityUserId);
+
+    Task<(int statusCode, object data)> GetInvoiceDetailsAsync(Guid invoiceId, string identityUserId);
 }
