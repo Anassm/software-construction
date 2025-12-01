@@ -191,3 +191,8 @@ jobs:
         run: |
           cd testing/UnitTesting
           dotnet test --filter "ParkingLotServiceTests"
+
+      - name: Test discounts
+        run: |
+          cd testing/UnitTesting
+          dotnet test --filter "DiscountServiceTests"
