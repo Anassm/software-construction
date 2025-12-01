@@ -126,6 +126,11 @@ jobs:
       #     cd testing/integratieTesting
       #     pytest test_billing.py
 
+      - name: Test Discounts
+        run: |
+          cd testing/integratieTesting
+          pytest test_discounts.py
+
       - name: Debug server log if tests fail
         if: failure()
         run: |
