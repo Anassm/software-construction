@@ -129,7 +129,7 @@ jobs:
       - name: Test Discounts
         run: |
           cd testing/integratieTesting
-          pytest test_discounts.py
+          pytest test_discount.py
 
       - name: Debug server log if tests fail
         if: failure()
