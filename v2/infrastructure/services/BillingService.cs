@@ -1,6 +1,7 @@
 using v2.core.Interfaces;
 using v2.Core.DTOs;
 using v2.Infrastructure.Data;
+using v2.Core.Models;
 namespace v2.infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -124,5 +125,127 @@ public class BillingService: IBilling
     {
         return (500, new { error = "An unexpected error occurred.", details = ex.Message });
     }
+}
+
+public async Task<(int statusCode, object data)> CreateBundleInvoiceAsync(CreateBundleInvoiceDto dto, string identityUserId)
+{
+    try
+    {
+       
+        var user = await _db.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.IdentityUserId == identityUserId);
+
+        if (user == null)
+        {
+            return (404, new { error = "User not found" });
+        }
+
+        
+        if (user.Role?.ToLower() != "admin" && 
+            user.Role?.ToLower() != "employee" && 
+            user.Role?.ToLower() != "business")
+        {
+            return (403, new { error = "Access denied. Business account required." });
+        }
+
+       
+        if (dto.SessionIds == null || !dto.SessionIds.Any())
+        {
+            return (400, new { error = "At least one session ID is required." });
+        }
+
+        
+        var sessions = await _db.Sessions
+            .Where(s => dto.SessionIds.Contains(s.ID))
+            .ToListAsync();
+
+        if (sessions.Count != dto.SessionIds.Count)
+        {
+            var foundIds = sessions.Select(s => s.ID).ToList();
+            var missingIds = dto.SessionIds.Except(foundIds).ToList();
+            return (404, new 
+            { 
+                error = "One or more sessions not found",
+                missingSessionIds = missingIds
+            });
+        }
+
+       
+        var alreadyInvoiced = await _db.Invoices
+            .Where(i => i.Sessions.Any(s => dto.SessionIds.Contains(s.ID)))
+            .Include(i => i.Sessions)
+            .ToListAsync();
+
+        if (alreadyInvoiced.Any())
+        {
+            var invoicedSessionIds = alreadyInvoiced
+                .SelectMany(i => i.Sessions)
+                .Where(s => dto.SessionIds.Contains(s.ID))
+                .Select(s => s.ID)
+                .ToList();
+
+            return (409, new 
+            { 
+                error = "One or more sessions are already invoiced",
+                alreadyInvoicedSessionIds = invoicedSessionIds,
+                existingInvoiceNumbers = alreadyInvoiced.Select(i => i.InvoiceNumber).ToList()
+            });
+        }
+
+        
+        float totalAmount = sessions.Sum(s => s.Price);
+
+        
+        var invoice = new Invoice
+        {
+            ID = Guid.NewGuid(),
+            InvoiceNumber = GenerateInvoiceNumber(),
+            TotalAmount = totalAmount,
+            CreatedAt = DateTime.UtcNow,
+            DueDate = dto.DueDate ?? DateTime.UtcNow.AddDays(14),
+            Status = InvoiceStatus.Open,
+            UserID = user.ID
+        };
+
+        
+        foreach (var session in sessions)
+        {
+            invoice.Sessions.Add(session);
+        }
+
+        _db.Invoices.Add(invoice);
+        await _db.SaveChangesAsync();
+
+        
+        var response = new BundleInvoiceResponseDto
+        {
+            InvoiceId = invoice.ID,
+            InvoiceNumber = invoice.InvoiceNumber,
+            TotalAmount = invoice.TotalAmount,
+            CreatedAt = invoice.CreatedAt,
+            DueDate = invoice.DueDate,
+            Status = invoice.Status.ToString(),
+            SessionCount = sessions.Count,
+            BundledSessionIds = dto.SessionIds,
+            CompanyName = dto.CompanyName
+        };
+
+        return (201, new 
+        { 
+            status = "Success", 
+            message = $"Bundle invoice created successfully with {sessions.Count} session(s).",
+            invoice = response 
+        });
+    }
+    catch (Exception ex)
+    {
+        return (500, new { error = "An unexpected error occurred.", details = ex.Message });
+    }
+}
+
+private string GenerateInvoiceNumber()
+{
+    return $"INV-{DateTime.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid().ToString("N")[..6]}";
 }
 }

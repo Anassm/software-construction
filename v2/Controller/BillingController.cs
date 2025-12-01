@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using v2.Core.Interfaces;
 using v2.core.Interfaces;
 using v2.infrastructure.Services;
+using v2.Core.DTOs;
 
 namespace V2.Controllers;
 
@@ -69,5 +70,38 @@ public class BillingController : ControllerBase
             _ => StatusCode(statusCode, message)
         };
     }
+
+[HttpPost("invoices/bundle")]
+    [Authorize(Roles = "Admin,Employee,Business")]
+    public async Task<IActionResult> CreateBundleInvoice([FromBody] CreateBundleInvoiceDto dto)
+    {
+        
+        var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        
+        
+        if (string.IsNullOrEmpty(identityUserId))
+            return StatusCode(StatusCodes.Status401Unauthorized, 
+                new { error = "Unauthorized: Invalid or missing session token" });
+
+        
+        if (dto == null)
+            return BadRequest(new { error = "Request body is required" });
+
+        if (dto.SessionIds == null || !dto.SessionIds.Any())
+            return BadRequest(new { error = "At least one session ID is required" });
+
+       
+        var (statusCode, message) = await _billingService.CreateBundleInvoiceAsync(dto, identityUserId);
+
+        return statusCode switch
+        {
+            201 => StatusCode(StatusCodes.Status201Created, message),
+            400 => BadRequest(message),
+            403 => StatusCode(StatusCodes.Status403Forbidden, message),
+            404 => NotFound(message),
+            409 => Conflict(message),
+            _ => StatusCode(statusCode, message)
+        };
+}
 
 }
