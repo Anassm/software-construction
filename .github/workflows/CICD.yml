@@ -33,7 +33,7 @@ jobs:
         run: cd v2 && dotnet build --configuration Release --no-restore
 
   Integration-tests:
-    needs: build
+    needs: Build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
