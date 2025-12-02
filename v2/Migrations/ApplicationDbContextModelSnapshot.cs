@@ -14,7 +14,6 @@ namespace v2.Migrations
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
-#pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.10");
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -240,8 +239,8 @@ namespace v2.Migrations
                     b.HasIndex("UserID");
 
                     b.ToTable("Invoices");
-                    //===========================
-
+                });
+                
             modelBuilder.Entity("v2.Core.Models.DiscountCode", b =>
                 {
                     b.Property<string>("AllowedLocation")
@@ -853,7 +852,6 @@ namespace v2.Migrations
                 {
                     b.Navigation("Reservations");
                 });
-#pragma warning restore 612, 618
         }
     }
 }
