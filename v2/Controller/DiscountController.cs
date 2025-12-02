@@ -142,5 +142,16 @@ namespace v2.Controllers
                 _ => StatusCode(StatusCodes.Status500InternalServerError, result.data)
             };
         }
+
+        [HttpGet("statistics")]
+        public async Task<IActionResult> GetStatistics()
+        {
+            var result = await _discountService.GetStatisticsAsync();
+            return result.statusCode switch
+            {
+                200 => StatusCode(StatusCodes.Status200OK, result.data),
+                _ => StatusCode(StatusCodes.Status500InternalServerError, result.data)
+            };
+        }
     }
 }

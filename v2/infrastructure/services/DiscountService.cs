@@ -272,6 +272,7 @@ namespace v2.Infrastructure.Services
             var finalAmount = Math.Max(0, original - discountAmount);
 
             discount.UsageCount += 1;
+            discount.SavedAmount += discountAmount;
             _db.DiscountCodes.Update(discount);
             await _db.SaveChangesAsync();
 
@@ -288,6 +289,24 @@ namespace v2.Infrastructure.Services
                 status = "Success",
                 discount = result
             });
+        }
+
+        public async Task<( DiscountStatistieksResponse data, int statusCode,  object message)> GetStatisticsAsync()
+        {
+            var stats = await _db.DiscountCodes
+                .Select(d => new DiscountStatistieksItem
+                {
+                    Code = d.Code,
+                    TotalUses = d.UsageCount,
+                    RemainingUses = d.MaxUsage.HasValue ? d.MaxUsage.Value - d.UsageCount : int.MaxValue,
+                    TotalSavedAmount = d.SavedAmount // Placeholder, calculation would require more data
+                })
+                .ToListAsync();
+
+            return (new DiscountStatistieksResponse
+            {
+                Discounts = stats
+            }, 200, new { message = "Statistics retrieved successfully." });
         }
     }
 }

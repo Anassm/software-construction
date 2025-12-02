@@ -310,6 +310,8 @@ namespace v2.Infrastructure.Services
 
                 return Task.FromResult<(int, object)>((200, payload));
             }
+            public Task<( DiscountStatistieksResponse data, int statusCode,  object message)> GetStatisticsAsync()
+                => Task.FromResult<(DiscountStatistieksResponse, int, object)>((new DiscountStatistieksResponse(), 501, new { error = "Not implemented" }));
         }
     }
 }
