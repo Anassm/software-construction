@@ -85,7 +85,6 @@ namespace v2.Infrastructure.Services
                         .Select(dc => dc.ID)
                         .FirstOrDefaultAsync(),
                     UserId = user.ID
-                    
                 };
 
                 await _context.DiscountCodeUsers.AddAsync(DiscountCodeUse);
@@ -358,6 +357,9 @@ namespace v2.Infrastructure.Services
 
                 return Task.FromResult<(int, object)>((200, payload));
             }
+
+            public Task<(int statusCode, object data)> GetAllActiveCodesAsync(string adminIdentityUserId)
+                => Task.FromResult<(int, object)>((501, new { error = "Not implemented" }));
         }
     }
 }
