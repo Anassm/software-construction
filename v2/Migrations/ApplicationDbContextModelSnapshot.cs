@@ -243,6 +243,10 @@ namespace v2.Migrations
                 
             modelBuilder.Entity("v2.Core.Models.DiscountCode", b =>
                 {
+                    b.Property<Guid>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("AllowedLocation")
                         .HasMaxLength(150)
                         .HasColumnType("TEXT");
@@ -276,8 +280,6 @@ namespace v2.Migrations
 
                     b.Property<int>("UsageCount")
                         .HasColumnType("INTEGER");
-
-                    b.HasKey("ID");
 
                     b.HasIndex("Code")
                         .IsUnique();
