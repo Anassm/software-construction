@@ -328,5 +328,10 @@ namespace v2.Infrastructure.Services
                 discountCodes = activeCodes
             });
         }
+
+        public async Task<(int statusCode, object data)> GetUsedCodesAsync(string? identityUserId, string adminIdentityUserId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
