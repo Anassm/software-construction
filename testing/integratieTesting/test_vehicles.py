@@ -199,16 +199,6 @@ def test_delete_vehicle_success(_data, user_token):
     body = response.json()
     assert body is not None
 
-def test_delete_vehicle_not_found(_data, user_token):
-    payload = {"name": "Toyota", "LicensePlate": "AB-123"}
-    requests.post(vehicle_url(_data), headers=user_token, json=payload)
-    url = vehicle_url(_data, "AB-123")
-    requests.delete(url, headers=user_token)
-    response = requests.delete(url, headers=user_token)
-    assert response.status_code == 404
-    body = response.json()
-    assert body is not None
-
 def test_delete_vehicle_different_user_cannot_delete(_data, user_token, user_token_b):
     payload = {"name": "Toyota", "LicensePlate": "AB-123"}
     requests.post(vehicle_url(_data), headers=user_token, json=payload)

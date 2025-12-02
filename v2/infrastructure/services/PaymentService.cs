@@ -12,10 +12,12 @@ namespace v2.Infrastructure.Services
     public class PaymentService : IPayment
     {
         private readonly ApplicationDbContext _context;
+        private readonly IDiscounts _discountService;
 
-        public PaymentService(ApplicationDbContext context)
+        public PaymentService(ApplicationDbContext context, IDiscounts? discountService = null)
         {
             _context = context;
+            _discountService = discountService ?? new NoopDiscountService();
         }
 
         public async Task<(int statusCode, object data)> CreatePaymentAsync(CreatePaymentRequestDTO request, string initiatorIdentityId)
@@ -31,15 +33,75 @@ namespace v2.Infrastructure.Services
                 return (400, new { error = "Required field missing, field: transaction or sessionID" });
             }
 
-           
+            decimal finalAmount = request.Amount;
+            decimal discountAmount = 0m;
+
+            if (!string.IsNullOrWhiteSpace(request.DiscountCode))
+            {
+                var applyRequest = new DiscountApplyRequest
+                {
+                    Code = request.DiscountCode!,
+                    OriginalAmount = request.Amount,
+                    Location = request.Location
+                };
+
+                var discountResult = await _discountService.ValidateAndApplyAsync(applyRequest, initiatorIdentityId);
+
+                if (discountResult.statusCode != 200)
+                {
+                    return (discountResult.statusCode, discountResult.data);
+                }
+
+                var data = discountResult.data;
+
+                DiscountApplyResult? result = null;
+
+                if (data is DiscountApplyResult direct)
+                {
+                    result = direct;
+                }
+                else
+                {
+                    var discountProp = data.GetType().GetProperty("discount");
+                    if (discountProp != null)
+                    {
+                        var value = discountProp.GetValue(data);
+                        if (value is DiscountApplyResult casted)
+                        {
+                            result = casted;
+                        }
+                    }
+                }
+
+                if (result == null)
+                {
+                    return (500, new { error = "Invalid discount response from discount service" });
+                }
+
+                var DiscountCodeUse = new DiscountCodeUser
+                {
+                    DiscountCodeId = await _context.DiscountCodes
+                        .Where(dc => dc.Code == request.DiscountCode)
+                        .Select(dc => dc.ID)
+                        .FirstOrDefaultAsync(),
+                    UserId = user.ID
+                    
+                };
+
+                await _context.DiscountCodeUsers.AddAsync(DiscountCodeUse);
+
+                discountAmount = result.DiscountAmount;
+                finalAmount = result.FinalAmount;
+            }
+
             var payment = new Payment
             {
-                Amount = request.Amount,
+                Amount = finalAmount,
                 Initiator = user.Username,
                 CreatedAt = DateTime.UtcNow,
                 CompletedAt = null,
                 Hash = null,
-                TransactionAmount = request.TransactionAmount ?? request.Amount,
+                TransactionAmount = request.TransactionAmount ?? finalAmount,
                 TransactionDate = request.TransactionDate ?? DateTime.UtcNow,
                 TransactionMethod = request.TransactionMethod ?? "N/A",
                 TransactionIssuer = request.TransactionIssuer ?? "N/A",
@@ -77,7 +139,17 @@ namespace v2.Infrastructure.Services
             await _context.SaveChangesAsync();
 
             var responseDto = MapPaymentToDto(payment);
-            var responseData = new { status = "Success", payment = responseDto };
+            var responseData = new
+            {
+                status = "Success",
+                payment = responseDto,
+                discount = new
+                {
+                    discountAmount,
+                    originalAmount = request.Amount,
+                    finalAmount
+                }
+            };
             return (201, responseData);
         }
 
@@ -156,7 +228,7 @@ namespace v2.Infrastructure.Services
                         return (404, new { error = $"User '{targetUsername}' not found." });
                     }
                 }
-                return (200, new List<PaymentResponseDTO>());
+                return (200, new System.Collections.Generic.List<PaymentResponseDTO>());
             }
 
             return (200, payments);
@@ -251,5 +323,41 @@ namespace v2.Infrastructure.Services
     
 
 
+        private class NoopDiscountService : IDiscounts
+        {
+            public Task<(int statusCode, object data)> CreateAsync(DiscountCreateRequest dto, string adminIdentityUserId)
+                => Task.FromResult<(int, object)>((501, new { error = "Not implemented" }));
+
+            public Task<(int statusCode, object data)> UpdateAsync(Guid id, DiscountUpdateRequest dto, string adminIdentityUserId)
+                => Task.FromResult<(int, object)>((501, new { error = "Not implemented" }));
+
+            public Task<(int statusCode, object data)> DeactivateAsync(Guid id, string adminIdentityUserId)
+                => Task.FromResult<(int, object)>((501, new { error = "Not implemented" }));
+
+            public Task<(int statusCode, object data)> UpdateExpiryAsync(Guid id, DateTime? expiryDate, string adminIdentityUserId)
+                => Task.FromResult<(int, object)>((501, new { error = "Not implemented" }));
+
+            public Task<(int statusCode, object data)> LinkUsersAsync(Guid id, DiscountLinkUsersRequest dto, string adminIdentityUserId)
+                => Task.FromResult<(int, object)>((501, new { error = "Not implemented" }));
+
+            public Task<(int statusCode, object data)> ValidateAndApplyAsync(DiscountApplyRequest dto, string identityUserId)
+            {
+                var result = new DiscountApplyResult
+                {
+                    Code = dto.Code,
+                    OriginalAmount = dto.OriginalAmount,
+                    DiscountAmount = 0m,
+                    FinalAmount = dto.OriginalAmount
+                };
+
+                var payload = new
+                {
+                    status = "Success",
+                    discount = result
+                };
+
+                return Task.FromResult<(int, object)>((200, payload));
+            }
+        }
     }
 }

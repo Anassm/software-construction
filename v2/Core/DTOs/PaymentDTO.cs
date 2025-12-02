@@ -14,6 +14,8 @@ public class CreatePaymentRequestDTO
     public string? TransactionIssuer { get; set; }
     public string? TransactionBank { get; set; }
     public Guid? SessionID { get; set; }
+    public string? DiscountCode { get; set; }
+    public string? Location { get; set; }
 }
 
 public class PaymentResponseDTO

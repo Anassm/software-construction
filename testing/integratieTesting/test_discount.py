@@ -1,0 +1,212 @@
+import pytest
+import requests
+import uuid
+
+# -----------------------------
+#  Fixtures (reused from your structure)
+# -----------------------------
+
+@pytest.fixture
+def _data():
+    return {
+        "base": "http://localhost:8000",
+        "users": {
+            "user_a": {
+                "email": "user@example.com",
+                "password": "UserPass123!",
+                "username": "regular.user",
+                "name": "Regular User",
+                "role": "user"
+            },
+            "user_b": {
+                "email": "user2@example.com",
+                "password": "User2Pass123!",
+                "username": "user.two",
+                "name": "Second User",
+                "role": "user"
+            },
+            "admin": {
+                "email": "admin@example.com",
+                "password": "AdminPass123!",
+                "username": "admin.user",
+                "name": "Admin User",
+                "role": "admin"
+            }
+        }
+    }
+
+
+def register_and_login(base_url, user):
+    # Register first (ignored if exists)
+    requests.post(f"{base_url}/register", json=user)
+
+    # Login
+    r = requests.post(f"{base_url}/login", json={
+        "username": user["username"],
+        "password": user["password"]
+    })
+    body = r.json()
+
+    return {"Authorization": f"{body['tokentype']} {body['accesstoken']}"}
+
+
+@pytest.fixture
+def user_token(_data):
+    return register_and_login(_data["base"], _data["users"]["user_a"])
+
+
+@pytest.fixture
+def user_token_b(_data):
+    return register_and_login(_data["base"], _data["users"]["user_b"])
+
+
+@pytest.fixture
+def admin_token(_data):
+    return register_and_login(_data["base"], _data["users"]["admin"])
+
+
+# -----------------------------
+# Helpers
+# -----------------------------
+
+def discount_url(_data):
+    return f"{_data['base']}/discounts"
+
+
+def create_discount(admin_token, _data, code=None):
+    if code is None:
+        code = "UPD" + uuid.uuid4().hex[:6]
+
+    r = requests.post(
+        discount_url(_data),
+        headers=admin_token,
+        json={"code": code}
+    )
+
+    return r.json()["discount"]["id"]
+
+
+# ===================================================================
+#  POST /discounts — 5 TESTS
+# ===================================================================
+
+def test_post_discount_no_auth(_data):
+    response = requests.post(discount_url(_data), json={"code": "NEWYEAR"})
+    assert response.status_code == 401
+    assert "Unauthorized" in response.text
+
+
+def test_post_discount_non_admin(user_token, _data):
+    payload = {"code": "USERTRY"}
+    response = requests.post(discount_url(_data), headers=user_token, json=payload)
+    assert response.status_code == 403
+
+    body = response.json()
+    assert "Access denied" in body["error"]
+
+
+def test_post_discount_missing_code(admin_token, _data):
+    payload = {"percentage": 10}
+
+    response = requests.post(discount_url(_data), headers=admin_token, json=payload)
+    assert response.status_code == 400
+
+    body = response.json()
+    assert "Code" in body["error"]
+
+
+def test_post_discount_success(admin_token, _data):
+    payload = {
+        "code": "DIS" + uuid.uuid4().hex[:5],
+        "isActive": True,
+        "percentage": 15.0
+    }
+
+    response = requests.post(discount_url(_data), headers=admin_token, json=payload)
+    assert response.status_code == 201
+
+    body = response.json()
+    assert body["status"] == "Success"
+    assert body["discount"]["code"].startswith("DIS")
+
+
+def test_post_discount_duplicate(admin_token, _data):
+    code = "DUP" + uuid.uuid4().hex[:4]
+    payload = {"code": code}
+
+    # first creation
+    requests.post(discount_url(_data), headers=admin_token, json=payload)
+
+    # duplicate
+    response = requests.post(discount_url(_data), headers=admin_token, json=payload)
+    assert response.status_code == 409
+
+    body = response.json()
+    assert "already exists" in body["error"]
+
+
+# ===================================================================
+#  PUT /discounts/{id} — 5 TESTS
+# ===================================================================
+
+def test_put_discount_no_auth(_data):
+    fake_id = uuid.uuid4()
+    response = requests.put(
+        f"{discount_url(_data)}/{fake_id}",
+        json={"isActive": False}
+    )
+    assert response.status_code == 401
+
+
+def test_put_discount_non_admin(user_token, _data):
+    fake_id = uuid.uuid4()
+    response = requests.put(
+        f"{discount_url(_data)}/{fake_id}",
+        headers=user_token,
+        json={"isActive": False}
+    )
+    assert response.status_code == 403
+    assert "Admin role" in response.text
+
+
+def test_put_discount_not_found(admin_token, _data):
+    fake_id = uuid.uuid4()
+    response = requests.put(
+        f"{discount_url(_data)}/{fake_id}",
+        headers=admin_token,
+        json={"isActive": False}
+    )
+    assert response.status_code == 404
+    assert "not found" in response.text
+
+
+def test_put_discount_success(admin_token, _data):
+    did = create_discount(admin_token, _data)
+
+    response = requests.put(
+        f"{discount_url(_data)}/{did}",
+        headers=admin_token,
+        json={"isActive": False, "percentage": 20}
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+
+    assert body["status"] == "Success"
+    assert body["discount"]["isActive"] is False
+    assert body["discount"]["percentage"] == 20
+
+
+def test_put_discount_partial_update(admin_token, _data):
+    did = create_discount(admin_token, _data)
+
+    response = requests.put(
+        f"{discount_url(_data)}/{did}",
+        headers=admin_token,
+        json={"allowedLocation": "Rotterdam"}
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+
+    assert body["discount"]["allowedLocation"] == "Rotterdam"
