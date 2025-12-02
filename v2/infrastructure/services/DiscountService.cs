@@ -289,5 +289,44 @@ namespace v2.Infrastructure.Services
                 discount = result
             });
         }
+
+        public async Task<(int statusCode, object data)> GetAllActiveCodesAsync(string adminIdentityUserId)
+        {
+            var user = await GetUserByIdentityAsync(adminIdentityUserId);
+            if (user == null)
+                return (404, new { error = "User not found" });
+            if (!IsAdmin(user))
+                return (403, new { error = "Access denied. Admin role required." });
+
+            var now = DateTime.UtcNow;
+
+            var activeCodes = await _db.DiscountCodes
+                .Where(d =>
+                    d.IsActive &&
+                    (d.StartDate == null || d.StartDate <= now) &&
+                    (d.ExpiryDate == null || d.ExpiryDate >= now)
+                )
+                .Select(d => new
+                {
+                    d.ID,
+                    d.Code,
+                    d.IsActive,
+                    d.StartDate,
+                    d.ExpiryDate,
+                    d.MaxUsage,
+                    d.UsageCount,
+                    d.Percentage,
+                    d.FixedAmount,
+                    d.AllowedLocation
+                })
+                .ToListAsync();
+
+            return (200, new
+            {
+                status = "Success",
+                count = activeCodes.Count,
+                discountCodes = activeCodes
+            });
+        }
     }
 }
