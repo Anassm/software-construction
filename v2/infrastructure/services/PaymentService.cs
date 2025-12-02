@@ -322,7 +322,7 @@ namespace v2.Infrastructure.Services
                 return Task.FromResult<(int, object)>((200, payload));
             }
 
-            public Task<(int statusCode, object data)> GetAllActiveCodesAsync()
+            public Task<(int statusCode, object data)> GetAllActiveCodesAsync(string adminIdentityUserId)
                 => Task.FromResult<(int, object)>((501, new { error = "Not implemented" }));
         }
     }
