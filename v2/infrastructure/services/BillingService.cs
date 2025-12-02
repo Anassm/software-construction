@@ -248,4 +248,98 @@ private string GenerateInvoiceNumber()
 {
     return $"INV-{DateTime.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid().ToString("N")[..6]}";
 }
+
+
+
+public async Task<(int statusCode, object data)> GetUserBillingSummaryAsync(string username, string identityUserId)
+{
+    try
+    {
+        
+        var requestingUser = await _db.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.IdentityUserId == identityUserId);
+
+        if (requestingUser == null)
+        {
+            return (404, new { error = "Requesting user not found" });
+        }
+
+        
+        if (requestingUser.Role?.ToLower() != "admin" && requestingUser.Role?.ToLower() != "employee")
+        {
+            return (403, new { error = "Access denied. Admin or employee role required." });
+        }
+
+        
+        var targetUser = await _db.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Username == username);
+
+        if (targetUser == null)
+        {
+            return (404, new { error = $"User '{username}' not found" });
+        }
+
+        
+        var invoices = await _db.Invoices
+            .Where(i => i.UserID == targetUser.ID)
+            .OrderByDescending(i => i.CreatedAt)
+            .Select(i => new InvoiceSummaryDto
+            {
+                Id = i.ID,
+                InvoiceNumber = i.InvoiceNumber,
+                TotalAmount = i.TotalAmount,
+                DueDate = i.DueDate,
+                Status = i.Status.ToString()
+            })
+            .ToListAsync();
+
+        
+        var payments = await _db.Payments
+            .Where(p => p.Initiator == targetUser.Username)
+            .OrderByDescending(p => p.CreatedAt)
+            .Select(p => new PaymentSummaryDto
+            {
+                Id = p.ID,
+                Amount = p.Amount,
+                CreatedAt = p.CreatedAt,
+                CompletedAt = p.CompletedAt,
+                TransactionMethod = p.TransactionMethod,
+                TransactionIssuer = p.TransactionIssuer
+            })
+            .ToListAsync();
+
+        
+        var summary = new BillingSummaryDto
+        {
+            TotalInvoices = invoices.Count,
+            TotalPaid = invoices.Count(i => i.Status == "Paid"),
+            TotalOpen = invoices.Count(i => i.Status == "Open"),
+            TotalOverdue = invoices.Count(i => i.Status == "Overdue"),
+            TotalInvoicedAmount = invoices.Sum(i => i.TotalAmount)
+        };
+
+        
+        var response = new UserBillingSummaryDto
+        {
+            User = new UserInfoDto
+            {
+                Id = targetUser.ID,
+                Username = targetUser.Username,
+                Name = targetUser.Name,
+                Email = targetUser.Email ?? ""
+            },
+            Invoices = invoices,
+            Payments = payments,
+            Summary = summary
+        };
+
+        return (200, new { status = "Success", data = response });
+    }
+    catch (Exception ex)
+    {
+        return (500, new { error = "An unexpected error occurred.", details = ex.Message });
+    }
+}
 }

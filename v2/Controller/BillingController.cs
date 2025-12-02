@@ -104,4 +104,32 @@ public class BillingController : ControllerBase
         };
 }
 
+
+[HttpGet("users/{username}/summary")]
+[Authorize(Roles = "Admin,Employee")]
+public async Task<IActionResult> GetUserBillingSummary(string username)
+{
+   
+    var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    
+   
+    if (string.IsNullOrEmpty(identityUserId))
+        return StatusCode(StatusCodes.Status401Unauthorized, 
+            new { error = "Unauthorized: Invalid or missing session token" });
+
+   
+    if (string.IsNullOrWhiteSpace(username))
+        return BadRequest(new { error = "Username is required" });
+
+  
+    var (statusCode, message) = await _billingService.GetUserBillingSummaryAsync(username, identityUserId);
+
+    return statusCode switch
+    {
+        200 => Ok(message),
+        403 => StatusCode(StatusCodes.Status403Forbidden, message),
+        404 => NotFound(message),
+        _ => StatusCode(statusCode, message)
+    };
+}
 }
