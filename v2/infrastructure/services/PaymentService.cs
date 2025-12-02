@@ -111,6 +111,31 @@ namespace v2.Infrastructure.Services
             };
 
             await _context.Payments.AddAsync(payment);
+
+            
+            var invoice = new Invoice
+            {
+                InvoiceNumber = GenerateInvoiceNumber(),
+                TotalAmount   = (float)payment.Amount,          
+                CreatedAt     = DateTime.UtcNow,
+                DueDate       = DateTime.UtcNow.AddDays(14),    
+                Status        = InvoiceStatus.Paid,             
+                UserID        = user.ID
+            };
+
+           
+            if (request.SessionID.HasValue)
+            {
+                var session = await _context.Sessions.FindAsync(request.SessionID.Value);
+                if (session != null)
+                {
+                    invoice.Sessions.Add(session);
+                }
+            }
+
+            await _context.Invoices.AddAsync(invoice);
+
+           
             await _context.SaveChangesAsync();
 
             var responseDto = MapPaymentToDto(payment);
@@ -127,6 +152,8 @@ namespace v2.Infrastructure.Services
             };
             return (201, responseData);
         }
+
+
 
         public async Task<(int statusCode, object data)> ConfirmPaymentAsync(Guid paymentId, ConfirmPaymentRequestDTO dto, string initiatorIdentityId)
         {
@@ -286,6 +313,15 @@ namespace v2.Infrastructure.Services
                 SessionID = payment.SessionID
             };
         }
+
+    private string GenerateInvoiceNumber()
+    {
+        
+        return $"INV-{DateTime.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid().ToString("N")[..6]}";
+    }
+
+    
+
 
         private class NoopDiscountService : IDiscounts
         {

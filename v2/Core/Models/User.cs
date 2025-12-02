@@ -22,4 +22,5 @@ public class User
     public required ICollection<Vehicle> Vehicles { get; set; }
     public required ICollection<Session> Sessions { get; set; }
     public required ICollection<Reservation> Reservations { get; set; }
+    public ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
 }

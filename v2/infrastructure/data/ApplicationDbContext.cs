@@ -21,6 +21,8 @@ namespace v2.Infrastructure.Data
             public virtual DbSet<DiscountCode> DiscountCodes { get; set; }
             public virtual DbSet<DiscountCodeUser> DiscountCodeUsers { get; set; }
 
+            public virtual DbSet<Invoice> Invoices { get; set; }
+
             protected override void OnModelCreating(ModelBuilder modelBuilder)
             {
                   base.OnModelCreating(modelBuilder);

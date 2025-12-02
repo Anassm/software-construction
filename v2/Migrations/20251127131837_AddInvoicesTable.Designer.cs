@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using v2.Infrastructure.Data;
 
@@ -10,9 +11,11 @@ using v2.Infrastructure.Data;
 namespace v2.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251127131837_AddInvoicesTable")]
+    partial class AddInvoicesTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.10");
@@ -209,79 +212,6 @@ namespace v2.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("v2.Core.Models.DiscountCode", b =>
-                {
-                    b.Property<Guid>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("AllowedLocation")
-                        .HasMaxLength(150)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("ExpiryDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<decimal?>("FixedAmount")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER")
-                        .HasDefaultValue(true);
-
-                    b.Property<int?>("MaxUsage")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<decimal>("Percentage")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT")
-                        .HasDefaultValue(0m);
-
-                    b.Property<DateTime?>("StartDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("UsageCount")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("ID");
-
-                    b.HasIndex("Code")
-                        .IsUnique();
-
-                    b.ToTable("DiscountCodes");
-                });
-
-            modelBuilder.Entity("v2.Core.Models.DiscountCodeUser", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("DiscountCodeId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("GroupName")
-                        .HasMaxLength(100)
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DiscountCodeId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("DiscountCodeUsers");
-                });
-
             modelBuilder.Entity("v2.Core.Models.Invoice", b =>
                 {
                     b.Property<Guid>("ID")
@@ -384,9 +314,6 @@ namespace v2.Migrations
                         .HasColumnType("TEXT")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                    b.Property<string>("DiscountCode")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Hash")
                         .HasMaxLength(256)
                         .HasColumnType("TEXT");
@@ -445,9 +372,6 @@ namespace v2.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<string>("DiscountCode")
-                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("TEXT");
@@ -705,24 +629,6 @@ namespace v2.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("v2.Core.Models.DiscountCodeUser", b =>
-                {
-                    b.HasOne("v2.Core.Models.DiscountCode", "DiscountCode")
-                        .WithMany("UserLinks")
-                        .HasForeignKey("DiscountCodeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("v2.Core.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.Navigation("DiscountCode");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("v2.Core.Models.Invoice", b =>
                 {
                     b.HasOne("v2.Core.Models.User", "User")
@@ -817,11 +723,6 @@ namespace v2.Migrations
                         .HasForeignKey("UserID1");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("v2.Core.Models.DiscountCode", b =>
-                {
-                    b.Navigation("UserLinks");
                 });
 
             modelBuilder.Entity("v2.Core.Models.Invoice", b =>
