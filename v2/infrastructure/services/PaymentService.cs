@@ -78,6 +78,18 @@ namespace v2.Infrastructure.Services
                     return (500, new { error = "Invalid discount response from discount service" });
                 }
 
+                var DiscountCodeUse = new DiscountCodeUser
+                {
+                    DiscountCodeId = await _context.DiscountCodes
+                        .Where(dc => dc.Code == request.DiscountCode)
+                        .Select(dc => dc.ID)
+                        .FirstOrDefaultAsync(),
+                    UserId = user.ID
+                    
+                };
+
+                await _context.DiscountCodeUsers.AddAsync(DiscountCodeUse);
+
                 discountAmount = result.DiscountAmount;
                 finalAmount = result.FinalAmount;
             }
