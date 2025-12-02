@@ -249,6 +249,11 @@ namespace UnitTesting
 
                 throw new InvalidOperationException("ValidateAndApplyAsync should not be called in this mode.");
             }
+
+            public Task<(int statusCode, object data)> GetAllActiveCodesAsync(string adminIdentityUserId)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }
