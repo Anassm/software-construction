@@ -255,7 +255,7 @@ namespace UnitTesting
                 throw new NotImplementedException();
             }
 
-            public Task<(int statusCode, object data)> GetUsedCodesAsync(string? identityUserId, string adminIdentityUserId)
+            public Task<(int statusCode, object data)> GetUsedCodesAsync(Guid? discountCodeId, string adminIdentityUserId)
             {
                 throw new NotImplementedException();
             }
