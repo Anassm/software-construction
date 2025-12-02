@@ -142,5 +142,23 @@ namespace v2.Controllers
                 _ => StatusCode(StatusCodes.Status500InternalServerError, result.data)
             };
         }
+
+        [HttpGet("active")]
+        public async Task<IActionResult> GetAllActiveCodes()
+        {
+            var identityUserId = GetIdentityUserId();
+            if (identityUserId == null)
+                return StatusCode(StatusCodes.Status401Unauthorized, new { error = "Unauthorized: Invalid or missing session token" });
+
+            var result = await _discountService.GetAllActiveCodesAsync(identityUserId);
+
+            return result.statusCode switch
+            {
+                200 => StatusCode(StatusCodes.Status200OK, result.data),
+                403 => StatusCode(StatusCodes.Status403Forbidden, result.data),
+                404 => StatusCode(StatusCodes.Status404NotFound, result.data),
+                _ => StatusCode(StatusCodes.Status500InternalServerError, result.data)
+            };
+        }
     }
 }
