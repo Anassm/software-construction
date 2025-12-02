@@ -329,9 +329,48 @@ namespace v2.Infrastructure.Services
             });
         }
 
-        public async Task<(int statusCode, object data)> GetUsedCodesAsync(string? identityUserId, string adminIdentityUserId)
+        public async Task<(int statusCode, object data)> GetUsedCodesAsync(Guid? discountCodeId, string adminIdentityUserId)
         {
-            throw new NotImplementedException();
+            var adminUser = await GetUserByIdentityAsync(adminIdentityUserId);
+            if (adminUser == null)
+                return (404, new { error = "User not found" });
+            if (!IsAdmin(adminUser))
+                return (403, new { error = "Access denied. Admin role required." });
+
+            var query = _db.DiscountCodeUsers
+                .Include(x => x.DiscountCode)
+                .Include(x => x.User)
+                .AsQueryable();
+
+            if (discountCodeId.HasValue)
+            {
+                var exists = await _db.DiscountCodes
+                    .AnyAsync(d => d.ID == discountCodeId.Value);
+
+                if (!exists)
+                    return (404, new { error = "Discount code not found" });
+
+                query = query.Where(x => x.DiscountCodeId == discountCodeId.Value);
+            }
+
+            var results = await query
+                    .Select(x => new
+                    {
+                        x.Id,
+                        x.DiscountCodeId,
+                        Code = x.DiscountCode.Code,
+                        UserId = x.UserId,
+                        GroupName = x.GroupName
+                    })
+                    .ToListAsync();
+
+            return (200, new
+            {
+                status = "Success",
+                count = results.Count,
+                uses = results
+            });
         }
+
     }
 }

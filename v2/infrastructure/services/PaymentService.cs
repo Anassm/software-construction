@@ -361,7 +361,7 @@ namespace v2.Infrastructure.Services
             public Task<(int statusCode, object data)> GetAllActiveCodesAsync(string adminIdentityUserId)
                 => Task.FromResult<(int, object)>((501, new { error = "Not implemented" }));
 
-            public Task<(int statusCode, object data)> GetUsedCodesAsync(string? identityUserId, string adminIdentityUserId)
+            public Task<(int statusCode, object data)> GetUsedCodesAsync(Guid? discountCodeId, string adminIdentityUserId)
                 => Task.FromResult<(int, object)>((501, new { error = "Not implemented" }));
 
 
