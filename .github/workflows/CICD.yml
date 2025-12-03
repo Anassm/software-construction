@@ -1,4 +1,4 @@
-name: MobiParkV2
+name: MobiParkV2_push
 
 on:
   pull_request:
@@ -8,7 +8,7 @@ on:
 #   contents: read
 
 jobs:
-  Dependancy-check:
+  Dependency-check:
     runs-on: ubuntu-latest
     steps:
       - name: "Checkout Repository"
@@ -19,6 +19,7 @@ jobs:
           fail-on-severity: moderate
 
   Build:
+    needs: Dependency-check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -33,7 +34,7 @@ jobs:
         run: cd v2 && dotnet build --configuration Release --no-restore
 
   Integration-tests:
-    needs: build
+    needs: Build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -120,11 +121,16 @@ jobs:
         run: |
           cd testing/integratieTesting
           pytest test_reservations.py
-          
+
       # - name: Test billing
       #   run: |
       #     cd testing/integratieTesting
       #     pytest test_billing.py
+
+      - name: Test Discounts
+        run: |
+          cd testing/integratieTesting
+          pytest test_discount.py
 
       - name: Debug server log if tests fail
         if: failure()
@@ -132,57 +138,41 @@ jobs:
           echo "---- LAST 100 LINES OF SERVER LOG ----"
           tail -n 100 v2/server.log || true
 
-  Unit-tests:
+  Unit-tests-and-Coverage:
     needs: Build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "9.0.x"
 
-      - name: Install dotnet-ef
+      - name: Install ReportGenerator tool
         run: |
-          dotnet tool install --global dotnet-ef --version 9.0.10
-          export PATH="$PATH:$HOME/.dotnet/tools"
+          dotnet tool install -g dotnet-reportgenerator-globaltool
+          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
-      - name: Install dotnet NuGet packages
-        run: |
-          cd v2
-          dotnet restore
-
-      - name: Apply EF Core migrations
-        run: |
-          cd v2
-          dotnet ef database update
-
-      - name: Install test packages
+      - name: Restore test project
         run: |
           cd testing/UnitTesting
           dotnet restore
 
-      - name: Test vehicles
+      - name: Run unit tests with coverage
         run: |
           cd testing/UnitTesting
-          dotnet test --filter "VehiclesServiceTests"
+          dotnet test --collect:"XPlat Code Coverage"
 
-      - name: Test payments
+      - name: Create coverage summary
         run: |
           cd testing/UnitTesting
-          dotnet test --filter "PaymentServiceTests"
+          reportgenerator \
+            -reports:"TestResults/*/coverage.cobertura.xml" \
+            -targetdir:"coveragereport" \
+            -reporttypes:"MarkdownSummary"
 
-      - name: Test reservations
+      - name: Display coverage summary
         run: |
-          cd testing/UnitTesting
-          dotnet test --filter "ReservationServiceTests"
-
-      - name: Test authentication
-        run: |
-          cd testing/UnitTesting
-          dotnet test --filter "AuthServiceTests"
-
-      - name: Test parkinglots
-        run: |
-          cd testing/UnitTesting
-          dotnet test --filter "ParkingLotServiceTests"
+          echo "### Code Coverage Summary" >> $GITHUB_STEP_SUMMARY
+          cat testing/UnitTesting/coveragereport/Summary.md >> $GITHUB_STEP_SUMMARY
