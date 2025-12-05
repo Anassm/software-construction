@@ -78,6 +78,41 @@ def setup_payment(_data, user_headers):
     return response.json()["payment"]["id"]
 
 
+@pytest.fixture
+def discount_url(_data):
+    return f"{_data['base']}/discounts"
+
+
+@pytest.fixture
+def discount_url(_data):
+    return f"{_data['base']}/discounts"
+
+
+@pytest.fixture
+def created_discount_code(_data, discount_url, admin_headers):
+    unique_code = f"TEST_{uuid.uuid4().hex[:8].upper()}"
+
+    payload = {
+        "code": unique_code,
+        "isActive": True,
+        "startDate": None,
+        "expiryDate": "2099-12-31T23:59:59Z",
+        "maxUsage": None,
+        "percentage": 0,
+        "fixedAmount": 10.00,
+        "allowedLocation": None,
+    }
+
+    response = requests.post(discount_url, headers=admin_headers, json=payload)
+
+    if response.status_code != 201:
+        pytest.fail(
+            f"Setup fail: Kon geen test-discount aanmaken. Status: {response.status_code}. Body: {response.text}"
+        )
+
+    return unique_code
+
+
 def test_get_payments_no_auth(_data):
     response = requests.get(_data["url"])
     assert response.status_code == 401
@@ -200,3 +235,55 @@ def test_put_payment_success(_data, user_headers, setup_payment):
     assert data["status"] == "Success"
     assert "payment" in data
     assert data["payment"]["hash"] == "hash123"
+
+
+# Discount codes
+def get_post_payload_with_discount(username, discount_code):
+    """Hulpmethode om payment payload met discount code te maken"""
+    payload = get_v1_post_payload(username)
+    payload["discountCode"] = discount_code
+    return payload
+
+
+def test_post_payment_with_valid_discount(_data, user_headers, created_discount_code):
+    payload = get_post_payload_with_discount(
+        _data["users"]["user_a"]["username"], created_discount_code
+    )
+
+    response = requests.post(_data["url"], headers=user_headers, json=payload)
+
+    if response.status_code != 201:
+        pytest.fail(
+            f"Payment met discount mislukt. Status: {response.status_code}. Response: {response.text}"
+        )
+
+    data = response.json()
+    assert data["status"] == "Success"
+
+    assert "discount" in data, "Response mist het 'discount' object"
+
+    disc_data = data["discount"]
+
+    original = float(disc_data["originalAmount"])
+    discount = float(disc_data["discountAmount"])
+    final = float(disc_data["finalAmount"])
+
+    assert original == 50.00
+    assert discount == 10.00
+    assert final == 40.00
+
+    assert final + discount == pytest.approx(original)
+
+
+def test_post_payment_with_invalid_discount(_data, user_headers):
+    fake_code = f"FAKE_{uuid.uuid4()}"
+    payload = get_post_payload_with_discount(
+        _data["users"]["user_a"]["username"], fake_code
+    )
+
+    response = requests.post(_data["url"], headers=user_headers, json=payload)
+
+    assert response.status_code in [400, 404]
+
+    body = response.json()
+    assert "error" in body

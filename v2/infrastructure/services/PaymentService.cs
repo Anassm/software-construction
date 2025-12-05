@@ -78,6 +78,17 @@ namespace v2.Infrastructure.Services
                     return (500, new { error = "Invalid discount response from discount service" });
                 }
 
+                var DiscountCodeUse = new DiscountCodeUser
+                {
+                    DiscountCodeId = await _context.DiscountCodes
+                        .Where(dc => dc.Code == request.DiscountCode)
+                        .Select(dc => dc.ID)
+                        .FirstOrDefaultAsync(),
+                    UserId = user.ID
+                };
+
+                await _context.DiscountCodeUsers.AddAsync(DiscountCodeUse);
+
                 discountAmount = result.DiscountAmount;
                 finalAmount = result.FinalAmount;
             }
@@ -99,6 +110,31 @@ namespace v2.Infrastructure.Services
             };
 
             await _context.Payments.AddAsync(payment);
+
+
+            var invoice = new Invoice
+            {
+                InvoiceNumber = GenerateInvoiceNumber(),
+                TotalAmount = (float)payment.Amount,
+                CreatedAt = DateTime.UtcNow,
+                DueDate = DateTime.UtcNow.AddDays(14),
+                Status = InvoiceStatus.Paid,
+                UserID = user.ID
+            };
+
+
+            if (request.SessionID.HasValue)
+            {
+                var session = await _context.Sessions.FindAsync(request.SessionID.Value);
+                if (session != null)
+                {
+                    invoice.Sessions.Add(session);
+                }
+            }
+
+            await _context.Invoices.AddAsync(invoice);
+
+
             await _context.SaveChangesAsync();
 
             var responseDto = MapPaymentToDto(payment);
@@ -115,6 +151,8 @@ namespace v2.Infrastructure.Services
             };
             return (201, responseData);
         }
+
+
 
         public async Task<(int statusCode, object data)> ConfirmPaymentAsync(Guid paymentId, ConfirmPaymentRequestDTO dto, string initiatorIdentityId)
         {
@@ -275,6 +313,15 @@ namespace v2.Infrastructure.Services
             };
         }
 
+        private string GenerateInvoiceNumber()
+        {
+
+            return $"INV-{DateTime.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid().ToString("N")[..6]}";
+        }
+
+
+
+
         private class NoopDiscountService : IDiscounts
         {
             public Task<(int statusCode, object data)> CreateAsync(DiscountCreateRequest dto, string adminIdentityUserId)
@@ -318,6 +365,14 @@ namespace v2.Infrastructure.Services
             {
                 throw new NotImplementedException();
             }
+
+            public Task<(int statusCode, object data)> GetAllActiveCodesAsync(string adminIdentityUserId)
+                => Task.FromResult<(int, object)>((501, new { error = "Not implemented" }));
+
+            public Task<(int statusCode, object data)> GetUsedCodesAsync(Guid? discountCodeId, string adminIdentityUserId)
+                => Task.FromResult<(int, object)>((501, new { error = "Not implemented" }));
+
+
         }
     }
 }

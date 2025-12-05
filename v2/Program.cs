@@ -85,11 +85,12 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<IReservation, ReservationService>();
 builder.Services.AddScoped<IVehicles, VehicleService>();
 builder.Services.AddScoped<IParkingLots, ParkingLotService>();
+builder.Services.AddScoped<IPayment, PaymentService>();
+builder.Services.AddScoped<IBilling, BillingService>();
+
 
 // --- Controllers & Swagger ---
 builder.Services.AddControllers();
-builder.Services.AddScoped<IPayment, PaymentService>();
-
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c => {
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme {

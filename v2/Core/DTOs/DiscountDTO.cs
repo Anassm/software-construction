@@ -28,7 +28,7 @@ namespace v2.Core.DTOs
 
     public class DiscountLinkUsersRequest
     {
-        public List <Guid> UserIds { get; set; } = new();
+        public List<Guid> UserIds { get; set; } = new();
         public List<string> Groups { get; set; } = new();
     }
 

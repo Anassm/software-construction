@@ -359,5 +359,87 @@ namespace v2.Infrastructure.Services
                 Discounts = stats
             }, 200, new { message = "Statistics retrieved successfully." });
         }
+        public async Task<(int statusCode, object data)> GetAllActiveCodesAsync(string adminIdentityUserId)
+        {
+            var user = await GetUserByIdentityAsync(adminIdentityUserId);
+            if (user == null)
+                return (404, new { error = "User not found" });
+            if (!IsAdmin(user))
+                return (403, new { error = "Access denied. Admin role required." });
+
+            var now = DateTime.UtcNow;
+
+            var activeCodes = await _db.DiscountCodes
+                .Where(d =>
+                    d.IsActive &&
+                    (d.StartDate == null || d.StartDate <= now) &&
+                    (d.ExpiryDate == null || d.ExpiryDate >= now)
+                )
+                .Select(d => new
+                {
+                    d.ID,
+                    d.Code,
+                    d.IsActive,
+                    d.StartDate,
+                    d.ExpiryDate,
+                    d.MaxUsage,
+                    d.UsageCount,
+                    d.Percentage,
+                    d.FixedAmount,
+                    d.AllowedLocation
+                })
+                .ToListAsync();
+
+            return (200, new
+            {
+                status = "Success",
+                count = activeCodes.Count,
+                discountCodes = activeCodes
+            });
+        }
+
+        public async Task<(int statusCode, object data)> GetUsedCodesAsync(Guid? discountCodeId, string adminIdentityUserId)
+        {
+            var adminUser = await GetUserByIdentityAsync(adminIdentityUserId);
+            if (adminUser == null)
+                return (404, new { error = "User not found" });
+            if (!IsAdmin(adminUser))
+                return (403, new { error = "Access denied. Admin role required." });
+
+            var query = _db.DiscountCodeUsers
+                .Include(x => x.DiscountCode)
+                .Include(x => x.User)
+                .AsQueryable();
+
+            if (discountCodeId.HasValue)
+            {
+                var exists = await _db.DiscountCodes
+                    .AnyAsync(d => d.ID == discountCodeId.Value);
+
+                if (!exists)
+                    return (404, new { error = "Discount code not found" });
+
+                query = query.Where(x => x.DiscountCodeId == discountCodeId.Value);
+            }
+
+            var results = await query
+                    .Select(x => new
+                    {
+                        x.Id,
+                        x.DiscountCodeId,
+                        Code = x.DiscountCode.Code,
+                        UserId = x.UserId,
+                        GroupName = x.GroupName
+                    })
+                    .ToListAsync();
+
+            return (200, new
+            {
+                status = "Success",
+                count = results.Count,
+                uses = results
+            });
+        }
+
     }
 }
