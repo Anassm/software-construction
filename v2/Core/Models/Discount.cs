@@ -16,6 +16,9 @@ namespace v2.Core.Models
         public string? AllowedLocation { get; set; }
         public decimal Percentage { get; set; } = 0m;
         public decimal? FixedAmount { get; set; }
+
+        public Guid? OrganizationId { get; set; }
+        public Organization? Organization { get; set; }
     }
 
     public class DiscountCodeUser
