@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using v2.Infrastructure.Data;
 
@@ -10,9 +11,11 @@ using v2.Infrastructure.Data;
 namespace v2.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251202195245_discountupdate")]
+    partial class discountupdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.10");
@@ -285,38 +288,6 @@ namespace v2.Migrations
                     b.ToTable("DiscountCodeUsers");
                 });
 
-            modelBuilder.Entity("v2.Core.Models.Invoice", b =>
-                {
-                    b.Property<Guid>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("DueDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("InvoiceNumber")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<float>("TotalAmount")
-                        .HasColumnType("REAL");
-
-                    b.Property<Guid>("UserID")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("ID");
-
-                    b.HasIndex("UserID");
-
-                    b.ToTable("Invoices");
-                });
-
             modelBuilder.Entity("v2.Core.Models.ParkingLot", b =>
                 {
                     b.Property<Guid>("ID")
@@ -499,9 +470,6 @@ namespace v2.Migrations
                     b.Property<DateTime?>("EndTime")
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid?>("InvoiceID")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("LicensePlate")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -537,8 +505,6 @@ namespace v2.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("ID");
-
-                    b.HasIndex("InvoiceID");
 
                     b.HasIndex("ParkingLotID");
 
@@ -726,17 +692,6 @@ namespace v2.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("v2.Core.Models.Invoice", b =>
-                {
-                    b.HasOne("v2.Core.Models.User", "User")
-                        .WithMany("Invoices")
-                        .HasForeignKey("UserID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("v2.Core.Models.Payment", b =>
                 {
                     b.HasOne("v2.Core.Models.Session", "Session")
@@ -776,10 +731,6 @@ namespace v2.Migrations
 
             modelBuilder.Entity("v2.Core.Models.Session", b =>
                 {
-                    b.HasOne("v2.Core.Models.Invoice", null)
-                        .WithMany("Sessions")
-                        .HasForeignKey("InvoiceID");
-
                     b.HasOne("v2.Core.Models.ParkingLot", "ParkingLot")
                         .WithMany("Sessions")
                         .HasForeignKey("ParkingLotID")
@@ -827,11 +778,6 @@ namespace v2.Migrations
                     b.Navigation("UserLinks");
                 });
 
-            modelBuilder.Entity("v2.Core.Models.Invoice", b =>
-                {
-                    b.Navigation("Sessions");
-                });
-
             modelBuilder.Entity("v2.Core.Models.ParkingLot", b =>
                 {
                     b.Navigation("Reservations");
@@ -846,8 +792,6 @@ namespace v2.Migrations
 
             modelBuilder.Entity("v2.Core.Models.User", b =>
                 {
-                    b.Navigation("Invoices");
-
                     b.Navigation("Reservations");
 
                     b.Navigation("Sessions");

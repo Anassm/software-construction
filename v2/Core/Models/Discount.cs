@@ -15,6 +15,7 @@ namespace v2.Core.Models
         public ICollection<DiscountCodeUser> UserLinks { get; set; } = new List<DiscountCodeUser>();
         public string? AllowedLocation { get; set; }
         public decimal Percentage { get; set; } = 0m;
+        public decimal SavedAmount { get; set; } = 0m;
         public decimal? FixedAmount { get; set; }
     }
 
