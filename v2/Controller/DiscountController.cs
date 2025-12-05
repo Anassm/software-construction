@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using v2.Core.DTOs;
 using v2.Core.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace v2.Controllers
 {
@@ -144,6 +145,7 @@ namespace v2.Controllers
         }
 
         [HttpGet("statistics")]
+        [Authorize(Roles = "Admin,Employee")]
         public async Task<IActionResult> GetStatistics()
         {
             var result = await _discountService.GetStatisticsAsync();
@@ -173,6 +175,7 @@ namespace v2.Controllers
         }
 
         [HttpGet("statistics/{filter}/{orderby}")]
+        [Authorize(Roles = "Admin,Employee")]
         public async Task<IActionResult> GetStatisticsFilter()
         {
             var filter = "";
