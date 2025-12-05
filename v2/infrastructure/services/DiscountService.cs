@@ -291,9 +291,59 @@ namespace v2.Infrastructure.Services
             });
         }
 
-        public async Task<( DiscountStatistieksResponse data, int statusCode,  object message)> GetStatisticsAsync()
+        public async Task<( DiscountStatistieksResponse data, int statusCode,  object message)> GetStatisticsAsync(string? filter = null, string? orderBy = null)
         {
-            var stats = await _db.DiscountCodes
+            var stats = new List<DiscountStatistieksItem>();
+            if(filter != null || orderBy != null)
+            {
+                if(orderBy == "asc")
+                {
+                    stats = await _db.DiscountCodes
+                    .Select(d => new DiscountStatistieksItem
+                    {
+                        Code = d.Code,
+                        TotalUses = d.UsageCount,
+                        RemainingUses = d.MaxUsage.HasValue 
+                            ? d.MaxUsage.Value - d.UsageCount 
+                            : int.MaxValue,
+                        TotalSavedAmount = d.SavedAmount
+                    })
+                    
+                    .ToListAsync();
+                    stats = filter switch
+                    {
+                        "totalUses"        => stats.OrderBy(d => d.TotalUses).ToList(),
+                        "remainingUses"    => stats.OrderBy(d => d.RemainingUses).ToList(),
+                        "totalSavedAmount" => stats.OrderBy(d => d.TotalSavedAmount).ToList(),
+                        _                  => stats
+                    };
+                        
+
+                
+                }else if(orderBy == "desc")
+                {
+                    stats = await _db.DiscountCodes
+                    .Select(d => new DiscountStatistieksItem
+                    {
+                        Code = d.Code,
+                        TotalUses = d.UsageCount,
+                        RemainingUses = d.MaxUsage.HasValue 
+                            ? d.MaxUsage.Value - d.UsageCount 
+                            : int.MaxValue,
+                        TotalSavedAmount = d.SavedAmount
+                    })
+                    .ToListAsync();
+
+                    stats = filter switch
+                    {
+                        "totalUses"        => stats.OrderByDescending(d => d.TotalUses).ToList(),
+                        "remainingUses"    => stats.OrderByDescending(d => d.RemainingUses).ToList(),
+                        "totalSavedAmount" => stats.OrderByDescending(d => d.TotalSavedAmount).ToList(),
+                        _                  => stats
+                    };
+                }
+            }else{
+            stats = await _db.DiscountCodes
                 .Select(d => new DiscountStatistieksItem
                 {
                     Code = d.Code,
@@ -302,6 +352,7 @@ namespace v2.Infrastructure.Services
                     TotalSavedAmount = d.SavedAmount // Placeholder, calculation would require more data
                 })
                 .ToListAsync();
+            }
 
             return (new DiscountStatistieksResponse
             {

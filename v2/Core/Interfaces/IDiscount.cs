@@ -12,6 +12,7 @@ namespace v2.Core.Interfaces
         Task<(int statusCode, object data)> UpdateExpiryAsync(Guid id, DateTime? expiryDate, string adminIdentityUserId);
         Task<(int statusCode, object data)> LinkUsersAsync(Guid id, DiscountLinkUsersRequest dto, string adminIdentityUserId);
         Task<(int statusCode, object data)> ValidateAndApplyAsync(DiscountApplyRequest dto, string identityUserId);
-        Task<( DiscountStatistieksResponse data, int statusCode,  object message)> GetStatisticsAsync();
+        Task<( DiscountStatistieksResponse data, int statusCode,  object message)> GetStatisticsAsync(string? filter = null, string? orderBy = null);
+        
     }
 }
