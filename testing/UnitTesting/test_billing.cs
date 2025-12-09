@@ -132,4 +132,46 @@ public class BillingServiceTests
         Assert.Contains(invoices, i => i.InvoiceNumber == "INV-001");
         Assert.Contains(invoices, i => i.InvoiceNumber == "INV-002");
     }
+
+
+
+    [Fact]
+    public async Task GetMyInvoiceHistory_EmptyList()
+    {
+        var identityUser = new IdentityUser 
+        { 
+            UserName = "noinvoices",
+            Id = Guid.NewGuid().ToString()
+        };
+        
+        var newUser = new User
+        {
+            ID = Guid.NewGuid(),
+            IdentityUserId = identityUser.Id,
+            IdentityUser = identityUser,
+            Username = "noinvoices",
+            Name = "No Invoices User",
+            Email = "noinvoices@example.com",
+            PhoneNumber = "1234567890",
+            Role = "user",
+            BirthYear = 1990,
+            IsActive = true,
+            Vehicles = new List<Vehicle>(),
+            Sessions = new List<Session>(),
+            Reservations = new List<Reservation>()
+        };
+        _context.Users.Add(newUser);
+        _context.SaveChanges();
+
+        var result = await _service.GetMyInvoiceHistoryAsync(newUser.IdentityUserId);
+        Assert.Equal(200, result.statusCode);
+
+        var dataType = result.data.GetType();
+        var invoicesProperty = dataType.GetProperty("invoices");
+        var invoices = invoicesProperty.GetValue(result.data) as List<InvoiceSummaryDto>;
+
+        Assert.NotNull(invoices);
+        Assert.Empty(invoices);
+    }
+
 }
