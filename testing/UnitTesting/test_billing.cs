@@ -174,4 +174,44 @@ public class BillingServiceTests
         Assert.Empty(invoices);
     }
 
+
+
+    [Fact]
+    public async Task GetMyInvoiceHistory_OrderedByCreatedDate()
+    {
+        var result = await _service.GetMyInvoiceHistoryAsync(_user.IdentityUserId);
+        Assert.Equal(200, result.statusCode);
+
+        var dataType = result.data.GetType();
+        var invoicesProperty = dataType.GetProperty("invoices");
+        var invoices = invoicesProperty.GetValue(result.data) as List<InvoiceSummaryDto>;
+
+        Assert.NotNull(invoices);
+        Assert.Equal(2, invoices.Count);
+        
+        
+        Assert.Equal("INV-002", invoices[0].InvoiceNumber);
+        Assert.Equal("INV-001", invoices[1].InvoiceNumber);
+    }
+
+    [Fact]
+    public async Task GetMyInvoiceHistory_CorrectInvoiceProperties()
+    {
+        var result = await _service.GetMyInvoiceHistoryAsync(_user.IdentityUserId);
+        Assert.Equal(200, result.statusCode);
+
+        var dataType = result.data.GetType();
+        var invoicesProperty = dataType.GetProperty("invoices");
+        var invoices = invoicesProperty.GetValue(result.data) as List<InvoiceSummaryDto>;
+        var firstInvoice = invoices.FirstOrDefault(i => i.InvoiceNumber == "INV-001");
+
+        Assert.NotNull(firstInvoice);
+        Assert.Equal(_invoice1.ID, firstInvoice.Id);
+        Assert.Equal("INV-001", firstInvoice.InvoiceNumber);
+        Assert.Equal(50.00f, firstInvoice.TotalAmount);
+        Assert.Equal("Paid", firstInvoice.Status);
+    }
+
+
+
 }
