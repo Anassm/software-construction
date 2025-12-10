@@ -250,6 +250,13 @@ namespace UnitTesting
                 throw new InvalidOperationException("ValidateAndApplyAsync should not be called in this mode.");
             }
 
+            public Task<( DiscountStatistieksResponse data, int statusCode,  object message)> GetStatisticsAsync(string? filter = null, string? orderBy = null)
+            {
+                throw new NotImplementedException();
+            }
+
+            
+
             public Task<(int statusCode, object data)> GetAllActiveCodesAsync(string adminIdentityUserId)
             {
                 throw new NotImplementedException();

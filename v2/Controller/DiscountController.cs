@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using v2.Core.DTOs;
 using v2.Core.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace v2.Controllers
 {
@@ -143,6 +144,18 @@ namespace v2.Controllers
             };
         }
 
+        [HttpGet("statistics")]
+        [Authorize(Roles = "Admin,Employee")]
+        public async Task<IActionResult> GetStatistics()
+        {
+            var result = await _discountService.GetStatisticsAsync();
+            return result.statusCode switch
+            {
+                200 => StatusCode(StatusCodes.Status200OK, result.data),
+                _ => StatusCode(StatusCodes.Status500InternalServerError, result.data)
+            };
+        }
+        
         [HttpGet("active")]
         public async Task<IActionResult> GetAllActiveCodes()
         {
@@ -161,6 +174,45 @@ namespace v2.Controllers
             };
         }
 
+        [HttpGet("statistics/{filter}/{orderby}")]
+        [Authorize(Roles = "Admin,Employee")]
+        public async Task<IActionResult> GetStatisticsFilter()
+        {
+            var filter = "";
+            switch (HttpContext.Request.RouteValues["filter"]?.ToString())  
+            {
+                case "totaluses":
+                    filter = "totalUses";
+                    break;
+                case "remaininguses":
+                    filter = "remainingUses";
+                    break;
+                case "totalsavedamount":
+                    filter = "totalSavedAmount";
+                    break;
+                default:
+                    return StatusCode(StatusCodes.Status400BadRequest, new { error = "Invalid filter parameter." });
+            };
+            var orderby = "";
+            switch (HttpContext.Request.RouteValues["orderby"]?.ToString())  
+            {
+                case "asc":
+                    orderby = "asc";
+                    break;
+                case "desc":
+                    orderby = "desc";
+                    break;
+                default:
+                    return StatusCode(StatusCodes.Status400BadRequest, new { error = "Invalid filter parameter." });
+            };
+            var result = await _discountService.GetStatisticsAsync(filter, orderby);
+            return result.statusCode switch
+            {
+                200 => StatusCode(StatusCodes.Status200OK, result.data),
+                _ => StatusCode(StatusCodes.Status500InternalServerError, result.data)
+            };
+        }
+        
         [HttpGet("used")]
         public async Task<IActionResult> GetUsedCodes([FromQuery] Guid? discountCodeId)
         {

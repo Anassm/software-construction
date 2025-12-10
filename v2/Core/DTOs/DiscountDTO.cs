@@ -46,4 +46,17 @@ namespace v2.Core.DTOs
         public decimal DiscountAmount { get; set; }
         public decimal FinalAmount { get; set; }
     }
+
+    public class DiscountStatistieksItem
+    {
+        public string Code { get; set; } = string.Empty;
+        public int TotalUses { get; set; }
+        public int RemainingUses { get; set; }
+        public decimal TotalSavedAmount { get; set; }
+    }
+
+    public class DiscountStatistieksResponse
+    {
+        public List<DiscountStatistieksItem> Discounts { get; set; } = new();
+    }
 }
