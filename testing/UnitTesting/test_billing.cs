@@ -260,4 +260,59 @@ public async Task GetMyInvoiceHistory_MultipleStatuses()
 }
 
 
+[Fact]
+public async Task GetMyInvoiceHistory_OnlyUserInvoices()
+{
+    var identityOther = new IdentityUser 
+    { 
+        UserName = "otheruser",
+        Id = Guid.NewGuid().ToString()
+    };
+    
+    var otherUser = new User
+    {
+        ID = Guid.NewGuid(),
+        IdentityUserId = identityOther.Id,
+        IdentityUser = identityOther,
+        Username = "otheruser",
+        Name = "Other User",
+        Email = "other@example.com",
+        PhoneNumber = "1234567890",
+        Role = "user",
+        BirthYear = 1990,
+        IsActive = true,
+        Vehicles = new List<Vehicle>(),
+        Sessions = new List<Session>(),
+        Reservations = new List<Reservation>()
+    };
+    _context.Users.Add(otherUser);
+
+    var otherInvoice = new Invoice
+    {
+        ID = Guid.NewGuid(),
+        InvoiceNumber = "INV-OTHER",
+        TotalAmount = 25.00f,
+        CreatedAt = DateTime.UtcNow,
+        DueDate = DateTime.UtcNow.AddDays(14),
+        Status = InvoiceStatus.Open,
+        UserID = otherUser.ID,
+        User = otherUser
+    };
+    _context.Invoices.Add(otherInvoice);
+    _context.SaveChanges();
+
+    var result = await _service.GetMyInvoiceHistoryAsync(_user.IdentityUserId);
+    Assert.Equal(200, result.statusCode);
+
+    var dataType = result.data.GetType();
+    var invoicesProperty = dataType.GetProperty("invoices");
+    var invoices = invoicesProperty.GetValue(result.data) as List<InvoiceSummaryDto>;
+
+    Assert.NotNull(invoices);
+    Assert.Equal(2, invoices.Count);
+    Assert.DoesNotContain(invoices, i => i.InvoiceNumber == "INV-OTHER");
+}
+
+
+
 }
