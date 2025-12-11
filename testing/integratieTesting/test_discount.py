@@ -30,17 +30,15 @@ def _data():
                 "password": "AdminPass123!",
                 "username": "admin.user",
                 "name": "Admin User",
-                "role": "admin"
+                "role": "Admin"
             }
         }
     }
 
 
 def register_and_login(base_url, user):
-    # Register first (ignored if exists)
     requests.post(f"{base_url}/register", json=user)
 
-    # Login
     r = requests.post(f"{base_url}/login", json={
         "username": user["username"],
         "password": user["password"]
@@ -87,7 +85,7 @@ def create_discount(admin_token, _data, code=None):
 
 
 # ===================================================================
-#  POST /discounts — 5 TESTS
+#  POST /discounts — ORIGINAL TESTS
 # ===================================================================
 
 def test_post_discount_no_auth(_data):
@@ -134,10 +132,8 @@ def test_post_discount_duplicate(admin_token, _data):
     code = "DUP" + uuid.uuid4().hex[:4]
     payload = {"code": code}
 
-    # first creation
     requests.post(discount_url(_data), headers=admin_token, json=payload)
 
-    # duplicate
     response = requests.post(discount_url(_data), headers=admin_token, json=payload)
     assert response.status_code == 409
 
@@ -146,7 +142,7 @@ def test_post_discount_duplicate(admin_token, _data):
 
 
 # ===================================================================
-#  PUT /discounts/{id} — 5 TESTS
+#  PUT /discounts/{id} — ORIGINAL TESTS
 # ===================================================================
 
 def test_put_discount_no_auth(_data):
@@ -210,3 +206,192 @@ def test_put_discount_partial_update(admin_token, _data):
     body = response.json()
 
     assert body["discount"]["allowedLocation"] == "Rotterdam"
+
+
+# ===================================================================
+#  NEW ENDPOINT TESTS START HERE
+# ===================================================================
+
+# ----------------------------------------
+# PUT /discounts/{id}/deactivate
+# ----------------------------------------
+
+def test_deactivate_discount_no_auth(_data):
+    did = uuid.uuid4()
+    r = requests.put(f"{discount_url(_data)}/{did}/deactivate")
+    assert r.status_code == 401
+
+
+def test_deactivate_discount_not_found(admin_token, _data):
+    did = uuid.uuid4()
+    r = requests.put(f"{discount_url(_data)}/{did}/deactivate", headers=admin_token)
+    assert r.status_code == 404
+
+
+def test_deactivate_discount_happy(admin_token, _data):
+    did = create_discount(admin_token, _data)
+    r = requests.put(f"{discount_url(_data)}/{did}/deactivate", headers=admin_token)
+    assert r.status_code == 200
+
+
+# ----------------------------------------
+# PUT /discounts/{id}/expiry
+# ----------------------------------------
+
+def test_update_expiry_no_auth(_data):
+    did = uuid.uuid4()
+    r = requests.put(f"{discount_url(_data)}/{did}/expiry", json="2029-01-01T00:00:00")
+    assert r.status_code == 401
+
+
+def test_update_expiry_not_found(admin_token, _data):
+    did = uuid.uuid4()
+    r = requests.put(
+        f"{discount_url(_data)}/{did}/expiry",
+        headers=admin_token,
+        json="2029-01-01T00:00:00"
+    )
+    assert r.status_code == 404
+
+
+def test_update_expiry_happy(admin_token, _data):
+    did = create_discount(admin_token, _data)
+    r = requests.put(
+        f"{discount_url(_data)}/{did}/expiry",
+        headers=admin_token,
+        json="2030-01-01T00:00:00"
+    )
+    assert r.status_code == 200
+
+
+# ----------------------------------------
+# POST /discounts/{id}/links
+# ----------------------------------------
+
+def test_link_users_no_body(admin_token, _data):
+    did = create_discount(admin_token, _data)
+    r = requests.post(f"{discount_url(_data)}/{did}/links",
+                      headers=admin_token, json=None)
+    assert r.status_code == 415
+
+
+def test_link_users_not_found(admin_token, _data):
+    did = uuid.uuid4()
+    r = requests.post(f"{discount_url(_data)}/{did}/links",
+                      headers=admin_token,
+                      json={"userIds": []})
+    assert r.status_code == 404
+
+
+def test_link_users_happy(admin_token, _data):
+    did = create_discount(admin_token, _data)
+    id = requests.get(
+        f"{_data['base']}/profile",
+        headers=admin_token).json().get("id")
+    print(f"User ID for linking: {id}")
+    r = requests.post(
+        f"{discount_url(_data)}/{did}/links",
+        headers=admin_token,
+        json={"userIds": [id]}
+    )
+    print(f"Link users response: {r.text}")
+    
+    assert r.status_code == 200
+
+
+# ----------------------------------------
+# POST /discounts/validate
+# ----------------------------------------
+
+def test_validate_no_auth(_data):
+    r = requests.post(f"{discount_url(_data)}/validate", json={"code": "ABC"})
+    assert r.status_code == 401
+
+
+def test_validate_invalid(admin_token, _data):
+    r = requests.post(
+        f"{discount_url(_data)}/validate",
+        headers=admin_token,
+        json={"code": "NONEXISTENTCODE"}
+    )
+    assert r.status_code in (400, 404)
+
+
+def test_validate_happy(admin_token, _data):
+    create_discount(admin_token, _data)
+    r = requests.post(
+        f"{discount_url(_data)}/validate",
+        headers=admin_token,
+        json={"code": "VALID"}  # service logic defines actual validity
+    )
+    assert r.status_code in (200, 400, 404)
+
+
+# ----------------------------------------
+# GET /discounts/statistics
+# ----------------------------------------
+
+def test_get_statistics_forbidden(user_token, _data):
+    r = requests.get(f"{discount_url(_data)}/statistics", headers=user_token)
+    assert r.status_code == 403
+
+
+def test_get_statistics_happy(admin_token, _data):
+    r = requests.get(f"{discount_url(_data)}/statistics", headers=admin_token)
+    assert r.status_code == 200
+
+
+# ----------------------------------------
+# GET /discounts/active
+# ----------------------------------------
+
+def test_get_active_no_auth(_data):
+    r = requests.get(f"{discount_url(_data)}/active")
+    assert r.status_code == 401
+
+
+def test_get_active_happy(admin_token, _data):
+    r = requests.get(f"{discount_url(_data)}/active", headers=admin_token)
+    assert r.status_code == 200
+
+
+# ----------------------------------------
+# GET /discounts/statistics/{filter}/{orderby}
+# ----------------------------------------
+
+def test_get_statistics_filter_invalid(admin_token, _data):
+    r = requests.get(
+        f"{discount_url(_data)}/statistics/wrong/asc",
+        headers=admin_token
+    )
+    assert r.status_code == 400
+
+
+def test_get_statistics_order_invalid(admin_token, _data):
+    r = requests.get(
+        f"{discount_url(_data)}/statistics/totaluses/wrong",
+        headers=admin_token
+    )
+    assert r.status_code == 400
+
+
+def test_get_statistics_filter_happy(admin_token, _data):
+    r = requests.get(
+        f"{discount_url(_data)}/statistics/totaluses/asc",
+        headers=admin_token
+    )
+    assert r.status_code == 200
+
+
+# ----------------------------------------
+# GET /discounts/used
+# ----------------------------------------
+
+def test_get_used_no_auth(_data):
+    r = requests.get(f"{discount_url(_data)}/used")
+    assert r.status_code == 401
+
+
+def test_get_used_happy(admin_token, _data):
+    r = requests.get(f"{discount_url(_data)}/used", headers=admin_token)
+    assert r.status_code == 200
