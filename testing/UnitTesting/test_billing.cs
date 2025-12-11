@@ -213,5 +213,51 @@ public class BillingServiceTests
     }
 
 
+    [Fact]
+public async Task GetMyInvoiceHistory_MultipleStatuses()
+{
+    var overdueInvoice = new Invoice
+    {
+        ID = Guid.NewGuid(),
+        InvoiceNumber = "INV-003",
+        TotalAmount = 100.00f,
+        CreatedAt = DateTime.UtcNow.AddDays(-30),
+        DueDate = DateTime.UtcNow.AddDays(-5),
+        Status = InvoiceStatus.Overdue,
+        UserID = _user.ID,
+        User = _user
+    };
+
+    var voidInvoice = new Invoice
+    {
+        ID = Guid.NewGuid(),
+        InvoiceNumber = "INV-004",
+        TotalAmount = 25.00f,
+        CreatedAt = DateTime.UtcNow.AddDays(-15),
+        DueDate = DateTime.UtcNow.AddDays(10),
+        Status = InvoiceStatus.Void,
+        UserID = _user.ID,
+        User = _user
+    };
+
+    _context.Invoices.Add(overdueInvoice);
+    _context.Invoices.Add(voidInvoice);
+    _context.SaveChanges();
+
+    var result = await _service.GetMyInvoiceHistoryAsync(_user.IdentityUserId);
+    Assert.Equal(200, result.statusCode);
+
+    var dataType = result.data.GetType();
+    var invoicesProperty = dataType.GetProperty("invoices");
+    var invoices = invoicesProperty.GetValue(result.data) as List<InvoiceSummaryDto>;
+
+    Assert.NotNull(invoices);
+    Assert.Equal(4, invoices.Count);
+    Assert.Contains(invoices, i => i.Status == "Paid");
+    Assert.Contains(invoices, i => i.Status == "Open");
+    Assert.Contains(invoices, i => i.Status == "Overdue");
+    Assert.Contains(invoices, i => i.Status == "Void");
+}
+
 
 }
