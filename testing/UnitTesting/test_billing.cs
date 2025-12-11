@@ -133,8 +133,6 @@ public class BillingServiceTests
         Assert.Contains(invoices, i => i.InvoiceNumber == "INV-002");
     }
 
-
-
     [Fact]
     public async Task GetMyInvoiceHistory_EmptyList()
     {
@@ -174,8 +172,6 @@ public class BillingServiceTests
         Assert.Empty(invoices);
     }
 
-
-
     [Fact]
     public async Task GetMyInvoiceHistory_OrderedByCreatedDate()
     {
@@ -211,7 +207,6 @@ public class BillingServiceTests
         Assert.Equal(50.00f, firstInvoice.TotalAmount);
         Assert.Equal("Paid", firstInvoice.Status);
     }
-
 
     [Fact]
 public async Task GetMyInvoiceHistory_MultipleStatuses()
@@ -258,7 +253,6 @@ public async Task GetMyInvoiceHistory_MultipleStatuses()
     Assert.Contains(invoices, i => i.Status == "Overdue");
     Assert.Contains(invoices, i => i.Status == "Void");
 }
-
 
 [Fact]
 public async Task GetMyInvoiceHistory_OnlyUserInvoices()
@@ -314,5 +308,25 @@ public async Task GetMyInvoiceHistory_OnlyUserInvoices()
 }
 
 
+[Fact]
+public async Task GetInvoiceDetails_AdminSuccess()
+{
+    var result = await _service.GetInvoiceDetailsAsync(_invoice1.ID, _admin.IdentityUserId);
+    Assert.Equal(200, result.statusCode);
+
+    var dataType = result.data.GetType();
+    var invoiceProperty = dataType.GetProperty("invoice");
+    var invoice = invoiceProperty.GetValue(result.data);
+
+    Assert.NotNull(invoice);
+}
+
+[Fact]
+public async Task GetInvoiceDetails_NonAdminForbidden()
+{
+    var result = await _service.GetInvoiceDetailsAsync(_invoice1.ID,_user.IdentityUserId);
+    Assert.Equal(403, result.statusCode);
+
+}
 
 }
