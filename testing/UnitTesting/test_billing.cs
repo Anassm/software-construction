@@ -328,5 +328,18 @@ public async Task GetInvoiceDetails_NonAdminForbidden()
     Assert.Equal(403, result.statusCode);
 
 }
+[Fact]
+public async Task GetInvoiceDetails_UserNotFound()
+{
+    var result = await _service.GetInvoiceDetailsAsync(_invoice1.ID, Guid.NewGuid().ToString());
+    Assert.Equal(404, result.statusCode);
+}
+
+[Fact]
+public async Task GetInvoiceDetails_InvoiceNotFound()
+{
+    var result = await _service.GetInvoiceDetailsAsync(Guid.NewGuid(), _admin.IdentityUserId);
+    Assert.Equal(404, result.statusCode);
+}
 
 }
