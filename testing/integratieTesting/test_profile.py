@@ -26,7 +26,6 @@ def test_profile_no_auth(_data):
 
 def test_profile_user_ok(_data, user_headers):
     r = requests.get(_data["url"], headers=user_headers)
-    print(f"hellolb{r.text}{user_headers}")
     assert r.status_code == 200
 
 # def test_profile_admin_ok(_data, admin_headers):
