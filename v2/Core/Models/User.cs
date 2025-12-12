@@ -1,4 +1,3 @@
-
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
@@ -18,6 +17,9 @@ public class User
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public int? BirthYear { get; set; }
     public required bool IsActive { get; set; } = true;
+
+    public Guid? OrganizationID { get; set; }
+    public Organization? Organization { get; set; }
 
     public required ICollection<Vehicle> Vehicles { get; set; }
     public required ICollection<Session> Sessions { get; set; }

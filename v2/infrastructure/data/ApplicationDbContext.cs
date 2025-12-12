@@ -20,6 +20,7 @@ namespace v2.Infrastructure.Data
             public virtual DbSet<ParkingLot> ParkingLots { get; set; }
             public virtual DbSet<DiscountCode> DiscountCodes { get; set; }
             public virtual DbSet<DiscountCodeUser> DiscountCodeUsers { get; set; }
+            public virtual DbSet<Organization> Organizations { get; set; }
 
             public virtual DbSet<Invoice> Invoices { get; set; }
 
@@ -40,6 +41,12 @@ namespace v2.Infrastructure.Data
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
                         entity.Property(u => u.BirthYear);
                         entity.Property(u => u.IsActive).HasDefaultValueSql("1");
+
+                        entity.HasOne(u => u.Organization)
+                        .WithMany(o => o.Users)
+                        .HasForeignKey(u => u.OrganizationID)
+                        .OnDelete(DeleteBehavior.SetNull);
+
                         modelBuilder.Entity<User>()
                         .HasOne(u => u.IdentityUser)
                         .WithOne()
@@ -188,6 +195,11 @@ namespace v2.Infrastructure.Data
 
                   entity.Property(d => d.AllowedLocation)
                         .HasMaxLength(150);
+
+                  entity.HasOne(d => d.Organization)
+                        .WithMany(o => o.DiscountCodes)
+                        .HasForeignKey(d => d.OrganizationId)
+                        .OnDelete(DeleteBehavior.SetNull);
                   });
 
                   modelBuilder.Entity<DiscountCodeUser>(entity =>
@@ -208,6 +220,26 @@ namespace v2.Infrastructure.Data
                         .OnDelete(DeleteBehavior.Cascade);
                   });
 
+                  modelBuilder.Entity<Organization>(entity =>
+                  {
+                  entity.HasKey(o => o.ID);
+
+                  entity.Property(o => o.Name)
+                        .IsRequired()
+                        .HasMaxLength(150);
+
+                  entity.Property(o => o.Address)
+                        .HasMaxLength(250);
+
+                  entity.Property(o => o.ContactEmail)
+                        .HasMaxLength(150);
+
+                  entity.Property(o => o.ContactPhone)
+                        .HasMaxLength(50);
+
+                  entity.Property(o => o.CreatedAt)
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                  });
             }
       }
 }
