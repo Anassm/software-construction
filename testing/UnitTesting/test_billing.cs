@@ -342,4 +342,37 @@ public async Task GetInvoiceDetails_InvoiceNotFound()
     Assert.Equal(404, result.statusCode);
 }
 
+[Fact]
+public async Task GetInvoiceDetails_EmployeeSuccess()
+{
+    
+    var identityEmployee = new IdentityUser
+    {
+        UserName = "employee",
+        Id = Guid.NewGuid().ToString()
+    };
+
+    var employee = new User
+    {
+        ID = Guid.NewGuid(),
+        IdentityUserId = identityEmployee.Id,
+        IdentityUser = identityEmployee,
+        Username = "employee",
+        Name = "Employee User",
+        Email = "employee@example.com",
+        PhoneNumber = "1234567890",
+        Role = "employee",
+        BirthYear = 1990,
+        IsActive = true,
+        Vehicles = new List<Vehicle>(),
+        Sessions = new List<Session>(),
+        Reservations = new List<Reservation>()
+    };
+    _context.Users.Add(employee);
+    _context.SaveChanges();
+
+    var result = await _service.GetInvoiceDetailsAsync(_invoice1.ID, employee.IdentityUserId);
+    Assert.Equal(200, result.statusCode);
+}
+
 }
