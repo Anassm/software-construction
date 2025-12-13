@@ -487,5 +487,83 @@ public async Task CreateBundleInvoice_AdminSuccess()
     Assert.Equal(201, result.statusCode);
 }
 
+[Fact]
+public async Task CreateBundleInvoice_EmployeeSuccess()
+{
+
+    var identityEmployee = new IdentityUser
+    {
+        UserName = "employee",
+        Id = Guid.NewGuid().ToString()
+    };
+
+    var employee = new User
+    {
+        ID = Guid.NewGuid(),
+        IdentityUserId = identityEmployee.Id,
+        IdentityUser = identityEmployee,
+        Username = "employee",
+        Name = "Employee User",
+        Email = "employee@example.com",
+        PhoneNumber = "1234567890",
+        Role = "employee",
+        BirthYear = 1990,
+        IsActive = true,
+        Vehicles = new List<Vehicle>(),
+        Sessions = new List<Session>(),
+        Reservations = new List<Reservation>()
+    };
+    _context.Users.Add(employee);
+    _context.SaveChanges();
+
+    var dto = new CreateBundleInvoiceDto
+    {
+        SessionIds = new List<Guid> { _session1.ID, _session2.ID }
+    };
+
+    var result = await _service.CreateBundleInvoiceAsync(dto, employee.IdentityUserId);
+    Assert.Equal(201, result.statusCode);
+}
+
+[Fact]
+public async Task CreateBundleInvoice_BusinessUserSuccess()
+{
+    
+    var identityBusiness = new IdentityUser
+    {
+        UserName = "business",
+        Id = Guid.NewGuid().ToString()
+    };
+
+    var businessUser = new User
+    {
+        ID = Guid.NewGuid(),
+        IdentityUserId = identityBusiness.Id,
+        IdentityUser = identityBusiness,
+        Username = "business",
+        Name = "Business User",
+        Email = "business@example.com",
+        PhoneNumber = "1234567890",
+        Role = "business",
+        BirthYear = 1990,
+        IsActive = true,
+        Vehicles = new List<Vehicle>(),
+        Sessions = new List<Session>(),
+        Reservations = new List<Reservation>()
+    };
+    _context.Users.Add(businessUser);
+    _context.SaveChanges();
+
+    var dto = new CreateBundleInvoiceDto
+    {
+        SessionIds = new List<Guid> { _session1.ID, _session2.ID }
+    };
+
+    var result = await _service.CreateBundleInvoiceAsync(dto, businessUser.IdentityUserId);
+    Assert.Equal(201, result.statusCode);
+}
+
+
+
 
 }
