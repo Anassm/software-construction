@@ -375,4 +375,44 @@ public async Task GetInvoiceDetails_EmployeeSuccess()
     Assert.Equal(200, result.statusCode);
 }
 
+[Fact]
+public async Task GetInvoiceDetails_CorrectInvoiceStructure()
+{
+    var result = await _service.GetInvoiceDetailsAsync(_invoice1.ID, _admin.IdentityUserId);
+    Assert.Equal(200, result.statusCode);
+
+    var dataType = result.data.GetType();
+    var invoiceProperty = dataType.GetProperty("invoice");
+    var invoice = invoiceProperty.GetValue(result.data);
+
+    var invoiceType = invoice.GetType();
+    Assert.NotNull(invoiceType.GetProperty("id").GetValue(invoice));
+    Assert.NotNull(invoiceType.GetProperty("invoiceNumber").GetValue(invoice));
+    Assert.NotNull(invoiceType.GetProperty("totalAmount").GetValue(invoice));
+    Assert.NotNull(invoiceType.GetProperty("status").GetValue(invoice));
+}
+
+[Fact]
+public async Task GetInvoiceDetails_IncludesCustomerDetails()
+{
+    var result = await _service.GetInvoiceDetailsAsync(_invoice1.ID, _admin.IdentityUserId);
+    Assert.Equal(200, result.statusCode);
+
+    var dataType = result.data.GetType();
+    var invoiceProperty = dataType.GetProperty("invoice");
+    var invoice = invoiceProperty.GetValue(result.data);
+
+    
+    var invoiceType = invoice.GetType();
+    var customer = invoiceType.GetProperty("customer").GetValue(invoice);
+    Assert.NotNull(customer);
+
+    var customerType = customer.GetType();
+    Assert.NotNull(customerType.GetProperty("id").GetValue(customer));
+    Assert.NotNull(customerType.GetProperty("username").GetValue(customer));
+    Assert.NotNull(customerType.GetProperty("name").GetValue(customer));
+    Assert.NotNull(customerType.GetProperty("email").GetValue(customer));
+}
+
+
 }
