@@ -110,12 +110,20 @@ public class BillingServiceTests
             ID = Guid.NewGuid(),
             Name = "Test Parking",
             Location = "Amsterdam",
+            Address = "Test Street 123",
             Capacity = 100,
-            HourlyTariff = 2.50f,
-            DayTariff = 20.00f
+            Reserved = 0,
+            Tariff = 2.50f,
+            DayTariff = 20.00f,
+            latitude = 52.3676f,
+            longitude = 4.9041f,
+            Reservations = new List<Reservation>(),
+            Sessions = new List<Session>()
         };
         _context.ParkingLots.Add(parkingLot);
+        _context.SaveChanges();
 
+        // Voeg sessions toe
         var session1 = new Session
         {
             ID = Guid.NewGuid(),
@@ -126,7 +134,9 @@ public class BillingServiceTests
             Price = 5.00f,
             PaymentStatus = PaymentStatus.Pending,
             UserID = _user.ID,
-            ParkingLotID = parkingLot.ID
+            ParkingLotID = parkingLot.ID,
+            User = _user,
+            ParkingLot = parkingLot
         };
 
         var session2 = new Session
@@ -139,7 +149,9 @@ public class BillingServiceTests
             Price = 7.50f,
             PaymentStatus = PaymentStatus.Pending,
             UserID = _user.ID,
-            ParkingLotID = parkingLot.ID
+            ParkingLotID = parkingLot.ID,
+            User = _user,
+            ParkingLot = parkingLot
         };
 
         _context.Sessions.Add(session1);
@@ -460,6 +472,19 @@ public async Task GetInvoiceDetails_IncludesCustomerDetails()
     Assert.NotNull(customerType.GetProperty("username").GetValue(customer));
     Assert.NotNull(customerType.GetProperty("name").GetValue(customer));
     Assert.NotNull(customerType.GetProperty("email").GetValue(customer));
+}
+
+[Fact]
+public async Task CreateBundleInvoice_AdminSuccess()
+{
+    var dto = new CreateBundleInvoiceDto
+    {
+        SessionIds = new List<Guid> { _session1.ID, _session2.ID },
+        CompanyName = "Test Company"
+    };
+
+    var result = await _service.CreateBundleInvoiceAsync(dto, _admin.IdentityUserId);
+    Assert.Equal(201, result.statusCode);
 }
 
 
