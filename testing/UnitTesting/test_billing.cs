@@ -20,6 +20,9 @@ public class BillingServiceTests
     private readonly Invoice _invoice1;
     private readonly Invoice _invoice2;
 
+    private readonly Session _session1;  
+    private readonly Session _session2;  
+
     public BillingServiceTests()
     {
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
@@ -101,6 +104,51 @@ public class BillingServiceTests
             UserID = _user.ID,
             User = _user
         };
+
+        var parkingLot = new ParkingLot
+        {
+            ID = Guid.NewGuid(),
+            Name = "Test Parking",
+            Location = "Amsterdam",
+            Capacity = 100,
+            HourlyTariff = 2.50f,
+            DayTariff = 20.00f
+        };
+        _context.ParkingLots.Add(parkingLot);
+
+        var session1 = new Session
+        {
+            ID = Guid.NewGuid(),
+            LicensePlate = "ABC123",
+            StartTime = DateTime.UtcNow.AddHours(-2),
+            EndTime = DateTime.UtcNow,
+            duration = 2,
+            Price = 5.00f,
+            PaymentStatus = PaymentStatus.Pending,
+            UserID = _user.ID,
+            ParkingLotID = parkingLot.ID
+        };
+
+        var session2 = new Session
+        {
+            ID = Guid.NewGuid(),
+            LicensePlate = "XYZ789",
+            StartTime = DateTime.UtcNow.AddHours(-3),
+            EndTime = DateTime.UtcNow,
+            duration = 3,
+            Price = 7.50f,
+            PaymentStatus = PaymentStatus.Pending,
+            UserID = _user.ID,
+            ParkingLotID = parkingLot.ID
+        };
+
+        _context.Sessions.Add(session1);
+        _context.Sessions.Add(session2);
+        _context.SaveChanges();
+
+
+        _session1 = session1;
+        _session2 = session2;
 
         _context.Invoices.Add(_invoice1);
         _context.Invoices.Add(_invoice2);
