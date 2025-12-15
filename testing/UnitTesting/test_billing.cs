@@ -622,4 +622,38 @@ public async Task GetUserBillingSummary_RegularUserForbidden()
     Assert.Equal(403, result.statusCode);
 }
 
+
+[Fact]
+public async Task GetUserBillingSummary_RequestingUserNotFound()
+{
+    var result = await _service.GetUserBillingSummaryAsync(_user.Username, Guid.NewGuid().ToString());
+    Assert.Equal(404, result.statusCode);
+}
+
+[Fact]
+public async Task GetUserBillingSummary_TargetUserNotFound()
+{
+    var result = await _service.GetUserBillingSummaryAsync("nonexistent", _admin.IdentityUserId);
+    Assert.Equal(404, result.statusCode);
+}
+
+[Fact]
+public async Task GetUserBillingSummary_CorrectInvoiceCount()
+{
+    var result = await _service.GetUserBillingSummaryAsync(_user.Username, _admin.IdentityUserId);
+    Assert.Equal(200, result.statusCode);
+
+    var dataType = result.data.GetType();
+    var dataProperty = dataType.GetProperty("data");
+    var data = dataProperty.GetValue(result.data);
+
+    var dataObjType = data.GetType();
+    var summaryProperty = dataObjType.GetProperty("Summary");
+    var summary = summaryProperty.GetValue(data);
+
+    var summaryType = summary.GetType();
+    var invoiceCount = summaryType.GetProperty("TotalInvoices").GetValue(summary);
+
+    Assert.Equal(2, invoiceCount); 
+}
 }
