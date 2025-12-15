@@ -87,6 +87,8 @@ builder.Services.AddScoped<IVehicles, VehicleService>();
 builder.Services.AddScoped<IParkingLots, ParkingLotService>();
 builder.Services.AddScoped<IPayment, PaymentService>();
 builder.Services.AddScoped<IBilling, BillingService>();
+builder.Services.AddScoped<IOrganizations, OrganizationService>();
+
 
 
 // --- Controllers & Swagger ---

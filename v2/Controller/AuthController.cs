@@ -105,5 +105,4 @@ public class AuthController : ControllerBase
             _ => StatusCode(StatusCodes.Status501NotImplemented, new { error = $"Unhandled statuscode: {result.statusCode}" })
         };
     }
-
 }

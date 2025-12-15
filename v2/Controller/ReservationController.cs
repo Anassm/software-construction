@@ -15,12 +15,16 @@ public class ReservationController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] ReservationCreateRequest request)
     {
+        var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (identityUserId == null)
+            return StatusCode(StatusCodes.Status401Unauthorized,
+                new { error = "Unauthorized: Invalid or missing session token" });
         if (!ModelState.IsValid)
             return BadRequest(new { error = "Invalid request body." });
 
         try
         {
-            var created = await _reservationService.CreateReservationAsync(request);
+            var created = await _reservationService.CreateReservationAsync(request, identityUserId);
 
             var response = new ReservationResponse
             {

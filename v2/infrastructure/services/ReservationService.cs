@@ -11,8 +11,11 @@ public class ReservationService : IReservation
     private readonly ApplicationDbContext _db;
     public ReservationService(ApplicationDbContext db) => _db = db;
 
-    public async Task<Reservation> CreateReservationAsync(ReservationCreateRequest request)
+    public async Task<Reservation> CreateReservationAsync(ReservationCreateRequest request, string identityUserId)
     {
+        var user = await _db.Users
+            .FirstOrDefaultAsync(u => u.IdentityUserId == identityUserId)
+            ?? throw new ArgumentException("User not found.");
         if (request.EndDate <= request.StartDate)
             throw new ArgumentException("EndDate must be greater than StartDate.");
 
@@ -48,6 +51,7 @@ public class ReservationService : IReservation
             Status      = "Pending",
             TotalPrice  = 0f,
             DiscountCode  = request.DiscountCode,
+            OrganizationID = user.OrganizationID != null ? user.OrganizationID : Guid.Empty,
             UserID      = vehicle.UserID,
             ParkingLotID = lot.ID,
             VehicleID   = vehicle.ID,

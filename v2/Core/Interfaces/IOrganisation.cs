@@ -19,5 +19,6 @@ namespace v2.Core.Interfaces
             float? minAmount = null,
             float? maxAmount = null,
             bool exportAsCsv = false);
+        Task<(int statusCode, object data)> assignUserToOrganization(string identityUserId, Guid organizationId);
     }
 }

@@ -4,6 +4,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace v2.Core.DTOs
 {
+    public class AssignUserDto
+    {
+        public required Guid OrganizationId { get; set; }
+    }
     public class OrganizationCreateRequest
     {
         [Required]
@@ -78,5 +82,30 @@ namespace v2.Core.DTOs
         public IEnumerable<OrganizationUserDto> Users { get; set; } = new List<OrganizationUserDto>();
         public IEnumerable<OrganizationVehicleDto> Vehicles { get; set; } = new List<OrganizationVehicleDto>();
         public IEnumerable<OrganizationDiscountCodeDto> DiscountCodes { get; set; } = new List<OrganizationDiscountCodeDto>();
+    }
+
+    public class OrganizationActionsResponse
+    {
+        public string Status { get; set; } = "Success";
+        public List<OrganizationReservationDto> Reservations { get; set; } = [];
+        public List<OrganizationSessionDto> Sessions { get; set; } = [];
+    }
+
+    public class OrganizationReservationDto
+    {
+        public Guid ID { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
+        public Guid ParkingLotID { get; set; }
+        public float TotalPrice { get; set; }
+    }
+
+    public class OrganizationSessionDto
+    {
+        public Guid ID { get; set; }
+        public DateTime StartTime { get; set; }
+        public DateTime? EndTime { get; set; }
+        public Guid ParkingLotID { get; set; }
+        public float Price { get; set; }
     }
 }

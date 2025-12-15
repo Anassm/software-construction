@@ -317,14 +317,13 @@ namespace v2.infrastructure.Services
                     reservationsQuery = reservationsQuery.Where(r => r.TotalPrice <= maxAmount.Value);
 
                 var reservations = await reservationsQuery
-                    .Select(r => new
+                    .Select(s => new OrganizationReservationDto
                     {
-                        r.ID,
-                        r.StartDate,
-                        r.EndDate,
-                        TotalTime = r.EndDate - r.StartDate,
-                        r.ParkingLotID,
-                        r.TotalPrice
+                        ID = s.ID,
+                        StartDate = s.StartDate,
+                        EndDate = s.EndDate,
+                        ParkingLotID = s.ParkingLotID,
+                        TotalPrice = s.TotalPrice
                     })
                     .ToListAsync();
 
@@ -347,52 +346,55 @@ namespace v2.infrastructure.Services
                     sessionsQuery = sessionsQuery.Where(s => s.Price <= maxAmount.Value);
 
                 var sessions = await sessionsQuery
-                    .Select(s => new
+                    .Select(s => new OrganizationSessionDto
                     {
-                        s.ID,
-                        s.StartTime,
-                        s.EndTime,
-                        TotalTime = s.EndTime - s.StartTime,
-                        s.ParkingLotID,
-                        s.Price
+                        ID = s.ID,
+                        StartTime = s.StartTime,
+                        EndTime = s.EndTime,
+                        ParkingLotID = s.ParkingLotID,
+                        Price = s.Price
                     })
                     .ToListAsync();
 
-                if (exportAsCsv)
+                var response = new OrganizationActionsResponse
                 {
-                    var csvBuilder = new StringBuilder();
-
-                    csvBuilder.AppendLine("Type,ID,StartDate,EndDate,TotalTime,ParkingLotID,Amount");
-                    foreach (var r in reservations)
-                    {
-                        csvBuilder.AppendLine($"Reservation,{r.ID},{r.StartDate},{r.EndDate},{r.TotalTime},{r.ParkingLotID},{r.TotalPrice}");
-                    }
-
-                    foreach (var s in sessions)
-                    {
-                        csvBuilder.AppendLine($"Session,{s.ID},{s.StartTime},{s.EndTime},{s.TotalTime},{s.ParkingLotID},{s.Price}");
-                    }
-
-                    var csvData = csvBuilder.ToString();
-
-                    return (200, new
-                    {
-                        status = "Success",
-                        filename = "parking_actions.csv",
-                        csv = csvData
-                    });
-                }
-
-                return (200, new
-                {
-                    status = "Success",
-                    reservations,
-                    sessions
-                });
+                    Reservations = reservations,
+                    Sessions = sessions
+                };
+                return (200, response);
             }
             catch (Exception ex)
             {
                 return (500, new { error = "An unexpected error occurred. Message:" + ex.Message });
+            }
+        }
+        public async Task<(int statusCode, object data)> assignUserToOrganization(string identityUserId, Guid organizationId)
+        {
+            try
+            {
+                var user = await _db.Users.FirstOrDefaultAsync(u => u.IdentityUserId == identityUserId);
+                if (user == null)
+                    return (404, new { error = "User not found" });
+
+                if (organizationId == Guid.Empty)
+                {
+                    return (400, new { error = "Invalid organization ID." });
+                }
+
+                var organization = await _db.Organizations.FirstOrDefaultAsync(o => o.ID == organizationId);
+                if (organization == null)
+                    return (404, new { error = "Organization not found" });
+
+                user.OrganizationID = organizationId;
+                user.IsOrganizationAdmin = true;
+                _db.Users.Update(user);
+                await _db.SaveChangesAsync();
+
+                return (200, new { status = "Success", message = "User assigned to organization successfully." });
+            }
+            catch
+            {
+                return (500, new { error = "An unexpected error occurred." });
             }
         }
     }

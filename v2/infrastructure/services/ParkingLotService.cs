@@ -223,21 +223,25 @@ public class ParkingLotService : IParkingLots
     {
         try
         {
-            
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.ID == userId);
+            if (user == null && userId != Guid.Empty)
+            {
+                return (404, new { error = "User not found" });
+            }
             var lot = await _db.ParkingLots.FirstOrDefaultAsync(p => p.ID == parkingLotId);
             if (lot == null)
             {
                 return (404, new { error = "Parking lot not found" });
             }
 
-          
+
             var activeSessionsCount = await _db.Sessions.CountAsync(s => s.ParkingLotID == parkingLotId && s.EndTime == null);
             if (activeSessionsCount >= lot.Capacity)
             {
                 return (409, new { error = "Parking lot is full" });
             }
 
-      
+
             var existingActiveSession = await _db.Sessions.FirstOrDefaultAsync(s =>
                 s.ParkingLotID == parkingLotId &&
                 s.LicensePlate == licensePlate &&
@@ -257,20 +261,21 @@ public class ParkingLotService : IParkingLots
                 LicensePlate = licensePlate,
                 ParkingLotID = parkingLotId,
                 ParkingLot = lot,
+                OrganizationID = user.OrganizationID != null ? user.OrganizationID : Guid.Empty,
                 // UserID = userId,
                 PaymentStatus = PaymentStatus.Unpaid
             };
-            
-             if (userId != Guid.Empty)
+
+            if (userId != Guid.Empty)
             {
                 newSession.UserID = userId;
             }
 
-      
+
             _db.Sessions.Add(newSession);
             await _db.SaveChangesAsync();
 
-       
+
             return (201, new
             {
                 status = "Success",
@@ -286,96 +291,96 @@ public class ParkingLotService : IParkingLots
                 }
             });
         }
-       catch (Exception ex)
-    {
-        return (500, new
+        catch (Exception ex)
         {
-            error = "An unexpected error occurred while starting the session.",
-            detail = ex.Message,
-            inner = ex.InnerException?.Message,
-            inner2 = ex.InnerException?.InnerException?.Message
-        });
-    }
+            return (500, new
+            {
+                error = "An unexpected error occurred while starting the session.",
+                detail = ex.Message,
+                inner = ex.InnerException?.Message,
+                inner2 = ex.InnerException?.InnerException?.Message
+            });
+        }
 
     }
 
     public async Task<(int statusCode, object message)> StopSessionAsync(Guid parkingLotId, string licensePlate, Guid userId)
-{
-    try
     {
-        
-        var query = _db.Sessions
-            .Include(s => s.ParkingLot)
-            .Where(s =>
-                s.ParkingLotID == parkingLotId &&
-                s.LicensePlate == licensePlate &&
-                s.EndTime == null);
-
-       
-        if (userId != Guid.Empty)
+        try
         {
-            query = query.Where(s => s.UserID == userId);
-        }
 
-        var activeSession = await query.FirstOrDefaultAsync();
+            var query = _db.Sessions
+                .Include(s => s.ParkingLot)
+                .Where(s =>
+                    s.ParkingLotID == parkingLotId &&
+                    s.LicensePlate == licensePlate &&
+                    s.EndTime == null);
 
-        if (activeSession == null)
-        {
-            return (404, new { error = "No active session found for this license plate and user in this parking lot." });
-        }
 
-       
-        activeSession.EndTime = DateTime.UtcNow;
-
-        
-        var duration = activeSession.EndTime.Value - activeSession.StartTime;
-        double totalHours = duration.TotalHours;
-
-        float cost = (float)totalHours * activeSession.ParkingLot.Tariff;
-
-        
-        if (totalHours > (activeSession.ParkingLot.DayTariff / activeSession.ParkingLot.Tariff))
-        {
-            cost = activeSession.ParkingLot.DayTariff;
-        }
-
-        _db.Sessions.Update(activeSession);
-        await _db.SaveChangesAsync();
-
-        
-        return (200, new
-        {
-            status = "Success",
-            message = "Session stopped",
-            session = new
+            if (userId != Guid.Empty)
             {
-                id = activeSession.ID,
-                licensePlate = activeSession.LicensePlate,
-                startTime = activeSession.StartTime,
-                endTime = activeSession.EndTime,
-                parkingLotId = activeSession.ParkingLotID,
-                paymentStatus = activeSession.PaymentStatus,
-                price = activeSession.Price,
-            },
-            billing = new
-            {
-                durationInMinutes = duration.TotalMinutes,
-                calculatedCost = cost
+                query = query.Where(s => s.UserID == userId);
             }
-        });
+
+            var activeSession = await query.FirstOrDefaultAsync();
+
+            if (activeSession == null)
+            {
+                return (404, new { error = "No active session found for this license plate and user in this parking lot." });
+            }
+
+
+            activeSession.EndTime = DateTime.UtcNow;
+
+
+            var duration = activeSession.EndTime.Value - activeSession.StartTime;
+            double totalHours = duration.TotalHours;
+
+            float cost = (float)totalHours * activeSession.ParkingLot.Tariff;
+
+
+            if (totalHours > (activeSession.ParkingLot.DayTariff / activeSession.ParkingLot.Tariff))
+            {
+                cost = activeSession.ParkingLot.DayTariff;
+            }
+
+            _db.Sessions.Update(activeSession);
+            await _db.SaveChangesAsync();
+
+
+            return (200, new
+            {
+                status = "Success",
+                message = "Session stopped",
+                session = new
+                {
+                    id = activeSession.ID,
+                    licensePlate = activeSession.LicensePlate,
+                    startTime = activeSession.StartTime,
+                    endTime = activeSession.EndTime,
+                    parkingLotId = activeSession.ParkingLotID,
+                    paymentStatus = activeSession.PaymentStatus,
+                    price = activeSession.Price,
+                },
+                billing = new
+                {
+                    durationInMinutes = duration.TotalMinutes,
+                    calculatedCost = cost
+                }
+            });
+        }
+        catch (Exception)
+        {
+            return (500, new { error = "An unexpected error occurred while stopping the session." });
+        }
     }
-    catch (Exception)
-    {
-        return (500, new { error = "An unexpected error occurred while stopping the session." });
-    }
-}
 
 
     public async Task<(int statusCode, object message)> GetAllSessionsForLotAsync(Guid parkingLotId)
     {
         try
         {
-          
+
             var lotExists = await _db.ParkingLots.AnyAsync(p => p.ID == parkingLotId);
             if (!lotExists)
             {
@@ -384,19 +389,19 @@ public class ParkingLotService : IParkingLots
 
             var sessions = await _db.Sessions
                 .Where(s => s.ParkingLotID == parkingLotId)
-                .OrderByDescending(s => s.StartTime) 
+                .OrderByDescending(s => s.StartTime)
                 .ToListAsync();
 
             return (200, new { status = "Success", sessions });
         }
         catch (Exception ex)
         {
-           
+
             return (500, new { error = "An unexpected error occurred." });
         }
     }
 
- 
+
     public async Task<(int statusCode, object message)> GetSessionByIdAsync(Guid parkingLotId, Guid sessionId)
     {
         try
@@ -413,7 +418,7 @@ public class ParkingLotService : IParkingLots
         }
         catch (Exception ex)
         {
-           
+
             return (500, new { error = "An unexpected error occurred." });
         }
     }
@@ -430,7 +435,7 @@ public class ParkingLotService : IParkingLots
                 return (404, new { error = "Session not found in this parking lot" });
             }
 
-          
+
 
             _db.Sessions.Remove(session);
             await _db.SaveChangesAsync();
@@ -439,7 +444,7 @@ public class ParkingLotService : IParkingLots
         }
         catch (Exception ex)
         {
-     
+
             return (500, new { error = "An unexpected error occurred." });
         }
     }
