@@ -20,4 +20,7 @@ public class Reservation
     public User? User { get; set; }
     public ParkingLot? ParkingLot { get; set; }
     public Vehicle? Vehicle { get; set; }
+
+    public Guid? OrganizationID { get; set; }
+    public Organization? Organization { get; set; }
 }

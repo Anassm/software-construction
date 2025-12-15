@@ -17,7 +17,7 @@ public class User
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public int? BirthYear { get; set; }
     public required bool IsActive { get; set; } = true;
-
+    public bool IsOrganizationAdmin { get; set; } = false;
     public Guid? OrganizationID { get; set; }
     public Organization? Organization { get; set; }
 

@@ -15,5 +15,8 @@ namespace v2.Core.Models
 
         public ICollection<User> Users { get; set; } = new List<User>();
         public ICollection<DiscountCode> DiscountCodes { get; set; } = new List<DiscountCode>();
+
+        public ICollection<Session> Sessions { get; set; } = new List<Session>();
+        public ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
     }
 }

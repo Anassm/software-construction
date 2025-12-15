@@ -18,6 +18,9 @@ public class Session
     public User? User { get; set; }
     public ParkingLot? ParkingLot { get; set; }
     public Payment? Payment { get; set; }
+
+    public Guid? OrganizationID { get; set; }
+    public Organization? Organization { get; set; }
 }
 
 public enum PaymentStatus

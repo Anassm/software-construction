@@ -42,10 +42,12 @@ namespace v2.Infrastructure.Data
                         entity.Property(u => u.BirthYear);
                         entity.Property(u => u.IsActive).HasDefaultValueSql("1");
 
+                        entity.Property(u => u.IsOrganizationAdmin).HasDefaultValueSql("0");
                         entity.HasOne(u => u.Organization)
                         .WithMany(o => o.Users)
                         .HasForeignKey(u => u.OrganizationID)
                         .OnDelete(DeleteBehavior.SetNull);
+                        
 
                         modelBuilder.Entity<User>()
                         .HasOne(u => u.IdentityUser)
@@ -125,6 +127,12 @@ namespace v2.Infrastructure.Data
                         .WithMany(v => v.Reservations)
                         .HasForeignKey(r => r.VehicleID)
                         .OnDelete(DeleteBehavior.Cascade);
+
+                        entity.HasOne(r => r.Organization)
+                        .WithMany(o => o.Reservations)
+                        .HasForeignKey(r => r.OrganizationID)
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired(false);
                   });
 
 
@@ -138,6 +146,8 @@ namespace v2.Infrastructure.Data
                         entity.Property(s => s.duration).IsRequired();
                         entity.Property(s => s.Price).IsRequired().HasDefaultValue(0);
                         entity.Property(s => s.PaymentStatus).IsRequired().HasDefaultValue(PaymentStatus.Unpaid);
+                        
+                        
 
                         entity.HasOne(s => s.User)
                         .WithMany(u => u.Sessions)
@@ -148,6 +158,12 @@ namespace v2.Infrastructure.Data
                         .WithMany(p => p.Sessions)
                         .HasForeignKey(s => s.ParkingLotID)
                         .OnDelete(DeleteBehavior.Cascade);
+
+                        entity.HasOne(s => s.Organization)
+                        .WithMany(o => o.Sessions)
+                        .HasForeignKey(s => s.OrganizationID)
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired(false);
                   });
 
                   modelBuilder.Entity<Payment>(entity =>

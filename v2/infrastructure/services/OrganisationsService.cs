@@ -249,5 +249,10 @@ namespace v2.infrastructure.Services
                 return (500, new { error = "An unexpected error occurred." });
             }
         }
+
+        // public async Task<(int StatusCode, object data)> GetParkingActions(Guid organizationId)
+        // {
+            
+        // }
     }
 }
