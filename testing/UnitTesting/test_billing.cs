@@ -656,4 +656,65 @@ public async Task GetUserBillingSummary_CorrectInvoiceCount()
 
     Assert.Equal(2, invoiceCount); 
 }
+
+
+[Fact]
+public async Task GetUserBillingSummary_CorrectTotalAmount()
+{
+    var result = await _service.GetUserBillingSummaryAsync(_user.Username, _admin.IdentityUserId);
+    Assert.Equal(200, result.statusCode);
+
+    var dataType = result.data.GetType();
+    var dataProperty = dataType.GetProperty("data");
+    var data = dataProperty.GetValue(result.data);
+
+    var dataObjType = data.GetType();
+    var summaryProperty = dataObjType.GetProperty("Summary");
+    var summary = summaryProperty.GetValue(data);
+
+    var summaryType = summary.GetType();
+    var totalAmount = summaryType.GetProperty("TotalInvoicedAmount").GetValue(summary);
+
+    Assert.Equal(125.00f, totalAmount);
+}
+
+[Fact]
+public async Task GetUserBillingSummary_CorrectPaidCount()
+{
+    var result = await _service.GetUserBillingSummaryAsync(_user.Username, _admin.IdentityUserId);
+    Assert.Equal(200, result.statusCode);
+
+    var dataType = result.data.GetType();
+    var dataProperty = dataType.GetProperty("data");
+    var data = dataProperty.GetValue(result.data);
+
+    var dataObjType = data.GetType();
+    var summaryProperty = dataObjType.GetProperty("Summary");
+    var summary = summaryProperty.GetValue(data);
+
+    var summaryType = summary.GetType();
+    var totalPaid = summaryType.GetProperty("TotalPaid").GetValue(summary);
+
+    Assert.Equal(1, totalPaid); 
+}
+
+[Fact]
+public async Task GetUserBillingSummary_CorrectOpenCount()
+{
+    var result = await _service.GetUserBillingSummaryAsync(_user.Username, _admin.IdentityUserId);
+    Assert.Equal(200, result.statusCode);
+
+    var dataType = result.data.GetType();
+    var dataProperty = dataType.GetProperty("data");
+    var data = dataProperty.GetValue(result.data);
+
+    var dataObjType = data.GetType();
+    var summaryProperty = dataObjType.GetProperty("Summary");
+    var summary = summaryProperty.GetValue(data);
+
+    var summaryType = summary.GetType();
+    var totalOpen = summaryType.GetProperty("TotalOpen").GetValue(summary);
+
+    Assert.Equal(1, totalOpen); 
+}
 }
