@@ -1,11 +1,13 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 using Microsoft.EntityFrameworkCore;
 using v2.Core.DTOs;
 using v2.Core.Interfaces;
 using v2.Core.Models;
 using v2.Infrastructure.Data;
+using System.Text;
 
 namespace v2.infrastructure.Services
 {
@@ -250,9 +252,148 @@ namespace v2.infrastructure.Services
             }
         }
 
-        // public async Task<(int StatusCode, object data)> GetParkingActions(Guid organizationId)
-        // {
-            
-        // }
+        public async Task<(int statusCode, object data)> GetParkingActions(
+            string identityUserId,
+            DateTime? startDate,
+            DateTime? endDate,
+            Guid? parkingLotId,
+            float? minAmount,
+            float? maxAmount,
+            bool exportAsCsv = false)
+        {
+            try
+            {
+                var user = await _db.Users.FirstOrDefaultAsync(u => u.IdentityUserId == identityUserId);
+                if (user == null)
+                    return (404, new { error = "User not found" });
+
+                if (!user.OrganizationID.HasValue)
+                {
+                    return (400, new { error = "User is not associated with any organization." });
+                }
+
+                if (!user.IsOrganizationAdmin)
+                {
+                    return (403, new { error = "Forbidden: User does not have permission to access organization data." });
+                }
+
+                if (endDate.HasValue && startDate.HasValue && endDate < startDate)
+                {
+                    return (400, new { error = "Invalid date range: endDate cannot be earlier than startDate." });
+                }
+
+                if (minAmount.HasValue && maxAmount.HasValue && maxAmount < minAmount)
+                {
+                    return (400, new { error = "Invalid amount range: maxAmount cannot be less than minAmount." });
+                }
+
+                var organization = await _db.Organizations
+                    .FirstOrDefaultAsync(o => o.Users.Any(u => u.IdentityUserId == identityUserId));
+
+                if (organization == null)
+                {
+                    return (404, new { error = "Organization not found for the given user." });
+                }
+
+                var organizationId = organization.ID;
+
+
+                var reservationsQuery = _db.Reservations
+                    .Where(r => r.OrganizationID == organizationId);
+
+                if (startDate.HasValue)
+                    reservationsQuery = reservationsQuery.Where(r => r.StartDate >= startDate.Value);
+
+                if (endDate.HasValue)
+                    reservationsQuery = reservationsQuery.Where(r => r.EndDate <= endDate.Value);
+
+                if (parkingLotId.HasValue)
+                    reservationsQuery = reservationsQuery.Where(r => r.ParkingLotID == parkingLotId.Value);
+
+                if (minAmount.HasValue)
+                    reservationsQuery = reservationsQuery.Where(r => r.TotalPrice >= minAmount.Value);
+
+                if (maxAmount.HasValue)
+                    reservationsQuery = reservationsQuery.Where(r => r.TotalPrice <= maxAmount.Value);
+
+                var reservations = await reservationsQuery
+                    .Select(r => new
+                    {
+                        r.ID,
+                        r.StartDate,
+                        r.EndDate,
+                        TotalTime = r.EndDate - r.StartDate,
+                        r.ParkingLotID,
+                        r.TotalPrice
+                    })
+                    .ToListAsync();
+
+                var sessionsQuery = _db.Sessions
+                    .Where(s => s.OrganizationID == organizationId);
+
+                if (startDate.HasValue)
+                    sessionsQuery = sessionsQuery.Where(s => s.StartTime >= startDate.Value);
+
+                if (endDate.HasValue)
+                    sessionsQuery = sessionsQuery.Where(s => s.EndTime <= endDate.Value);
+
+                if (parkingLotId.HasValue)
+                    sessionsQuery = sessionsQuery.Where(s => s.ParkingLotID == parkingLotId.Value);
+
+                if (minAmount.HasValue)
+                    sessionsQuery = sessionsQuery.Where(s => s.Price >= minAmount.Value);
+
+                if (maxAmount.HasValue)
+                    sessionsQuery = sessionsQuery.Where(s => s.Price <= maxAmount.Value);
+
+                var sessions = await sessionsQuery
+                    .Select(s => new
+                    {
+                        s.ID,
+                        s.StartTime,
+                        s.EndTime,
+                        TotalTime = s.EndTime - s.StartTime,
+                        s.ParkingLotID,
+                        s.Price
+                    })
+                    .ToListAsync();
+
+                if (exportAsCsv)
+                {
+                    var csvBuilder = new StringBuilder();
+
+                    csvBuilder.AppendLine("Type,ID,StartDate,EndDate,TotalTime,ParkingLotID,Amount");
+                    foreach (var r in reservations)
+                    {
+                        csvBuilder.AppendLine($"Reservation,{r.ID},{r.StartDate},{r.EndDate},{r.TotalTime},{r.ParkingLotID},{r.TotalPrice}");
+                    }
+
+                    foreach (var s in sessions)
+                    {
+                        csvBuilder.AppendLine($"Session,{s.ID},{s.StartTime},{s.EndTime},{s.TotalTime},{s.ParkingLotID},{s.Price}");
+                    }
+
+                    var csvData = csvBuilder.ToString();
+
+                    return (200, new
+                    {
+                        status = "Success",
+                        filename = "parking_actions.csv",
+                        csv = csvData
+                    });
+                }
+
+                return (200, new
+                {
+                    status = "Success",
+                    reservations,
+                    sessions
+                });
+            }
+            catch (Exception ex)
+            {
+                return (500, new { error = "An unexpected error occurred. Message:" + ex.Message });
+            }
+        }
     }
 }

@@ -11,5 +11,13 @@ namespace v2.Core.Interfaces
         Task<(int statusCode, object data)> DeleteAsync(Guid id);
         Task<(int statusCode, object data)> GetAllAsync();
         Task<(int statusCode, object data)> GetByIdAsync(Guid id);
+        Task<(int statusCode, object data)> GetParkingActions(
+            string identityUserId,
+            DateTime? startDate = null,
+            DateTime? endDate = null,
+            Guid? parkingLotId = null,
+            float? minAmount = null,
+            float? maxAmount = null,
+            bool exportAsCsv = false);
     }
 }
