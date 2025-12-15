@@ -123,7 +123,7 @@ public class BillingServiceTests
         _context.ParkingLots.Add(parkingLot);
         _context.SaveChanges();
 
-        // Voeg sessions toe
+   
         var session1 = new Session
         {
             ID = Guid.NewGuid(),
@@ -563,7 +563,63 @@ public async Task CreateBundleInvoice_BusinessUserSuccess()
     Assert.Equal(201, result.statusCode);
 }
 
+[Fact]
+public async Task CreateBundleInvoice_SessionNotFound()
+{
+    var dto = new CreateBundleInvoiceDto
+    {
+        SessionIds = new List<Guid> { _session1.ID, Guid.NewGuid() }  
+    };
 
+    var result = await _service.CreateBundleInvoiceAsync(dto, _admin.IdentityUserId);
+    Assert.Equal(404, result.statusCode);
+}
 
+[Fact]
+public async Task GetUserBillingSummary_AdminCanViewSummary()
+{
+    var result = await _service.GetUserBillingSummaryAsync(_user.Username, _admin.IdentityUserId);
+    Assert.Equal(200, result.statusCode);
+}
+
+[Fact]
+public async Task GetUserBillingSummary_EmployeeCanViewSummary()
+{
+  
+    var identityEmployee = new IdentityUser
+    {
+        UserName = "employee",
+        Id = Guid.NewGuid().ToString()
+    };
+
+    var employee = new User
+    {
+        ID = Guid.NewGuid(),
+        IdentityUserId = identityEmployee.Id,
+        IdentityUser = identityEmployee,
+        Username = "employee",
+        Name = "Employee User",
+        Email = "employee@example.com",
+        PhoneNumber = "1234567890",
+        Role = "employee",
+        BirthYear = 1990,
+        IsActive = true,
+        Vehicles = new List<Vehicle>(),
+        Sessions = new List<Session>(),
+        Reservations = new List<Reservation>()
+    };
+    _context.Users.Add(employee);
+    _context.SaveChanges();
+
+    var result = await _service.GetUserBillingSummaryAsync(_user.Username, employee.IdentityUserId);
+    Assert.Equal(200, result.statusCode);
+}
+
+[Fact]
+public async Task GetUserBillingSummary_RegularUserForbidden()
+{
+    var result = await _service.GetUserBillingSummaryAsync(_admin.Username, _user.IdentityUserId);
+    Assert.Equal(403, result.statusCode);
+}
 
 }
