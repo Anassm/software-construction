@@ -1,8 +1,6 @@
 import pytest
 import requests
 from datetime import datetime, timedelta, timezone
-from uuid import uuid4
-
 
 @pytest.fixture
 def _data():

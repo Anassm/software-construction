@@ -127,6 +127,11 @@ jobs:
       #     cd testing/integratieTesting
       #     pytest test_billing.py
 
+      - name: Test Organizations
+        run: |
+          cd testing/integratieTesting
+          pytest test_organizations.py
+
       - name: Test Discounts
         run: |
           cd testing/integratieTesting
