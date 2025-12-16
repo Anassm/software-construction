@@ -5,10 +5,11 @@ using System.Text;
 using v2.Core.DTOs;
 using Microsoft.AspNetCore.SignalR.Protocol;
 
-namespace v2.Controller
+
+namespace v2.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("organizations")]
     public class OrganizationController : ControllerBase
     {
         private readonly IOrganizations _organizationService;
@@ -18,23 +19,23 @@ namespace v2.Controller
             _organizationService = organizationsService;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreateOrganization([FromBody] OrganizationCreateRequest dto)
-        {
-            var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (identityUserId == null)
-                return StatusCode(StatusCodes.Status401Unauthorized, new { error = "Unauthorized: Invalid or missing session token" });
+        // [HttpPost]
+        // public async Task<IActionResult> CreateOrganization([FromBody] OrganizationCreateRequest dto)
+        // {
+        //     var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        //     if (identityUserId == null)
+        //         return StatusCode(StatusCodes.Status401Unauthorized, new { error = "Unauthorized: Invalid or missing session token" });
 
-            var result = await _organizationService.CreateAsync(dto);
+        //     var result = await _organizationService.CreateAsync(dto);
 
-            return result.statusCode switch
-            {
-                201 => StatusCode(StatusCodes.Status201Created, result.data),
-                409 => StatusCode(StatusCodes.Status409Conflict, result.data),
-                500 => StatusCode(StatusCodes.Status500InternalServerError, result.data),
-                _ => StatusCode(StatusCodes.Status501NotImplemented, new { error = $"Unhandled statuscode: {result.statusCode}" })
-            };
-        }
+        //     return result.statusCode switch
+        //     {
+        //         201 => StatusCode(StatusCodes.Status201Created, result.data),
+        //         409 => StatusCode(StatusCodes.Status409Conflict, result.data),
+        //         500 => StatusCode(StatusCodes.Status500InternalServerError, result.data),
+        //         _ => StatusCode(StatusCodes.Status501NotImplemented, new { error = $"Unhandled statuscode: {result.statusCode}" })
+        //     };
+        // }
 
         // GET: api/parking/actions
         [HttpGet("actions")]
@@ -124,6 +125,69 @@ namespace v2.Controller
                 _ => StatusCode(StatusCodes.Status501NotImplemented, new { error = $"Unhandled statuscode: {result.statusCode}" })
             };
         }
+
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] OrganizationCreateRequest dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var (statusCode, data) = await _organizationService.CreateAsync(dto);
+
+            return statusCode switch
+            {
+                201 => Created($"/organizations/{((dynamic)data).organization.id}", data),
+                409 => Conflict(data),
+                _   => StatusCode(statusCode, data)
+            };
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var (statusCode, data) = await _organizationService.GetAllAsync();
+            return StatusCode(statusCode, data);
+        }
+
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            var (statusCode, data) = await _organizationService.GetByIdAsync(id);
+
+            return statusCode switch
+            {
+                200 => Ok(data),
+                404 => NotFound(data),
+                _   => StatusCode(statusCode, data)
+            };
+        }
+
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] OrganizationUpdateRequest dto)
+        {
+            var (statusCode, data) = await _organizationService.UpdateAsync(id, dto);
+
+            return statusCode switch
+            {
+                200 => Ok(data),
+                404 => NotFound(data),
+                409 => Conflict(data),
+                _   => StatusCode(statusCode, data)
+            };
+        }
+
+        [HttpDelete("{id:guid}")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var (statusCode, data) = await _organizationService.DeleteAsync(id);
+
+            return statusCode switch
+            {
+                200 => Ok(data),
+                404 => NotFound(data),
+                409 => Conflict(data),
+                _   => StatusCode(statusCode, data)
+            };
+        }
     }
 }
-
