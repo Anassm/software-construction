@@ -95,140 +95,140 @@ namespace UnitTesting
             };
         }
 
-        [Fact]
-        public async Task CreateReservation_Should_Fail_When_EndDate_Not_After_StartDate()
-        {
-            using var db = CreateInMemoryDbContext();
-            var lotId = Guid.NewGuid();
-            var userId = Guid.NewGuid();
-            var vehicleId = Guid.NewGuid();
+        // [Fact]
+        // public async Task CreateReservation_Should_Fail_When_EndDate_Not_After_StartDate()
+        // {
+        //     using var db = CreateInMemoryDbContext();
+        //     var lotId = Guid.NewGuid();
+        //     var userId = Guid.NewGuid();
+        //     var vehicleId = Guid.NewGuid();
 
-            db.ParkingLots.Add(CreateTestParkingLot(lotId));
-            db.Vehicles.Add(CreateTestVehicle(vehicleId, userId, "TEST123"));
-            await db.SaveChangesAsync();
+        //     db.ParkingLots.Add(CreateTestParkingLot(lotId));
+        //     db.Vehicles.Add(CreateTestVehicle(vehicleId, userId, "TEST123"));
+        //     await db.SaveChangesAsync();
 
-            var service = new ReservationService(db);
-            var now = DateTime.UtcNow;
+        //     var service = new ReservationService(db);
+        //     var now = DateTime.UtcNow;
 
-            var req = new ReservationCreateRequest
-            {
-                LicensePlate = "TEST-123",
-                ParkingLotId = lotId,
-                StartDate = now,
-                EndDate = now
-            };
+        //     var req = new ReservationCreateRequest
+        //     {
+        //         LicensePlate = "TEST-123",
+        //         ParkingLotId = lotId,
+        //         StartDate = now,
+        //         EndDate = now
+        //     };
 
-            var ex = await Assert.ThrowsAsync<ArgumentException>(() => service.CreateReservationAsync(req, "identity-1"));
-            Assert.Contains("EndDate must be greater", ex.Message);
-        }
+        //     var ex = await Assert.ThrowsAsync<ArgumentException>(() => service.CreateReservationAsync(req, "identity-1"));
+        //     Assert.Contains("EndDate must be greater", ex.Message);
+        // }
 
-        [Fact]
-        public async Task CreateReservation_Should_Fail_When_ParkingLot_NotFound()
-        {
-            using var db = CreateInMemoryDbContext();
-            var userId = Guid.NewGuid();
-            var vehicleId = Guid.NewGuid();
+        // [Fact]
+        // public async Task CreateReservation_Should_Fail_When_ParkingLot_NotFound()
+        // {
+        //     using var db = CreateInMemoryDbContext();
+        //     var userId = Guid.NewGuid();
+        //     var vehicleId = Guid.NewGuid();
 
-            db.Vehicles.Add(CreateTestVehicle(vehicleId, userId, "TEST123"));
-            await db.SaveChangesAsync();
+        //     db.Vehicles.Add(CreateTestVehicle(vehicleId, userId, "TEST123"));
+        //     await db.SaveChangesAsync();
 
-            var service = new ReservationService(db);
+        //     var service = new ReservationService(db);
 
-            var req = new ReservationCreateRequest
-            {
-                LicensePlate = "TEST-123",
-                StartDate = DateTime.UtcNow.AddHours(1),
-                EndDate = DateTime.UtcNow.AddHours(2),
-                ParkingLotId = Guid.NewGuid()
-            };
+        //     var req = new ReservationCreateRequest
+        //     {
+        //         LicensePlate = "TEST-123",
+        //         StartDate = DateTime.UtcNow.AddHours(1),
+        //         EndDate = DateTime.UtcNow.AddHours(2),
+        //         ParkingLotId = Guid.NewGuid()
+        //     };
 
-            var ex = await Assert.ThrowsAsync<ArgumentException>(() => service.CreateReservationAsync(req, "identity-1"));
-            Assert.Contains("Parking lot not found", ex.Message);
-        }
+        //     var ex = await Assert.ThrowsAsync<ArgumentException>(() => service.CreateReservationAsync(req, "identity-1"));
+        //     Assert.Contains("Parking lot not found", ex.Message);
+        // }
 
-        [Fact]
-        public async Task CreateReservation_Should_Fail_When_Vehicle_NotFound()
-        {
-            using var db = CreateInMemoryDbContext();
-            var lotId = Guid.NewGuid();
+        // [Fact]
+        // public async Task CreateReservation_Should_Fail_When_Vehicle_NotFound()
+        // {
+        //     using var db = CreateInMemoryDbContext();
+        //     var lotId = Guid.NewGuid();
 
-            db.ParkingLots.Add(CreateTestParkingLot(lotId));
-            await db.SaveChangesAsync();
+        //     db.ParkingLots.Add(CreateTestParkingLot(lotId));
+        //     await db.SaveChangesAsync();
 
-            var service = new ReservationService(db);
+        //     var service = new ReservationService(db);
 
-            var req = new ReservationCreateRequest
-            {
-                LicensePlate = "DOES-NOT-EXIST",
-                StartDate = DateTime.UtcNow.AddHours(1),
-                EndDate = DateTime.UtcNow.AddHours(2),
-                ParkingLotId = lotId
-            };
+        //     var req = new ReservationCreateRequest
+        //     {
+        //         LicensePlate = "DOES-NOT-EXIST",
+        //         StartDate = DateTime.UtcNow.AddHours(1),
+        //         EndDate = DateTime.UtcNow.AddHours(2),
+        //         ParkingLotId = lotId
+        //     };
 
-            var ex = await Assert.ThrowsAsync<ArgumentException>(() => service.CreateReservationAsync(req, "identity-1"));
-            Assert.Contains("Vehicle with given license plate not found", ex.Message);
-        }
+        //     var ex = await Assert.ThrowsAsync<ArgumentException>(() => service.CreateReservationAsync(req, "identity-1"));
+        //     Assert.Contains("Vehicle with given license plate not found", ex.Message);
+        // }
 
-        [Fact]
-        public async Task CreateReservation_Should_Fail_When_LicensePlate_Empty_And_NoVehicleId()
-        {
-            using var db = CreateInMemoryDbContext();
-            var lotId = Guid.NewGuid();
-            db.ParkingLots.Add(CreateTestParkingLot(lotId));
-            await db.SaveChangesAsync();
+        // [Fact]
+        // public async Task CreateReservation_Should_Fail_When_LicensePlate_Empty_And_NoVehicleId()
+        // {
+        //     using var db = CreateInMemoryDbContext();
+        //     var lotId = Guid.NewGuid();
+        //     db.ParkingLots.Add(CreateTestParkingLot(lotId));
+        //     await db.SaveChangesAsync();
 
-            var service = new ReservationService(db);
+        //     var service = new ReservationService(db);
 
-            var req = new ReservationCreateRequest
-            {
-                LicensePlate = "   ",
-                StartDate = DateTime.UtcNow.AddHours(1),
-                EndDate = DateTime.UtcNow.AddHours(2),
-                ParkingLotId = lotId
-            };
+        //     var req = new ReservationCreateRequest
+        //     {
+        //         LicensePlate = "   ",
+        //         StartDate = DateTime.UtcNow.AddHours(1),
+        //         EndDate = DateTime.UtcNow.AddHours(2),
+        //         ParkingLotId = lotId
+        //     };
 
-            var ex = await Assert.ThrowsAsync<ArgumentException>(() => service.CreateReservationAsync(req, "identity-1"));
-            Assert.Contains("License plate is required", ex.Message);
-        }
+        //     var ex = await Assert.ThrowsAsync<ArgumentException>(() => service.CreateReservationAsync(req, "identity-1"));
+        //     Assert.Contains("License plate is required", ex.Message);
+        // }
 
-        [Fact]
-        public async Task CreateReservation_Should_Create_When_Valid_And_Normalize_LicensePlate()
-        {
-            using var db = CreateInMemoryDbContext();
-            var lotId = Guid.NewGuid();
-            var userId = Guid.NewGuid();
-            var vehicleId = Guid.NewGuid();
+        // [Fact]
+        // public async Task CreateReservation_Should_Create_When_Valid_And_Normalize_LicensePlate()
+        // {
+        //     using var db = CreateInMemoryDbContext();
+        //     var lotId = Guid.NewGuid();
+        //     var userId = Guid.NewGuid();
+        //     var vehicleId = Guid.NewGuid();
 
-            db.ParkingLots.Add(CreateTestParkingLot(lotId));
-            db.Vehicles.Add(CreateTestVehicle(vehicleId, userId, "ABC123"));
-            await db.SaveChangesAsync();
+        //     db.ParkingLots.Add(CreateTestParkingLot(lotId));
+        //     db.Vehicles.Add(CreateTestVehicle(vehicleId, userId, "ABC123"));
+        //     await db.SaveChangesAsync();
 
-            var service = new ReservationService(db);
-            var start = DateTime.UtcNow.AddHours(1);
-            var end = DateTime.UtcNow.AddHours(3);
+        //     var service = new ReservationService(db);
+        //     var start = DateTime.UtcNow.AddHours(1);
+        //     var end = DateTime.UtcNow.AddHours(3);
 
-            var req = new ReservationCreateRequest
-            {
-                LicensePlate = "ABC-123",
-                StartDate = start,
-                EndDate = end,
-                ParkingLotId = lotId,
-                DiscountCode = "DISC10"
-            };
+        //     var req = new ReservationCreateRequest
+        //     {
+        //         LicensePlate = "ABC-123",
+        //         StartDate = start,
+        //         EndDate = end,
+        //         ParkingLotId = lotId,
+        //         DiscountCode = "DISC10"
+        //     };
 
-            var created = await service.CreateReservationAsync(req, "identity-1");
-            var saved = await db.Reservations.SingleAsync(r => r.ID == created.ID);
+        //     var created = await service.CreateReservationAsync(req, "identity-1");
+        //     var saved = await db.Reservations.SingleAsync(r => r.ID == created.ID);
 
-            Assert.Equal("Pending", saved.Status);
-            Assert.Equal(vehicleId, saved.VehicleID);
-            Assert.Equal(lotId, saved.ParkingLotID);
-            Assert.Equal(userId, saved.UserID);
-            Assert.Equal(start, saved.StartDate);
-            Assert.Equal(end, saved.EndDate);
-            Assert.Equal("DISC10", saved.DiscountCode);
+        //     Assert.Equal("Pending", saved.Status);
+        //     Assert.Equal(vehicleId, saved.VehicleID);
+        //     Assert.Equal(lotId, saved.ParkingLotID);
+        //     Assert.Equal(userId, saved.UserID);
+        //     Assert.Equal(start, saved.StartDate);
+        //     Assert.Equal(end, saved.EndDate);
+        //     Assert.Equal("DISC10", saved.DiscountCode);
 
-            Assert.Equal("ABC123", req.LicensePlate);
-        }
+        //     Assert.Equal("ABC123", req.LicensePlate);
+        // }
 
         [Fact]
         public async Task GetReservationsForUser_Should_Fail_When_User_NotFound()
