@@ -11,7 +11,7 @@ using v2.Infrastructure.Data;
 namespace v2.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251212085723_organisationsUpdate")]
+    [Migration("20251216124149_organisationsUpdate")]
     partial class organisationsUpdate
     {
         /// <inheritdoc />
@@ -503,6 +503,9 @@ namespace v2.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("OrganizationID")
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid>("ParkingLotID")
                         .HasColumnType("TEXT");
 
@@ -524,6 +527,8 @@ namespace v2.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("ID");
+
+                    b.HasIndex("OrganizationID");
 
                     b.HasIndex("ParkingLotID");
 
@@ -555,6 +560,9 @@ namespace v2.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("OrganizationID")
+                        .HasColumnType("TEXT");
+
                     b.Property<Guid>("ParkingLotID")
                         .HasColumnType("TEXT");
 
@@ -583,6 +591,8 @@ namespace v2.Migrations
                     b.HasKey("ID");
 
                     b.HasIndex("InvoiceID");
+
+                    b.HasIndex("OrganizationID");
 
                     b.HasIndex("ParkingLotID");
 
@@ -617,6 +627,11 @@ namespace v2.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER")
                         .HasDefaultValueSql("1");
+
+                    b.Property<bool>("IsOrganizationAdmin")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValueSql("0");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -685,7 +700,6 @@ namespace v2.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("OldID")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("UserID")
@@ -808,6 +822,11 @@ namespace v2.Migrations
 
             modelBuilder.Entity("v2.Core.Models.Reservation", b =>
                 {
+                    b.HasOne("v2.Core.Models.Organization", "Organization")
+                        .WithMany("Reservations")
+                        .HasForeignKey("OrganizationID")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.HasOne("v2.Core.Models.ParkingLot", "ParkingLot")
                         .WithMany("Reservations")
                         .HasForeignKey("ParkingLotID")
@@ -826,6 +845,8 @@ namespace v2.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Organization");
+
                     b.Navigation("ParkingLot");
 
                     b.Navigation("User");
@@ -839,6 +860,11 @@ namespace v2.Migrations
                         .WithMany("Sessions")
                         .HasForeignKey("InvoiceID");
 
+                    b.HasOne("v2.Core.Models.Organization", "Organization")
+                        .WithMany("Sessions")
+                        .HasForeignKey("OrganizationID")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.HasOne("v2.Core.Models.ParkingLot", "ParkingLot")
                         .WithMany("Sessions")
                         .HasForeignKey("ParkingLotID")
@@ -849,6 +875,8 @@ namespace v2.Migrations
                         .WithMany("Sessions")
                         .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("Organization");
 
                     b.Navigation("ParkingLot");
 
@@ -901,6 +929,10 @@ namespace v2.Migrations
             modelBuilder.Entity("v2.Core.Models.Organization", b =>
                 {
                     b.Navigation("DiscountCodes");
+
+                    b.Navigation("Reservations");
+
+                    b.Navigation("Sessions");
 
                     b.Navigation("Users");
                 });
