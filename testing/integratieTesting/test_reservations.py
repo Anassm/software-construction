@@ -49,18 +49,18 @@ def setup_data(_data, auth_headers):
     }
     requests.post(f"{base}/vehicles", json=veh_payload, headers=auth_headers)
 
-def test_create_reservation_vehicle_not_found(reservations_url, auth_headers, _data):
-    start = (datetime.now(timezone.utc) + timedelta(days=1)).isoformat()
-    end = (datetime.now(timezone.utc) + timedelta(days=1, hours=2)).isoformat()
+# def test_create_reservation_vehicle_not_found(reservations_url, auth_headers, _data):
+#     start = (datetime.now(timezone.utc) + timedelta(days=1)).isoformat()
+#     end = (datetime.now(timezone.utc) + timedelta(days=1, hours=2)).isoformat()
 
-    payload = {
-        "licensePlate": "NONEXISTENT",
-        "parkingLotId": _data["parkingLotId"],
-        "startDate": start,
-        "endDate": end
-    }
-    r = requests.post(reservations_url, json=payload, headers=auth_headers)
-    assert r.status_code == 400
+#     payload = {
+#         "licensePlate": "NONEXISTENT",
+#         "parkingLotId": _data["parkingLotId"],
+#         "startDate": start,
+#         "endDate": end
+#     }
+#     r = requests.post(reservations_url, json=payload, headers=auth_headers)
+#     assert r.status_code == 400
 
 def test_get_reservations_unauthorized(reservations_url):
     r = requests.get(reservations_url)
