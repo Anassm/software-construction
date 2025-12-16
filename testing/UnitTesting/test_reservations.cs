@@ -118,7 +118,7 @@ namespace UnitTesting
                 EndDate = now
             };
 
-            var ex = await Assert.ThrowsAsync<ArgumentException>(() => service.CreateReservationAsync(req));
+            var ex = await Assert.ThrowsAsync<ArgumentException>(() => service.CreateReservationAsync(req, "identity-1"));
             Assert.Contains("EndDate must be greater", ex.Message);
         }
 
@@ -142,7 +142,7 @@ namespace UnitTesting
                 ParkingLotId = Guid.NewGuid()
             };
 
-            var ex = await Assert.ThrowsAsync<ArgumentException>(() => service.CreateReservationAsync(req));
+            var ex = await Assert.ThrowsAsync<ArgumentException>(() => service.CreateReservationAsync(req, "identity-1"));
             Assert.Contains("Parking lot not found", ex.Message);
         }
 
@@ -165,7 +165,7 @@ namespace UnitTesting
                 ParkingLotId = lotId
             };
 
-            var ex = await Assert.ThrowsAsync<ArgumentException>(() => service.CreateReservationAsync(req));
+            var ex = await Assert.ThrowsAsync<ArgumentException>(() => service.CreateReservationAsync(req, "identity-1"));
             Assert.Contains("Vehicle with given license plate not found", ex.Message);
         }
 
@@ -187,7 +187,7 @@ namespace UnitTesting
                 ParkingLotId = lotId
             };
 
-            var ex = await Assert.ThrowsAsync<ArgumentException>(() => service.CreateReservationAsync(req));
+            var ex = await Assert.ThrowsAsync<ArgumentException>(() => service.CreateReservationAsync(req, "identity-1"));
             Assert.Contains("License plate is required", ex.Message);
         }
 
@@ -216,7 +216,7 @@ namespace UnitTesting
                 DiscountCode = "DISC10"
             };
 
-            var created = await service.CreateReservationAsync(req);
+            var created = await service.CreateReservationAsync(req, "identity-1");
             var saved = await db.Reservations.SingleAsync(r => r.ID == created.ID);
 
             Assert.Equal("Pending", saved.Status);
