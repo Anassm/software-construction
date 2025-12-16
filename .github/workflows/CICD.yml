@@ -3,9 +3,9 @@ name: MobiParkV2_push
 on:
   pull_request:
     branches: ["development", "main"]
+  push:
+    branches: ["organisation-jens"]
 
-# permissions:
-#   contents: read
 
 jobs:
   Dependency-check:

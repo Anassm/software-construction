@@ -353,8 +353,10 @@ namespace UnitTesting
                 DiscountCode = "DISC10"
             };
 
-            mock.Setup(s => s.CreateReservationAsync(It.IsAny<ReservationCreateRequest>()))
-                .ReturnsAsync(createdModel);
+            mock.Setup(s => s.CreateReservationAsync(
+                It.IsAny<ReservationCreateRequest>(),
+                It.IsAny<string>()))
+            .ReturnsAsync(createdModel);
 
             var controller = CreateControllerWithUser(mock.Object, "identity-1");
 
