@@ -399,8 +399,10 @@ namespace UnitTesting
         public async Task Create_ServiceThrowsArgumentException_ReturnsBadRequest_400_WithError()
         {
             var mock = new Mock<IReservation>();
-            mock.Setup(s => s.CreateReservationAsync(It.IsAny<ReservationCreateRequest>()))
-                .ThrowsAsync(new ArgumentException("Parking lot not found."));
+            mock.Setup(s => s.CreateReservationAsync(
+                It.IsAny<ReservationCreateRequest>(),
+                It.IsAny<string>()))
+            .ThrowsAsync(new ArgumentException("Parking lot not found."));
 
             var controller = CreateControllerWithUser(mock.Object, "identity-1");
 
@@ -447,8 +449,10 @@ namespace UnitTesting
                 VehicleID = Guid.NewGuid()
             };
 
-            mock.Setup(s => s.CreateReservationAsync(It.IsAny<ReservationCreateRequest>()))
-                .ReturnsAsync(createdModel);
+            mock.Setup(s => s.CreateReservationAsync(
+                It.IsAny<ReservationCreateRequest>(),
+                It.IsAny<string>()))
+            .ReturnsAsync(createdModel);
 
             var controller = CreateControllerWithUser(mock.Object, "identity-1");
 
@@ -463,7 +467,9 @@ namespace UnitTesting
         {
             var mock = new Mock<IReservation>();
 
-            mock.Setup(s => s.CreateReservationAsync(It.IsAny<ReservationCreateRequest>()))
+            mock.Setup(s => s.CreateReservationAsync(
+                It.IsAny<ReservationCreateRequest>(),
+                It.IsAny<string>()))
                 .ReturnsAsync(new Reservation
                 {
                     ID = Guid.NewGuid(),
@@ -489,7 +495,9 @@ namespace UnitTesting
 
             _ = await controller.Create(req);
 
-            mock.Verify(s => s.CreateReservationAsync(It.IsAny<ReservationCreateRequest>()), Times.Once);
+            mock.Verify(s => s.CreateReservationAsync(
+            It.IsAny<ReservationCreateRequest>(),
+            It.IsAny<string>()), Times.Once);
         }
 
         [Fact]
