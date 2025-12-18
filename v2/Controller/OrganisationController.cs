@@ -98,8 +98,9 @@ namespace v2.Controllers
                     .Concat(Encoding.UTF8.GetBytes(csvBuilder.ToString()))
                     .ToArray();
 
+                var filename = $"PA_{DateTime.UtcNow:yyyyMMdd}.csv";
                 // Use Append instead of Add
-                Response.Headers.Append("Content-Disposition", "attachment; filename=parking_actions.csv");
+                Response.Headers.Append("Content-Disposition", $"attachment; filename={filename}");
                 Response.Headers.Append("Content-Type", "application/csv");
 
                 return File(bytes, "text/csv");

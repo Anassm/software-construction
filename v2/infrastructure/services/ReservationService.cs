@@ -44,12 +44,14 @@ public class ReservationService : IReservation
         var lot = await _db.ParkingLots.FindAsync(request.ParkingLotId)
             ?? throw new ArgumentException("Parking lot not found.");
 
+
+        float totalprice = lot.Tariff * (float)(request.EndDate - request.StartDate).TotalHours;
         var reservation = new Reservation
         {
             StartDate   = request.StartDate,
             EndDate     = request.EndDate,
             Status      = "Pending",
-            TotalPrice  = 0f,
+            TotalPrice  = totalprice,
             DiscountCode  = request.DiscountCode,
             OrganizationID = user.OrganizationID != null ? user.OrganizationID : Guid.Empty,
             UserID      = vehicle.UserID,
