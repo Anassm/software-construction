@@ -165,7 +165,7 @@ namespace v2.Tests.Services
         [Fact]
         public async Task RegisterUser_FailsOnCreate()
         {
-            var registerDto = new RegisterDto { Username = "failuser", Password = "Password123!", Name = "Fail User" };
+            var registerDto = new RegisterDto { Username = "failuser", Password = "Password123", Name = "Fail User" };
             _userManagerMock.Setup(x => x.CreateAsync(It.IsAny<IdentityUser>(), It.IsAny<string>()))
                 .ReturnsAsync(IdentityResult.Failed(new IdentityError { Description = "Invalid password" }));
 

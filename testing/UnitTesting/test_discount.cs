@@ -59,6 +59,39 @@ namespace UnitTesting
             return (ctx, user, identityUserId);
         }
 
+        private ApplicationDbContext SeedDiscounts(ApplicationDbContext ctx)
+        {
+            ctx.DiscountCodes.AddRange(
+                new DiscountCode
+                {
+                    ID = Guid.NewGuid(),
+                    Code = "DISC10",
+                    UsageCount = 5,
+                    MaxUsage = 10,
+                    SavedAmount = 50m
+                },
+                new DiscountCode
+                {
+                    ID = Guid.NewGuid(),
+                    Code = "DISC20",
+                    UsageCount = 2,
+                    MaxUsage = 5,
+                    SavedAmount = 20m
+                },
+                new DiscountCode
+                {
+                    ID = Guid.NewGuid(),
+                    Code = "UNLIMITED",
+                    UsageCount = 8,
+                    MaxUsage = null,
+                    SavedAmount = 100m
+                }
+            );
+
+            ctx.SaveChanges();
+            return ctx;
+        }
+
         [Fact]
         public async Task CreatePayment_WithoutDiscount_UsesOriginalAmount()
         {
@@ -175,6 +208,64 @@ namespace UnitTesting
 
             var paymentsInDb = context.Payments.ToList();
             Assert.Empty(paymentsInDb);
+        }
+
+        [Fact]
+        public async Task GetStatistics_NoFilterOrOrder_ReturnsAllDiscounts()
+        {
+            // Arrange
+            var ctx = SeedDiscounts(CreateContext());
+            var service = new DiscountService(ctx);
+
+            // Act
+            var (data, statusCode, message) = await service.GetStatisticsAsync();
+
+            // Assert
+            Assert.Equal(200, statusCode);
+            Assert.NotNull(data);
+            Assert.Equal(3, data.Discounts.Count);
+        }
+
+        [Fact]
+        public async Task GetStatistics_OrderByAsc_TotalUses_SortsCorrectly()
+        {
+            // Arrange
+            var ctx = SeedDiscounts(CreateContext());
+            var service = new DiscountService(ctx);
+
+            // Act
+            var (data, _, _) = await service.GetStatisticsAsync(
+                filter: "totalUses",
+                orderBy: "asc"
+            );
+
+            // Assert
+            var items = data.Discounts.ToList();
+
+            Assert.Equal("DISC20", items[0].Code); // UsageCount = 2
+            Assert.Equal("DISC10", items[1].Code); // UsageCount = 5
+            Assert.Equal("UNLIMITED", items[2].Code); // UsageCount = 8
+        }
+
+        [Fact]
+        public async Task GetStatistics_OrderByDesc_RemainingUses_UnlimitedFirst()
+        {
+            // Arrange
+            var ctx = SeedDiscounts(CreateContext());
+            var service = new DiscountService(ctx);
+
+            // Act
+            var (data, _, _) = await service.GetStatisticsAsync(
+                filter: "remainingUses",
+                orderBy: "desc"
+            );
+
+            // Assert
+            var items = data.Discounts.ToList();
+
+            // MaxUsage = null → int.MaxValue
+            Assert.Equal("UNLIMITED", items[0].Code);
+            Assert.True(items[0].RemainingUses > items[1].RemainingUses);
         }
 
         private enum FakeDiscountMode
