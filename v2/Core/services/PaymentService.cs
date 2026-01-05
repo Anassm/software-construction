@@ -85,7 +85,6 @@ namespace v2.Infrastructure.Services
                         .Select(dc => dc.ID)
                         .FirstOrDefaultAsync(),
                     UserId = user.ID
-                    
                 };
 
                 await _context.DiscountCodeUsers.AddAsync(DiscountCodeUse);
@@ -112,18 +111,18 @@ namespace v2.Infrastructure.Services
 
             await _context.Payments.AddAsync(payment);
 
-            
+
             var invoice = new Invoice
             {
                 InvoiceNumber = GenerateInvoiceNumber(),
-                TotalAmount   = (float)payment.Amount,          
-                CreatedAt     = DateTime.UtcNow,
-                DueDate       = DateTime.UtcNow.AddDays(14),    
-                Status        = InvoiceStatus.Paid,             
-                UserID        = user.ID
+                TotalAmount = (float)payment.Amount,
+                CreatedAt = DateTime.UtcNow,
+                DueDate = DateTime.UtcNow.AddDays(14),
+                Status = InvoiceStatus.Paid,
+                UserID = user.ID
             };
 
-           
+
             if (request.SessionID.HasValue)
             {
                 var session = await _context.Sessions.FindAsync(request.SessionID.Value);
@@ -135,7 +134,7 @@ namespace v2.Infrastructure.Services
 
             await _context.Invoices.AddAsync(invoice);
 
-           
+
             await _context.SaveChangesAsync();
 
             var responseDto = MapPaymentToDto(payment);
@@ -314,13 +313,13 @@ namespace v2.Infrastructure.Services
             };
         }
 
-    private string GenerateInvoiceNumber()
-    {
-        
-        return $"INV-{DateTime.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid().ToString("N")[..6]}";
-    }
+        private string GenerateInvoiceNumber()
+        {
 
-    
+            return $"INV-{DateTime.UtcNow:yyyyMMddHHmmss}-{Guid.NewGuid().ToString("N")[..6]}";
+        }
+
+
 
 
         private class NoopDiscountService : IDiscounts
@@ -358,6 +357,14 @@ namespace v2.Infrastructure.Services
 
                 return Task.FromResult<(int, object)>((200, payload));
             }
+
+            public Task<(int statusCode, object data)> GetAllActiveCodesAsync(string adminIdentityUserId)
+                => Task.FromResult<(int, object)>((501, new { error = "Not implemented" }));
+
+            public Task<(int statusCode, object data)> GetUsedCodesAsync(Guid? discountCodeId, string adminIdentityUserId)
+                => Task.FromResult<(int, object)>((501, new { error = "Not implemented" }));
+
+
         }
     }
 }
