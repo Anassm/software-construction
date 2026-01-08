@@ -36,7 +36,6 @@ public class VehicleService : IVehicles
                 Model = dto.Model,
                 Color = dto.Color,
                 Year = dto.Year,
-                CreatedAt = DateOnly.FromDateTime(DateTime.UtcNow),
                 UserID = user.ID,
                 Reservations = new List<Reservation>()
             };

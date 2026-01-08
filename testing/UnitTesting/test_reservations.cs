@@ -60,7 +60,7 @@ namespace UnitTesting
                 Model = "TestModel",
                 Color = "Black",
                 Year = 2022,
-                CreatedAt = DateOnly.FromDateTime(DateTime.UtcNow),
+                CreatedAt = DateTime.UtcNow,
                 UserID = userId,
                 User = null,
                 Reservations = new List<Reservation>()

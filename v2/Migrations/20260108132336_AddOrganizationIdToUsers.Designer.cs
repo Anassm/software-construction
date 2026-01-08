@@ -11,8 +11,8 @@ using v2.Infrastructure.Data;
 namespace v2.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251202195245_discountupdate")]
-    partial class discountupdate
+    [Migration("20260108132336_AddOrganizationIdToUsers")]
+    partial class AddOrganizationIdToUsers
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -241,6 +241,9 @@ namespace v2.Migrations
                     b.Property<int?>("MaxUsage")
                         .HasColumnType("INTEGER");
 
+                    b.Property<Guid?>("OrganizationId")
+                        .HasColumnType("TEXT");
+
                     b.Property<decimal>("Percentage")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT")
@@ -259,6 +262,8 @@ namespace v2.Migrations
 
                     b.HasIndex("Code")
                         .IsUnique();
+
+                    b.HasIndex("OrganizationId");
 
                     b.ToTable("DiscountCodes");
                 });
@@ -286,6 +291,74 @@ namespace v2.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("DiscountCodeUsers");
+                });
+
+            modelBuilder.Entity("v2.Core.Models.Invoice", b =>
+                {
+                    b.Property<Guid>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("DueDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("InvoiceNumber")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<float>("TotalAmount")
+                        .HasColumnType("REAL");
+
+                    b.Property<Guid>("UserID")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("UserID");
+
+                    b.ToTable("Invoices");
+                });
+
+            modelBuilder.Entity("v2.Core.Models.Organization", b =>
+                {
+                    b.Property<Guid>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(250)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ContactEmail")
+                        .HasMaxLength(150)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ContactPhone")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("Organizations");
                 });
 
             modelBuilder.Entity("v2.Core.Models.ParkingLot", b =>
@@ -470,6 +543,9 @@ namespace v2.Migrations
                     b.Property<DateTime?>("EndTime")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("InvoiceID")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("LicensePlate")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -505,6 +581,8 @@ namespace v2.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("ID");
+
+                    b.HasIndex("InvoiceID");
 
                     b.HasIndex("ParkingLotID");
 
@@ -549,6 +627,9 @@ namespace v2.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("OrganizationID")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("PhoneNumber")
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
@@ -567,6 +648,8 @@ namespace v2.Migrations
                     b.HasIndex("IdentityUserId")
                         .IsUnique();
 
+                    b.HasIndex("OrganizationID");
+
                     b.ToTable("Users");
                 });
 
@@ -581,7 +664,7 @@ namespace v2.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("TEXT");
 
-                    b.Property<DateOnly>("CreatedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
@@ -674,6 +757,16 @@ namespace v2.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("v2.Core.Models.DiscountCode", b =>
+                {
+                    b.HasOne("v2.Core.Models.Organization", "Organization")
+                        .WithMany("DiscountCodes")
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Organization");
+                });
+
             modelBuilder.Entity("v2.Core.Models.DiscountCodeUser", b =>
                 {
                     b.HasOne("v2.Core.Models.DiscountCode", "DiscountCode")
@@ -688,6 +781,17 @@ namespace v2.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("DiscountCode");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("v2.Core.Models.Invoice", b =>
+                {
+                    b.HasOne("v2.Core.Models.User", "User")
+                        .WithMany("Invoices")
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
@@ -731,6 +835,10 @@ namespace v2.Migrations
 
             modelBuilder.Entity("v2.Core.Models.Session", b =>
                 {
+                    b.HasOne("v2.Core.Models.Invoice", null)
+                        .WithMany("Sessions")
+                        .HasForeignKey("InvoiceID");
+
                     b.HasOne("v2.Core.Models.ParkingLot", "ParkingLot")
                         .WithMany("Sessions")
                         .HasForeignKey("ParkingLotID")
@@ -755,7 +863,14 @@ namespace v2.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("v2.Core.Models.Organization", "Organization")
+                        .WithMany("Users")
+                        .HasForeignKey("OrganizationID")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("IdentityUser");
+
+                    b.Navigation("Organization");
                 });
 
             modelBuilder.Entity("v2.Core.Models.Vehicle", b =>
@@ -778,6 +893,18 @@ namespace v2.Migrations
                     b.Navigation("UserLinks");
                 });
 
+            modelBuilder.Entity("v2.Core.Models.Invoice", b =>
+                {
+                    b.Navigation("Sessions");
+                });
+
+            modelBuilder.Entity("v2.Core.Models.Organization", b =>
+                {
+                    b.Navigation("DiscountCodes");
+
+                    b.Navigation("Users");
+                });
+
             modelBuilder.Entity("v2.Core.Models.ParkingLot", b =>
                 {
                     b.Navigation("Reservations");
@@ -792,6 +919,8 @@ namespace v2.Migrations
 
             modelBuilder.Entity("v2.Core.Models.User", b =>
                 {
+                    b.Navigation("Invoices");
+
                     b.Navigation("Reservations");
 
                     b.Navigation("Sessions");
