@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace v2.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class AddOrganizationIdToUsers : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -48,6 +48,23 @@ namespace v2.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Organizations",
+                columns: table => new
+                {
+                    ID = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Name = table.Column<string>(type: "TEXT", maxLength: 150, nullable: false),
+                    Address = table.Column<string>(type: "TEXT", maxLength: 250, nullable: true),
+                    ContactEmail = table.Column<string>(type: "TEXT", maxLength: 150, nullable: true),
+                    ContactPhone = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    UpdatedAt = table.Column<DateTime>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Organizations", x => x.ID);
                 });
 
             migrationBuilder.CreateTable(
@@ -179,6 +196,34 @@ namespace v2.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "DiscountCodes",
+                columns: table => new
+                {
+                    ID = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Code = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
+                    IsActive = table.Column<bool>(type: "INTEGER", nullable: false, defaultValue: true),
+                    StartDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    ExpiryDate = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    MaxUsage = table.Column<int>(type: "INTEGER", nullable: true),
+                    UsageCount = table.Column<int>(type: "INTEGER", nullable: false),
+                    AllowedLocation = table.Column<string>(type: "TEXT", maxLength: 150, nullable: true),
+                    Percentage = table.Column<decimal>(type: "TEXT", nullable: false, defaultValue: 0m),
+                    SavedAmount = table.Column<decimal>(type: "TEXT", nullable: false),
+                    FixedAmount = table.Column<decimal>(type: "TEXT", nullable: true),
+                    OrganizationId = table.Column<Guid>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DiscountCodes", x => x.ID);
+                    table.ForeignKey(
+                        name: "FK_DiscountCodes_Organizations_OrganizationId",
+                        column: x => x.OrganizationId,
+                        principalTable: "Organizations",
+                        principalColumn: "ID",
+                        onDelete: ReferentialAction.SetNull);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
@@ -192,7 +237,8 @@ namespace v2.Migrations
                     Role = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     BirthYear = table.Column<int>(type: "INTEGER", nullable: true),
-                    IsActive = table.Column<bool>(type: "INTEGER", nullable: false, defaultValueSql: "1")
+                    IsActive = table.Column<bool>(type: "INTEGER", nullable: false, defaultValueSql: "1"),
+                    OrganizationID = table.Column<Guid>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -203,35 +249,57 @@ namespace v2.Migrations
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Users_Organizations_OrganizationID",
+                        column: x => x.OrganizationID,
+                        principalTable: "Organizations",
+                        principalColumn: "ID",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Sessions",
+                name: "DiscountCodeUsers",
                 columns: table => new
                 {
-                    ID = table.Column<Guid>(type: "TEXT", nullable: false),
-                    OldID = table.Column<string>(type: "TEXT", nullable: false),
-                    LicensePlate = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
-                    StartTime = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    EndTime = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    duration = table.Column<int>(type: "INTEGER", nullable: false),
-                    Price = table.Column<float>(type: "REAL", nullable: false, defaultValue: 0f),
-                    PaymentStatus = table.Column<int>(type: "INTEGER", nullable: false, defaultValue: 0),
-                    UserID = table.Column<Guid>(type: "TEXT", nullable: false),
-                    ParkingLotID = table.Column<Guid>(type: "TEXT", nullable: false),
-                    PaymentID = table.Column<Guid>(type: "TEXT", nullable: true)
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    DiscountCodeId = table.Column<Guid>(type: "TEXT", nullable: false),
+                    UserId = table.Column<Guid>(type: "TEXT", nullable: true),
+                    GroupName = table.Column<string>(type: "TEXT", maxLength: 100, nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Sessions", x => x.ID);
+                    table.PrimaryKey("PK_DiscountCodeUsers", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Sessions_ParkingLots_ParkingLotID",
-                        column: x => x.ParkingLotID,
-                        principalTable: "ParkingLots",
+                        name: "FK_DiscountCodeUsers_DiscountCodes_DiscountCodeId",
+                        column: x => x.DiscountCodeId,
+                        principalTable: "DiscountCodes",
                         principalColumn: "ID",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Sessions_Users_UserID",
+                        name: "FK_DiscountCodeUsers_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "ID",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Invoices",
+                columns: table => new
+                {
+                    ID = table.Column<Guid>(type: "TEXT", nullable: false),
+                    InvoiceNumber = table.Column<string>(type: "TEXT", nullable: false),
+                    TotalAmount = table.Column<float>(type: "REAL", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    DueDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    Status = table.Column<int>(type: "INTEGER", nullable: false),
+                    UserID = table.Column<Guid>(type: "TEXT", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Invoices", x => x.ID);
+                    table.ForeignKey(
+                        name: "FK_Invoices_Users_UserID",
                         column: x => x.UserID,
                         principalTable: "Users",
                         principalColumn: "ID",
@@ -249,7 +317,7 @@ namespace v2.Migrations
                     Model = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
                     Color = table.Column<string>(type: "TEXT", maxLength: 30, nullable: false),
                     Year = table.Column<int>(type: "INTEGER", nullable: false),
-                    CreatedAt = table.Column<DateOnly>(type: "TEXT", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     UserID = table.Column<Guid>(type: "TEXT", nullable: false),
                     UserID1 = table.Column<Guid>(type: "TEXT", nullable: true)
                 },
@@ -270,30 +338,40 @@ namespace v2.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Payments",
+                name: "Sessions",
                 columns: table => new
                 {
                     ID = table.Column<Guid>(type: "TEXT", nullable: false),
                     OldID = table.Column<string>(type: "TEXT", nullable: false),
-                    Amount = table.Column<decimal>(type: "TEXT", nullable: false),
-                    Initiator = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    CompletedAt = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    Hash = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
-                    TransactionAmount = table.Column<decimal>(type: "TEXT", nullable: false),
-                    TransactionDate = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    TransactionMethod = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
-                    TransactionIssuer = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    TransactionBank = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
-                    SessionID = table.Column<Guid>(type: "TEXT", nullable: false)
+                    LicensePlate = table.Column<string>(type: "TEXT", maxLength: 20, nullable: false),
+                    StartTime = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    EndTime = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    duration = table.Column<int>(type: "INTEGER", nullable: false),
+                    Price = table.Column<float>(type: "REAL", nullable: false, defaultValue: 0f),
+                    PaymentStatus = table.Column<int>(type: "INTEGER", nullable: false, defaultValue: 0),
+                    UserID = table.Column<Guid>(type: "TEXT", nullable: true),
+                    ParkingLotID = table.Column<Guid>(type: "TEXT", nullable: false),
+                    PaymentID = table.Column<Guid>(type: "TEXT", nullable: true),
+                    InvoiceID = table.Column<Guid>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Payments", x => x.ID);
+                    table.PrimaryKey("PK_Sessions", x => x.ID);
                     table.ForeignKey(
-                        name: "FK_Payments_Sessions_SessionID",
-                        column: x => x.SessionID,
-                        principalTable: "Sessions",
+                        name: "FK_Sessions_Invoices_InvoiceID",
+                        column: x => x.InvoiceID,
+                        principalTable: "Invoices",
+                        principalColumn: "ID");
+                    table.ForeignKey(
+                        name: "FK_Sessions_ParkingLots_ParkingLotID",
+                        column: x => x.ParkingLotID,
+                        principalTable: "ParkingLots",
+                        principalColumn: "ID",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Sessions_Users_UserID",
+                        column: x => x.UserID,
+                        principalTable: "Users",
                         principalColumn: "ID",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -310,6 +388,7 @@ namespace v2.Migrations
                     CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     TotalPrice = table.Column<float>(type: "REAL", nullable: false),
                     CompanyName = table.Column<string>(type: "TEXT", nullable: true),
+                    DiscountCode = table.Column<string>(type: "TEXT", nullable: true),
                     UserID = table.Column<Guid>(type: "TEXT", nullable: false),
                     ParkingLotID = table.Column<Guid>(type: "TEXT", nullable: false),
                     VehicleID = table.Column<Guid>(type: "TEXT", nullable: false)
@@ -333,6 +412,36 @@ namespace v2.Migrations
                         name: "FK_Reservations_Vehicles_VehicleID",
                         column: x => x.VehicleID,
                         principalTable: "Vehicles",
+                        principalColumn: "ID",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Payments",
+                columns: table => new
+                {
+                    ID = table.Column<Guid>(type: "TEXT", nullable: false),
+                    OldID = table.Column<string>(type: "TEXT", nullable: false),
+                    Amount = table.Column<decimal>(type: "TEXT", nullable: false),
+                    Initiator = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    CompletedAt = table.Column<DateTime>(type: "TEXT", nullable: true),
+                    Hash = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
+                    DiscountCode = table.Column<string>(type: "TEXT", nullable: true),
+                    TransactionAmount = table.Column<decimal>(type: "TEXT", nullable: false),
+                    TransactionDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    TransactionMethod = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
+                    TransactionIssuer = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    TransactionBank = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    SessionID = table.Column<Guid>(type: "TEXT", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Payments", x => x.ID);
+                    table.ForeignKey(
+                        name: "FK_Payments_Sessions_SessionID",
+                        column: x => x.SessionID,
+                        principalTable: "Sessions",
                         principalColumn: "ID",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -375,6 +484,32 @@ namespace v2.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_DiscountCodes_Code",
+                table: "DiscountCodes",
+                column: "Code",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DiscountCodes_OrganizationId",
+                table: "DiscountCodes",
+                column: "OrganizationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DiscountCodeUsers_DiscountCodeId",
+                table: "DiscountCodeUsers",
+                column: "DiscountCodeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DiscountCodeUsers_UserId",
+                table: "DiscountCodeUsers",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Invoices_UserID",
+                table: "Invoices",
+                column: "UserID");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Payments_SessionID",
                 table: "Payments",
                 column: "SessionID",
@@ -396,6 +531,11 @@ namespace v2.Migrations
                 column: "VehicleID");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Sessions_InvoiceID",
+                table: "Sessions",
+                column: "InvoiceID");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Sessions_ParkingLotID",
                 table: "Sessions",
                 column: "ParkingLotID");
@@ -410,6 +550,11 @@ namespace v2.Migrations
                 table: "Users",
                 column: "IdentityUserId",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Users_OrganizationID",
+                table: "Users",
+                column: "OrganizationID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Vehicles_UserID",
@@ -441,6 +586,9 @@ namespace v2.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "DiscountCodeUsers");
+
+            migrationBuilder.DropTable(
                 name: "Payments");
 
             migrationBuilder.DropTable(
@@ -450,10 +598,16 @@ namespace v2.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
+                name: "DiscountCodes");
+
+            migrationBuilder.DropTable(
                 name: "Sessions");
 
             migrationBuilder.DropTable(
                 name: "Vehicles");
+
+            migrationBuilder.DropTable(
+                name: "Invoices");
 
             migrationBuilder.DropTable(
                 name: "ParkingLots");
@@ -463,6 +617,9 @@ namespace v2.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
+
+            migrationBuilder.DropTable(
+                name: "Organizations");
         }
     }
 }

@@ -9,7 +9,7 @@ public class Vehicle
     public string? Model { get; set; }
     public string? Color { get; set; }
     public int? Year { get; set; }
-    public DateOnly CreatedAt { get; set; } = DateOnly.FromDateTime(DateTime.UtcNow);
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public required Guid UserID { get; set; }
     public User? User { get; set; }
     
