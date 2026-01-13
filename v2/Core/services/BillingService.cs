@@ -20,11 +20,9 @@ public class BillingService : IBilling
     {
         try
         {
-
             var user = await _db.Users
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.IdentityUserId == identityUserId);
-
 
             if (user == null)
             {
@@ -50,7 +48,6 @@ public class BillingService : IBilling
         }
         catch (Exception ex)
         {
-
             return (500, new { error = "An unexpected error occurred.", details = ex.Message });
         }
     }
