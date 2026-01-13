@@ -238,6 +238,9 @@ namespace v2.Migrations
                     b.Property<int?>("MaxUsage")
                         .HasColumnType("INTEGER");
 
+                    b.Property<Guid?>("OrganizationId")
+                        .HasColumnType("TEXT");
+
                     b.Property<decimal>("Percentage")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT")
@@ -256,6 +259,8 @@ namespace v2.Migrations
 
                     b.HasIndex("Code")
                         .IsUnique();
+
+                    b.HasIndex("OrganizationId");
 
                     b.ToTable("DiscountCodes");
                 });
@@ -315,6 +320,42 @@ namespace v2.Migrations
                     b.HasIndex("UserID");
 
                     b.ToTable("Invoices");
+                });
+
+            modelBuilder.Entity("v2.Core.Models.Organization", b =>
+                {
+                    b.Property<Guid>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(250)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ContactEmail")
+                        .HasMaxLength(150)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ContactPhone")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("Organizations");
                 });
 
             modelBuilder.Entity("v2.Core.Models.ParkingLot", b =>
@@ -583,6 +624,9 @@ namespace v2.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("OrganizationID")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("PhoneNumber")
                         .HasMaxLength(20)
                         .HasColumnType("TEXT");
@@ -601,6 +645,8 @@ namespace v2.Migrations
                     b.HasIndex("IdentityUserId")
                         .IsUnique();
 
+                    b.HasIndex("OrganizationID");
+
                     b.ToTable("Users");
                 });
 
@@ -615,7 +661,7 @@ namespace v2.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("TEXT");
 
-                    b.Property<DateOnly>("CreatedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
@@ -706,6 +752,16 @@ namespace v2.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("v2.Core.Models.DiscountCode", b =>
+                {
+                    b.HasOne("v2.Core.Models.Organization", "Organization")
+                        .WithMany("DiscountCodes")
+                        .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Organization");
                 });
 
             modelBuilder.Entity("v2.Core.Models.DiscountCodeUser", b =>
@@ -804,7 +860,14 @@ namespace v2.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("v2.Core.Models.Organization", "Organization")
+                        .WithMany("Users")
+                        .HasForeignKey("OrganizationID")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("IdentityUser");
+
+                    b.Navigation("Organization");
                 });
 
             modelBuilder.Entity("v2.Core.Models.Vehicle", b =>
@@ -830,6 +893,13 @@ namespace v2.Migrations
             modelBuilder.Entity("v2.Core.Models.Invoice", b =>
                 {
                     b.Navigation("Sessions");
+                });
+
+            modelBuilder.Entity("v2.Core.Models.Organization", b =>
+                {
+                    b.Navigation("DiscountCodes");
+
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("v2.Core.Models.ParkingLot", b =>
