@@ -148,6 +148,10 @@ namespace v2.Controllers
         [Authorize(Roles = "Admin,Employee")]
         public async Task<IActionResult> GetStatistics()
         {
+            var identityUserId = GetIdentityUserId();
+            if (identityUserId == null)
+                return StatusCode(StatusCodes.Status401Unauthorized, new { error = "Unauthorized: Invalid or missing session token" });
+
             var result = await _discountService.GetStatisticsAsync();
             return result.statusCode switch
             {
@@ -178,6 +182,10 @@ namespace v2.Controllers
         [Authorize(Roles = "Admin,Employee")]
         public async Task<IActionResult> GetStatisticsFilter()
         {
+            var identityUserId = GetIdentityUserId();
+            if (identityUserId == null)
+                return StatusCode(StatusCodes.Status401Unauthorized, new { error = "Unauthorized: Invalid or missing session token" });
+
             var filter = "";
             switch (HttpContext.Request.RouteValues["filter"]?.ToString())  
             {
