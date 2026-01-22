@@ -11,11 +11,49 @@ def _data():
         "admin_token": "adminToken123"
     }
 
+def _dataUsers():
+    return {
+        "base": "http://localhost:8000",
+        "url": "http://localhost:8000/payments",
+        "users": {
+            "user_a": {
+                "email": "user@example.com",
+                "password": "UserPass123!",
+                "username": "regular.user3",
+                "name": "Regular User",
+                "role": "user",
+            },
+            "admin": {
+                "email": "admin@example.com",
+                "password": "AdminPass123!",
+                "username": "admin.user3",
+                "name": "Admin User",
+                "role": "admin",
+            },
+        },
+    }
+
+def register_and_login(base_url, user):
+    requests.post(f"{_dataUsers()['base']}/register", json=user)
+
+    r = requests.post(
+        f"{_dataUsers()['base']}/login",
+        json={"username": user["username"], "password": user["password"]},
+    )
+
+    if r.status_code != 200 or "accesstoken" not in r.json():
+        pytest.fail(
+            f"Fout bij inloggen: {r.status_code} - {r.text} {r.json()}"
+        )
+
+    body = r.json()
+    return f"Bearer {body['accesstoken']}"  # ✅ string
+
 
 @pytest.fixture
 def user_headers(_data):
     return {
-        "Authorization": _data["user_token"],
+        "Authorization": register_and_login(_data["url"], _dataUsers()["users"]["user_a"]),
         "Content-Type": "application/json"
     }
 
@@ -23,7 +61,7 @@ def user_headers(_data):
 @pytest.fixture
 def admin_headers(_data):
     return {
-        "Authorization": _data["admin_token"],
+        "Authorization": register_and_login(_data["url"], _dataUsers()["users"]["admin"]),
         "Content-Type": "application/json"
     }
 
@@ -42,13 +80,15 @@ def parkinglot_payload(name=None):
 
 
 def test_get_parkinglots_no_auth(_data):
+    
     r = requests.get(_data["url"])
-    assert r.status_code == 200
+    assert r.status_code == 401
     body = r.json()
     assert isinstance(body, list) or isinstance(body, dict)
 
 
 def test_get_parkinglots_user(_data, user_headers):
+    
     r = requests.get(_data["url"], headers=user_headers)
     assert r.status_code == 200
 
