@@ -123,4 +123,3 @@ def test_user_billing_summary_user_forbidden(_data, user_token):
         headers=user_token
     )
     assert r.status_code == 403
-
