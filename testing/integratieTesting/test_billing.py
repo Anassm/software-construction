@@ -1,71 +1,106 @@
 import pytest
 import requests
 
-
 @pytest.fixture
 def _data():
     return {
-        "base": "http://localhost:8000/billing",
-        "user_token": "userToken123",
-        "admin_token": "adminToken123",
+        "base": "http://localhost:8000",
+        "users": {
+            "user": {
+                "email": "billing_user@example.com",
+                "password": "UserPass123!",
+                "username": "regular.user",
+                "name": "Regular User",
+                "role": "user"
+            },
+            "admin": {
+                "email": "billing_admin@example.com",
+                "password": "AdminPass123!",
+                "username": "admin.user",
+                "name": "Admin User",
+                "role": "admin"
+            }
+        }
     }
 
-
-@pytest.fixture
-def user_headers(_data):
-    return {"Authorization": _data["user_token"]}
-
-
-@pytest.fixture
-def admin_headers(_data):
-    return {"Authorization": _data["admin_token"]}
-
-
-def test_billing_no_auth(_data):
-    r = requests.get(f"{_data['base']}/regular.user")
-    assert r.status_code in [401, 403]
-
-
-def test_billing_user_forbidden_other_user(_data, user_headers):
-    r = requests.get(f"{_data['base']}/admin.user", headers=user_headers)
-    assert r.status_code in [401, 403]
-
-
-def test_billing_user_self_access(_data, user_headers):
-    r = requests.get(f"{_data['base']}/regular.user", headers=user_headers)
-    assert r.status_code in [200, 403]
-
-
-def test_billing_admin_by_username(_data, admin_headers):
-    r = requests.get(f"{_data['base']}/regular.user", headers=admin_headers)
-    assert r.status_code in [200, 404]
-    if r.status_code == 200:
-        assert isinstance(r.json(), list)
-
-
-def test_billing_invalid_token(_data):
-    r = requests.get(
-        f"{_data['base']}/regular.user", headers={"Authorization": "invalid"}
+def register_and_login(base_url, user):
+    requests.post(f"{base_url}/register", json=user)
+    r = requests.post(
+        f"{base_url}/login",
+        json={"username": user["username"], "password": user["password"]}
     )
-    assert r.status_code in [401, 403]
+    body = r.json()
+    return {
+        "Authorization": f"{body['tokentype']} {body['accesstoken']}"
+    }
 
+@pytest.fixture
+def user_token(_data):
+    return register_and_login(_data["base"], _data["users"]["user"])
+
+@pytest.fixture
+def admin_token(_data):
+    return register_and_login(_data["base"], _data["users"]["admin"])
+
+def test_get_my_invoices_no_auth(_data):
+    r = requests.get(f"{_data['base']}/billing/invoices")
+    assert r.status_code == 401
+
+def test_get_my_invoices_invalid_token(_data):
+    r = requests.get(
+        f"{_data['base']}/billing/invoices",
+        headers={"Authorization": "invalid-token"}
+    )
+    assert r.status_code == 401
+
+def test_get_my_invoices_success(_data, user_token):
+    r = requests.get(
+        f"{_data['base']}/billing/invoices",
+        headers=user_token
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert "invoices" in body
+    assert isinstance(body["invoices"], list)
 
 def test_monthly_invoices_no_auth(_data):
-    r = requests.get(f"{_data['base']}/invoices/monthly?year=2025&month=11")
-    assert r.status_code in [401, 403]
-
+    r = requests.get(
+        f"{_data['base']}/billing/invoices/monthly?year=2025&month=11"
+    )
+    assert r.status_code == 401
 
 def test_monthly_invoices_invalid_token(_data):
     r = requests.get(
-        f"{_data['base']}/invoices/monthly?year=2025&month=11",
-        headers={"Authorization": "invalid"},
+        f"{_data['base']}/billing/invoices/monthly?year=2025&month=11",
+        headers={"Authorization": "invalid-token"}
     )
-    assert r.status_code in [401, 403]
+    assert r.status_code == 401
 
-
-def test_monthly_invoices_user_success(_data, user_headers):
+def test_monthly_invoices_missing_params(_data, user_token):
     r = requests.get(
-        f"{_data['base']}/invoices/monthly?year=2025&month=11", headers=user_headers
+        f"{_data['base']}/billing/invoices/monthly",
+        headers=user_token
+    )
+    assert r.status_code == 400
+
+def test_monthly_invoices_invalid_month(_data, user_token):
+    r = requests.get(
+        f"{_data['base']}/billing/invoices/monthly?year=2025&month=13",
+        headers=user_token
+    )
+    assert r.status_code == 400
+
+def test_monthly_invoices_invalid_year(_data, user_token):
+    r = requests.get(
+        f"{_data['base']}/billing/invoices/monthly?year=0&month=11",
+        headers=user_token
+    )
+    assert r.status_code == 400
+
+def test_monthly_invoices_user_success(_data, user_token):
+    r = requests.get(
+        f"{_data['base']}/billing/invoices/monthly?year=2025&month=11",
+        headers=user_token
     )
     assert r.status_code in [200, 404]
 
@@ -76,32 +111,15 @@ def test_monthly_invoices_user_success(_data, user_headers):
         assert "totalInvoices" in body
         assert isinstance(body["invoices"], list)
 
-
-def test_monthly_invoices_admin_success(_data, admin_headers):
+def test_user_billing_summary_no_auth(_data):
     r = requests.get(
-        f"{_data['base']}/invoices/monthly?year=2025&month=11", headers=admin_headers
+        f"{_data['base']}/billing/users/regular.user/summary"
     )
-    assert r.status_code in [200, 404]
+    assert r.status_code == 401
 
-    if r.status_code == 200:
-        body = r.json()
-        assert isinstance(body.get("invoices"), list)
-
-
-def test_monthly_invoices_missing_params(_data, user_headers):
-    r = requests.get(f"{_data['base']}/invoices/monthly", headers=user_headers)
-    assert r.status_code in [400, 422]
-
-
-def test_monthly_invoices_invalid_month(_data, user_headers):
+def test_user_billing_summary_user_forbidden(_data, user_token):
     r = requests.get(
-        f"{_data['base']}/invoices/monthly?year=2025&month=13", headers=user_headers
+        f"{_data['base']}/billing/users/regular.user/summary",
+        headers=user_token
     )
-    assert r.status_code == 400
-
-
-def test_monthly_invoices_invalid_year(_data, user_headers):
-    r = requests.get(
-        f"{_data['base']}/invoices/monthly?year=0&month=11", headers=user_headers
-    )
-    assert r.status_code == 400
+    assert r.status_code == 403
