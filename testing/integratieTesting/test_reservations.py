@@ -7,28 +7,55 @@ from datetime import datetime, timedelta, timezone
 def _data():
     return {
         "base": "http://localhost:8000",
-        "users": {
-            "user_a": {
-                "token": "userToken123",
-                "username": "regular.user"
-            },
-            "user_b": {
-                "token": "otherUserToken",
-                "username": "other.user"
-            }
-        },
         "parkingLotId": "11111111-1111-1111-1111-111111111111",
         "licensePlate": "TEST123"
     }
+def _dataUsers():
+    return {
+        "base": "http://localhost:8000",
+        "url": "http://localhost:8000/payments",
+        "users": {
+            "user_a": {
+                "email": "user@example.com",
+                "password": "UserPass123!",
+                "username": "regular.user4",
+                "name": "Regular User",
+                "role": "user",
+            },
+            "admin": {
+                "email": "admin@example.com",
+                "password": "AdminPass123!",
+                "username": "admin.user4",
+                "name": "Admin User",
+                "role": "Admin",
+            },
+        },
+    }
+
+def register_and_login(base_url, user):
+    requests.post(f"{_dataUsers()['base']}/register", json=user)
+
+    r = requests.post(
+        f"{_dataUsers()['base']}/login",
+        json={"username": user["username"], "password": user["password"]},
+    )
+
+    if r.status_code != 200 or "accesstoken" not in r.json():
+        pytest.fail(
+            f"Fout bij inloggen: {r.status_code} - {r.text} {r.json()}"
+        )
+
+    body = r.json()
+    return f"Bearer {body['accesstoken']}" 
 
 @pytest.fixture
 def auth_headers(_data):
-    return {"Authorization": f"Bearer {_data['users']['user_a']['token']}"}
+    return {"Authorization": register_and_login(_data["base"], _dataUsers()["users"]["user_a"])}
 
 
 @pytest.fixture
 def other_headers(_data):
-    return {"Authorization": f"Bearer {_data['users']['user_b']['token']}"}
+    return {"Authorization": register_and_login(_data["base"], _dataUsers()["users"]["admin"])}
 
 
 @pytest.fixture
