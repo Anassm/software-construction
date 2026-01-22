@@ -102,7 +102,7 @@ def test_monthly_invoices_user_success(_data, user_token):
         f"{_data['base']}/billing/invoices/monthly?year=2025&month=11",
         headers=user_token
     )
-    assert r.status_code in [200, 404]
+    assert r.status_code == 200
 
     if r.status_code == 200:
         body = r.json()
@@ -123,3 +123,4 @@ def test_user_billing_summary_user_forbidden(_data, user_token):
         headers=user_token
     )
     assert r.status_code == 403
+
