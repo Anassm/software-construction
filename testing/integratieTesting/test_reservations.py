@@ -92,11 +92,11 @@ def test_create_reservation_vehicle_not_found(reservations_url, auth_headers, _d
     r = requests.post(reservations_url, json=payload, headers=auth_headers)
     assert r.status_code == 400
 
-def test_get_reservations_unauthorized(reservations_url):
+def test_get_reservations_unauthorized(reservations_url, _data):
     r = requests.get(reservations_url)
     assert r.status_code == 401
 
-def test_update_reservation_success(reservations_url, auth_headers):
+def test_update_reservation_success(reservations_url, auth_headers, _data):
     start = (datetime.now(timezone.utc) + timedelta(days=1)).isoformat()
     end = (datetime.now(timezone.utc) + timedelta(days=1, hours=2)).isoformat()
 
@@ -132,7 +132,7 @@ def test_update_reservation_success(reservations_url, auth_headers):
     data = r.json()
     assert data["startDate"] == new_start
 
-def test_update_reservation_not_found_or_owned(reservations_url, other_headers, auth_headers):
+def test_update_reservation_not_found_or_owned(reservations_url, other_headers, auth_headers, _data):
     start = (datetime.now(timezone.utc) + timedelta(days=1)).isoformat()
     end = (datetime.now(timezone.utc) + timedelta(days=1, hours=2)).isoformat()
 
@@ -152,7 +152,7 @@ def test_update_reservation_not_found_or_owned(reservations_url, other_headers, 
     r = requests.put(f"{reservations_url}/{res_id}", json=payload, headers=other_headers)
     assert r.status_code == 404
 
-def test_update_reservation_invalid_dates(reservations_url, auth_headers):
+def test_update_reservation_invalid_dates(reservations_url, auth_headers, _data):
     start = (datetime.now(timezone.utc) + timedelta(days=1)).isoformat()
     end = (datetime.now(timezone.utc) + timedelta(days=1, hours=2)).isoformat()
 
@@ -176,7 +176,7 @@ def test_update_reservation_invalid_dates(reservations_url, auth_headers):
     r = requests.put(f"{reservations_url}/{res_id}", json=payload, headers=auth_headers)
     assert r.status_code == 400
 
-def test_delete_reservation_success(reservations_url, auth_headers):
+def test_delete_reservation_success(reservations_url, auth_headers, _data):
     start = (datetime.now(timezone.utc) + timedelta(days=1)).isoformat()
     end = (datetime.now(timezone.utc) + timedelta(days=1, hours=2)).isoformat()
 
@@ -199,7 +199,7 @@ def test_delete_reservation_success(reservations_url, auth_headers):
     ids = [item["id"] for item in r_check.json()]
     assert res_id not in ids
 
-def test_delete_reservation_other_user(reservations_url, other_headers, auth_headers):
+def test_delete_reservation_other_user(reservations_url, other_headers, auth_headers, _data):
     start = (datetime.now(timezone.utc) + timedelta(days=1)).isoformat()
     end = (datetime.now(timezone.utc) + timedelta(days=1, hours=2)).isoformat()
 
