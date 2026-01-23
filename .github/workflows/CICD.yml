@@ -166,7 +166,7 @@ jobs:
             --settings coverlet.runsettings \
             --collect:"XPlat Code Coverage"
 
-      - name: Create coverage summary and enforce 70%
+      - name: Create coverage summary and enforce 70% line coverage
         run: |
           cd testing/UnitTesting
           reportgenerator \
