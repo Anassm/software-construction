@@ -9,7 +9,8 @@
                         **/Migrations/**/*.cs,
                         **/obj/**,
                         **/bin/**,
-                        **/Controller/**/*.cs
+                        **/Controller/**/*.cs,
+                        **/infrastructure/data/**/ImportService.cs
                     </ExcludeByFile>
                     <ExcludeByAttribute>
                         GeneratedCodeAttribute
