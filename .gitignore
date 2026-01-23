@@ -425,3 +425,5 @@ FodyWeavers.xsd
 # Test summaries
 TestResults/
 coveragereport/
+
+appsettings.Development.json

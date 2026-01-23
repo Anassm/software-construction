@@ -17,9 +17,17 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var jwtKey = "thisIsASuperSecretKeyWithAtLeast32Bytes!";
-var jwtIssuer = "yourIssuer";
-var jwtAudience = "yourAudience";
+var jwtKey = Environment.GetEnvironmentVariable("JWT_SECRET") 
+    ?? builder.Configuration["JwtSettings:Key"];
+
+var jwtIssuer = builder.Configuration["JwtSettings:Issuer"];
+var jwtAudience = builder.Configuration["JwtSettings:Audience"];
+
+if (string.IsNullOrEmpty(jwtKey) || jwtKey.Length < 32)
+{
+    throw new InvalidOperationException(
+        "JWT_SECRET environment variable must be set and at least 32 characters long");
+}
 
 // --- Database ---
 var isTest = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Testing";
