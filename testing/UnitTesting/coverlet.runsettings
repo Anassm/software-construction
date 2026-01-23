@@ -4,18 +4,10 @@
             <DataCollector friendlyName="XPlat Code Coverage">
                 <Configuration>
 
-                    <Exclude>
-                        <ModulePath>.*Migrations.*</ModulePath>
-                        <ModulePath>.*DTO.*</ModulePath>
-                        <ModulePath>.*Program.*</ModulePath>
-                        <ModulePath>.*Startup.*</ModulePath>
-                    </Exclude>
-
                     <ExcludeByFile>
-                        <File>**/Program.cs</File>
-                        <File>**/*Dto.cs</File>
-                        <File>**/*DTO.cs</File>
-                        <File>**/Migrations/*.cs</File>
+                        <File>**/v2/Program.cs</File>
+                        <File>**/v2/Core/DTOs/*DTO.cs</File>
+                        <File>**/v2/Migrations/*.cs</File>
                     </ExcludeByFile>
 
                     <ExcludeByAttribute>
