@@ -188,19 +188,6 @@ def test_post_refund_user_forbidden(_data, user_headers):
     assert response.status_code == 403
 
 
-# def test_post_refund_admin_success(_data, admin_headers, setup_payment):
-#     refund_data = {"paymentId": setup_payment, "reason": "Test Refund"}
-#     response = requests.post(
-#         f"{_data['url']}/refund", headers=admin_headers, json=refund_data
-#     )
-
-#     assert response.status_code == 201
-#     data = response.json()
-#     assert data["status"] == "Success"
-#     assert "payment" in data
-#     assert data["payment"]["hash"].startswith("REFUND:")
-
-
 def test_put_payment_no_auth(_data, setup_payment):
     url = f"{_data['base']}/payments/{setup_payment}"
     response = requests.put(url, json={"t_data": {"info": "ok"}, "validation": "hash"})
