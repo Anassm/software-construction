@@ -7,35 +7,6 @@ import pytest
 import requests
 import uuid
 
-# @pytest.fixture
-# def _data():
-#     return {
-#         "base": "http://localhost:8000",
-#         "users": {
-#             "user_a": {
-#                 "email": "user@example.com",
-#                 "password": "UserPass123!",
-#                 "username": "regular.user",
-#                 "name": "Regular User",
-#                 "role": "user"
-#             },
-#             "user_b": {
-#                 "email": "user2@example.com",
-#                 "password": "User2Pass123!",
-#                 "username": "user.two",
-#                 "name": "Second User",
-#                 "role": "user"
-#             },
-#             "admin": {
-#                 "email": "admin@example.com",
-#                 "password": "AdminPass123!",
-#                 "username": "admin.user",
-#                 "name": "Admin User",
-#                 "role": "admin"
-#             }
-#         }
-#     }
-
 @pytest.fixture
 def _data():
     return {
