@@ -76,7 +76,7 @@ def get_v1_post_payload(username):
 @pytest.fixture
 def setup_payment(_data, user_headers):
     payload = get_v1_post_payload(_data["users"]["user_a"]["username"])
-    response = requests.post(_data["url"], headers=user_headers, json=payload)
+    response = requests.post(_data["base"] + "/payments", headers=user_headers, json=payload)
     if response.status_code != 201:
         pytest.fail(
             f"Setup payment failed (kan betaling niet aanmaken): {response.status_code} - {response.text}"
@@ -280,7 +280,7 @@ def test_post_payment_with_invalid_discount(_data, user_headers):
         _data["users"]["user_a"]["username"], fake_code
     )
 
-    response = requests.post(_data["url"], headers=user_headers, json=payload)
+    response = requests.post(_data["base"] + "/payments", headers=user_headers, json=payload)
 
     assert response.status_code in [400, 404]
 
