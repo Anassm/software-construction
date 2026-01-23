@@ -4,9 +4,11 @@
             <DataCollector friendlyName="XPlat Code Coverage">
                 <Configuration>
                     <ExcludeByFile>
-                        **/Program.cs
-                        **/Core/DTOs/*.cs
-                        **/Migrations/*.cs
+                        **/Program.cs,
+                        **/Core/DTOs/**/*.cs,
+                        **/Migrations/**/*.cs,
+                        **/obj/**,
+                        **/bin/**
                     </ExcludeByFile>
                     <ExcludeByAttribute>
                         GeneratedCodeAttribute
