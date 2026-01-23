@@ -47,7 +47,7 @@ def register_and_login(base_url, user):
         )
 
     body = r.json()
-    return f"Bearer {body['accesstoken']}"  # ✅ string
+    return f"Bearer {body['accesstoken']}" 
 
 
 @pytest.fixture
@@ -155,3 +155,4 @@ def test_delete_parkinglot_admin_success(_data, admin_headers):
 def test_delete_parkinglot_not_found(_data, admin_headers):
     r = requests.delete(f"{_data['url']}/99999999-9999-9999-9999-999999999999", headers=admin_headers)
     assert r.status_code in (404, 400)
+
