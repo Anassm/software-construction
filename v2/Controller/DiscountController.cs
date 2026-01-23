@@ -240,7 +240,7 @@ namespace v2.Controllers
 
             var result = await _discountService.GetUsedCodesAsync(discountCodeId, identityUserId);
 
-            return result.statuscode switch
+            return result.statusCode switch
             {
                 200 => StatusCode(StatusCodes.Status200OK, result.data),
                 403 => StatusCode(StatusCodes.Status403Forbidden, result.data),
