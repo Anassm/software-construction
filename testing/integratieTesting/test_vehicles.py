@@ -169,7 +169,7 @@ def test_put_vehicle_update_existing_success(_data, user_token):
     update_payload = {"name": "Toyota Supra", "LicensePlate": "AB-123"}
     url = vehicle_url(_data, "AB-123")
     response = requests.put(url, headers=user_token, json=update_payload)
-    assert response.status_code == 200
+    assert response.status_code == 200 
 
 #delete /vehicles
 def test_delete_vehicle_no_auth(_data):
