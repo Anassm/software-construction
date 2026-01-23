@@ -39,8 +39,8 @@ jobs:
     env:
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
       ASPNETCORE_ENVIRONMENT: Testing
-      JwtSettings__Issuer: MobiParkTestIssuer
-      JwtSettings__Audience: MobiParkTestAudience
+      JwtSettings__Issuer: ParkingManagementAPI
+      JwtSettings__Audience: ParkingManagementAPI
     steps:
       - uses: actions/checkout@v4
       - name: Set up .NET
