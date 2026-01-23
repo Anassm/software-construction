@@ -335,7 +335,7 @@ public class VehicleServiceTests
             User = _user,
             Vehicle = _vehicle,
             ParkingLot = null
-        };
+        }; 
         _context.Reservations.Add(reservation);
         _context.SaveChanges();
 

@@ -1,42 +1,45 @@
 import pytest
 import requests
 from datetime import datetime, timedelta, timezone
+import os
 
 
 @pytest.fixture
 def _data():
     return {
-        "base": "http://localhost:8000",
-        "parkingLotId": "11111111-1111-1111-1111-111111111111",
-        "licensePlate": "TEST123"
-    }
-def _dataUsers():
-    return {
-        "base": "http://localhost:8000",
-        "url": "http://localhost:8000/payments",
+        "base": os.environ["BASE_URL"],
+        "parkingLotId": os.environ.get("PARKING_LOT_ID", "11111111-1111-1111-1111-111111111111"),
+        "licensePlate": os.environ.get("LICENSE_PLATE", "TEST123"),
         "users": {
             "user_a": {
-                "email": "user@example.com",
-                "password": "UserPass123!",
-                "username": "regular.user4",
-                "name": "Regular User",
-                "role": "user",
+                "email": os.environ["USER_A_EMAIL"],
+                "password": os.environ["USER_A_PASSWORD"],
+                "username": os.environ["USER_A_USERNAME"],
+                "name": os.environ["USER_A_NAME"],
+                "role": "user"
+            },
+            "user_b": {
+                "email": os.environ["USER_B_EMAIL"],
+                "password": os.environ["USER_B_PASSWORD"],
+                "username": os.environ["USER_B_USERNAME"],
+                "name": os.environ["USER_B_NAME"],
+                "role": "user"
             },
             "admin": {
-                "email": "admin@example.com",
-                "password": "AdminPass123!",
-                "username": "admin.user4",
-                "name": "Admin User",
-                "role": "Admin",
-            },
-        },
+                "email": os.environ["ADMIN_EMAIL"],
+                "password": os.environ["ADMIN_PASSWORD"],
+                "username": os.environ["ADMIN_USERNAME"],
+                "name": os.environ["ADMIN_NAME"],
+                "role": "admin"
+            }
+        }
     }
 
 def register_and_login(base_url, user):
-    requests.post(f"{_dataUsers()['base']}/register", json=user)
+    requests.post(f"{base_url}/register", json=user)
 
     r = requests.post(
-        f"{_dataUsers()['base']}/login",
+        f"{base_url}/login",
         json={"username": user["username"], "password": user["password"]},
     )
 
@@ -50,12 +53,12 @@ def register_and_login(base_url, user):
 
 @pytest.fixture
 def auth_headers(_data):
-    return {"Authorization": register_and_login(_data["base"], _dataUsers()["users"]["user_a"])}
+    return {"Authorization": register_and_login(_data["base"], _data["users"]["user_a"])}
 
 
 @pytest.fixture
 def other_headers(_data):
-    return {"Authorization": register_and_login(_data["base"], _dataUsers()["users"]["admin"])}
+    return {"Authorization": register_and_login(_data["base"], _data["users"]["admin"])}
 
 
 @pytest.fixture
@@ -89,15 +92,15 @@ def test_create_reservation_vehicle_not_found(reservations_url, auth_headers, _d
     r = requests.post(reservations_url, json=payload, headers=auth_headers)
     assert r.status_code == 400
 
-def test_get_reservations_unauthorized(reservations_url):
+def test_get_reservations_unauthorized(reservations_url, _data):
     r = requests.get(reservations_url)
     assert r.status_code == 401
 
-def test_update_reservation_success(reservations_url, auth_headers):
+def test_update_reservation_success(reservations_url, auth_headers, _data):
     start = (datetime.now(timezone.utc) + timedelta(days=1)).isoformat()
     end = (datetime.now(timezone.utc) + timedelta(days=1, hours=2)).isoformat()
 
-    pl_resp = requests.post("http://localhost:8000/parkinglots", json={
+    pl_resp = requests.post(f"{_data['base']}/parkinglots", json={
         "name": "Res Lot Update", "location": "Loc", "address": "Addr",
         "capacity": 50, "tariff": 1.0, "dayTariff": 5.0,
         "latitude": 0, "longitude": 0
@@ -129,13 +132,13 @@ def test_update_reservation_success(reservations_url, auth_headers):
     data = r.json()
     assert data["startDate"] == new_start
 
-def test_update_reservation_not_found_or_owned(reservations_url, other_headers, auth_headers):
+def test_update_reservation_not_found_or_owned(reservations_url, other_headers, auth_headers, _data):
     start = (datetime.now(timezone.utc) + timedelta(days=1)).isoformat()
     end = (datetime.now(timezone.utc) + timedelta(days=1, hours=2)).isoformat()
 
     create_payload = {
-        "licensePlate": "TEST123",
-        "parkingLotId": "11111111-1111-1111-1111-111111111111",
+        "licensePlate": _data["licensePlate"],
+        "parkingLotId": _data["parkingLotId"],
         "startDate": start,
         "endDate": end
     }
@@ -149,13 +152,13 @@ def test_update_reservation_not_found_or_owned(reservations_url, other_headers, 
     r = requests.put(f"{reservations_url}/{res_id}", json=payload, headers=other_headers)
     assert r.status_code == 404
 
-def test_update_reservation_invalid_dates(reservations_url, auth_headers):
+def test_update_reservation_invalid_dates(reservations_url, auth_headers, _data):
     start = (datetime.now(timezone.utc) + timedelta(days=1)).isoformat()
     end = (datetime.now(timezone.utc) + timedelta(days=1, hours=2)).isoformat()
 
     create_payload = {
-        "licensePlate": "TEST123",
-        "parkingLotId": "11111111-1111-1111-1111-111111111111",
+        "licensePlate": _data["licensePlate"],
+        "parkingLotId": _data["parkingLotId"],
         "startDate": start,
         "endDate": end
     }
@@ -173,13 +176,13 @@ def test_update_reservation_invalid_dates(reservations_url, auth_headers):
     r = requests.put(f"{reservations_url}/{res_id}", json=payload, headers=auth_headers)
     assert r.status_code == 400
 
-def test_delete_reservation_success(reservations_url, auth_headers):
+def test_delete_reservation_success(reservations_url, auth_headers, _data):
     start = (datetime.now(timezone.utc) + timedelta(days=1)).isoformat()
     end = (datetime.now(timezone.utc) + timedelta(days=1, hours=2)).isoformat()
 
     create_payload = {
-        "licensePlate": "TEST123",
-        "parkingLotId": "11111111-1111-1111-1111-111111111111",
+        "licensePlate": _data["licensePlate"],
+        "parkingLotId": _data["parkingLotId"],
         "startDate": start,
         "endDate": end
     }
@@ -196,13 +199,13 @@ def test_delete_reservation_success(reservations_url, auth_headers):
     ids = [item["id"] for item in r_check.json()]
     assert res_id not in ids
 
-def test_delete_reservation_other_user(reservations_url, other_headers, auth_headers):
+def test_delete_reservation_other_user(reservations_url, other_headers, auth_headers, _data):
     start = (datetime.now(timezone.utc) + timedelta(days=1)).isoformat()
     end = (datetime.now(timezone.utc) + timedelta(days=1, hours=2)).isoformat()
 
     create_payload = {
-        "licensePlate": "TEST123",
-        "parkingLotId": "11111111-1111-1111-1111-111111111111",
+        "licensePlate": _data["licensePlate"],
+        "parkingLotId": _data["parkingLotId"],
         "startDate": start,
         "endDate": end
     }

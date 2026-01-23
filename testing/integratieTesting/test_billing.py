@@ -1,23 +1,24 @@
+import os
 import pytest
 import requests
 
 @pytest.fixture
 def _data():
     return {
-        "base": "http://localhost:8000",
+        "base": os.environ["BASE_URL"],
         "users": {
             "user": {
-                "email": "billing_user@example.com",
-                "password": "UserPass123!",
-                "username": "regular.user",
-                "name": "Regular User",
+                "email": os.environ["BILLING_USER_EMAIL"],
+                "password": os.environ["BILLING_USER_PASSWORD"],
+                "username": os.environ["BILLING_USER_USERNAME"],
+                "name": os.environ["BILLING_USER_NAME"],
                 "role": "user"
             },
             "admin": {
-                "email": "billing_admin@example.com",
-                "password": "AdminPass123!",
-                "username": "admin.user",
-                "name": "Admin User",
+                "email": os.environ["BILLING_ADMIN_EMAIL"],
+                "password": os.environ["BILLING_ADMIN_PASSWORD"],
+                "username": os.environ["BILLING_ADMIN_USERNAME"],
+                "name": os.environ["BILLING_ADMIN_NAME"],
                 "role": "admin"
             }
         }
@@ -113,14 +114,13 @@ def test_monthly_invoices_user_success(_data, user_token):
 
 def test_user_billing_summary_no_auth(_data):
     r = requests.get(
-        f"{_data['base']}/billing/users/regular.user/summary"
+        f"{_data['base']}/billing/users/{os.environ['BILLING_USER_USERNAME']}/summary"
     )
     assert r.status_code == 401
 
 def test_user_billing_summary_user_forbidden(_data, user_token):
     r = requests.get(
-        f"{_data['base']}/billing/users/regular.user/summary",
+        f"{_data['base']}/billing/users/{os.environ['BILLING_USER_USERNAME']}/summary",
         headers=user_token
     )
     assert r.status_code == 403
-    

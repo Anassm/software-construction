@@ -2,6 +2,7 @@ using v2.Core.DTOs;
 using v2.Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using v2.Core.Validators;
 
 namespace V2.Controllers
 {
@@ -28,6 +29,11 @@ namespace V2.Controllers
 
             if (request.Amount <= 0)
                  return StatusCode(StatusCodes.Status400BadRequest, new { error = "Required field missing, field: amount" });
+
+            var (isValid, errorMessage) = ValidationHelper.ValidateCreatePaymentRequestDTO(request);
+            if (!isValid)
+                return StatusCode(StatusCodes.Status400BadRequest, new { error = errorMessage });
+
 
             var result = await _paymentService.CreatePaymentAsync(request, identityUserId);
 

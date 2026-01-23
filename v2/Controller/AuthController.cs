@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using v2.Infrastructure.Data;
 using v2.core.Interfaces;
 using v2.infrastructure.Services;
+using v2.Core.Validators;
 
 namespace v2.Controller;
 
@@ -20,7 +21,6 @@ public class AuthController : ControllerBase
 
     public AuthController(SignInManager<IdentityUser> signInManager, UserManager<IdentityUser> userManager, ApplicationDbContext dbContext)
     {
-        
         _authService = new AuthService(dbContext, signInManager, userManager);
     }
 
@@ -38,7 +38,6 @@ public class AuthController : ControllerBase
             _ => StatusCode(StatusCodes.Status501NotImplemented, new { error = $"Unhandled statuscode: {result.statusCode}" })
         };
     }
-
 
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto dto)
@@ -62,6 +61,10 @@ public class AuthController : ControllerBase
         var identityUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (identityUserId == null)
             return StatusCode(StatusCodes.Status401Unauthorized, new { error = "Unauthorized: Invalid or missing session token" });
+
+        var (isValid, errorMessage) = ValidationHelper.ValidateProfileDto(dto);
+        if (!isValid)
+            return StatusCode(StatusCodes.Status400BadRequest, new { error = errorMessage });
 
         var result = await _authService.UpdateProfile(dto, identityUserId);
         
@@ -102,8 +105,8 @@ public class AuthController : ControllerBase
         {
             200 => StatusCode(StatusCodes.Status200OK, result.message),
             400 => StatusCode(StatusCodes.Status400BadRequest, result.message),
+            500 => StatusCode(StatusCodes.Status500InternalServerError, result.message),
             _ => StatusCode(StatusCodes.Status501NotImplemented, new { error = $"Unhandled statuscode: {result.statusCode}" })
         };
     }
-
 }

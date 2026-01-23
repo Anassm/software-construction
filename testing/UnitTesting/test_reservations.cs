@@ -123,6 +123,151 @@ namespace UnitTesting
         }
 
         [Fact]
+        public async Task CreateReservation_Should_Create_When_Using_VehicleId()
+        {
+            using var db = CreateInMemoryDbContext();
+
+            var lotId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+            var vehicleId = Guid.NewGuid();
+
+            db.ParkingLots.Add(CreateTestParkingLot(lotId));
+            db.Vehicles.Add(CreateTestVehicle(vehicleId, userId, "VID123"));
+            await db.SaveChangesAsync();
+
+            var service = new ReservationService(db);
+
+            var start = DateTime.UtcNow.AddHours(1);
+            var end = DateTime.UtcNow.AddHours(2);
+
+            var req = new ReservationCreateRequest
+            {
+                VehicleId = vehicleId,
+                LicensePlate = "",
+                ParkingLotId = lotId,
+                StartDate = start,
+                EndDate = end,
+                DiscountCode = "DISC10"
+            };
+
+            var created = await service.CreateReservationAsync(req);
+
+            var saved = await db.Reservations.SingleAsync(r => r.ID == created.ID);
+            Assert.Equal(vehicleId, saved.VehicleID);
+            Assert.Equal(userId, saved.UserID);
+            Assert.Equal(lotId, saved.ParkingLotID);
+            Assert.Equal("Pending", saved.Status);
+            Assert.Equal("DISC10", saved.DiscountCode);
+        }
+
+        [Fact]
+        public async Task UpdateReservation_Should_Return404_When_NewParkingLot_NotFound()
+        {
+            using var db = CreateInMemoryDbContext();
+
+            var userId = Guid.NewGuid();
+            var identityId = "identity-u1";
+            var user = CreateTestUser(userId, identityId);
+            db.Users.Add(user);
+
+            var lotId = Guid.NewGuid();
+            db.ParkingLots.Add(CreateTestParkingLot(lotId));
+
+            var vehicleId = Guid.NewGuid();
+            db.Vehicles.Add(CreateTestVehicle(vehicleId, userId, "U1CAR"));
+
+            var reservationId = Guid.NewGuid();
+            db.Reservations.Add(new Reservation
+            {
+                ID = reservationId,
+                StartDate = DateTime.UtcNow.AddDays(1),
+                EndDate = DateTime.UtcNow.AddDays(1).AddHours(1),
+                Status = "Pending",
+                CreatedAt = DateTime.UtcNow,
+                TotalPrice = 0f,
+                UserID = userId,
+                ParkingLotID = lotId,
+                VehicleID = vehicleId
+            });
+
+            await db.SaveChangesAsync();
+
+            var service = new ReservationService(db);
+
+            var req = new ReservationUpdateRequest
+            {
+                ParkingLotId = Guid.NewGuid()
+            };
+
+            var (updated, status, msg) = await service.UpdateReservationForUserAsync(reservationId, identityId, req);
+
+            Assert.Null(updated);
+            Assert.Equal(404, status);
+
+            var errorProp = msg!.GetType().GetProperty("error");
+            Assert.NotNull(errorProp);
+            Assert.Equal("Parking lot not found.", errorProp!.GetValue(msg));
+        }
+
+        [Fact]
+        public async Task UpdateReservation_Should_Succeed_And_LoadVehicle()
+        {
+            using var db = CreateInMemoryDbContext();
+
+            var userId = Guid.NewGuid();
+            var identityId = "identity-u1";
+            db.Users.Add(CreateTestUser(userId, identityId));
+
+            var lotId = Guid.NewGuid();
+            db.ParkingLots.Add(CreateTestParkingLot(lotId));
+
+            var vehicleId = Guid.NewGuid();
+            db.Vehicles.Add(CreateTestVehicle(vehicleId, userId, "U1CAR"));
+
+            var reservationId = Guid.NewGuid();
+            db.Reservations.Add(new Reservation
+            {
+                ID = reservationId,
+                StartDate = DateTime.UtcNow.AddDays(2),
+                EndDate = DateTime.UtcNow.AddDays(2).AddHours(1),
+                Status = "Pending",
+                CreatedAt = DateTime.UtcNow,
+                TotalPrice = 0f,
+                UserID = userId,
+                ParkingLotID = lotId,
+                VehicleID = vehicleId
+            });
+
+            await db.SaveChangesAsync();
+
+            var service = new ReservationService(db);
+
+            var newStart = DateTime.UtcNow.AddDays(3);
+            var newEnd = newStart.AddHours(2);
+
+            var req = new ReservationUpdateRequest
+            {
+                StartDate = newStart,
+                EndDate = newEnd
+            };
+
+            var (updated, status, msg) = await service.UpdateReservationForUserAsync(reservationId, identityId, req);
+
+            Assert.Equal(200, status);
+            Assert.NotNull(updated);
+            Assert.Equal(newStart, updated!.StartDate);
+            Assert.Equal(newEnd, updated.EndDate);
+
+            Assert.NotNull(updated.Vehicle);
+            Assert.Equal("U1CAR", updated.Vehicle!.LicensePlate);
+
+            var messageProp = msg!.GetType().GetProperty("message");
+            Assert.NotNull(messageProp);
+            Assert.Equal("Reservation updated successfully.", messageProp!.GetValue(msg));
+        }
+
+
+        [Fact]
         public async Task CreateReservation_Should_Fail_When_ParkingLot_NotFound()
         {
             using var db = CreateInMemoryDbContext();

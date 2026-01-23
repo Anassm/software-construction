@@ -17,11 +17,14 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var jwtKey = "thisIsASuperSecretKeyWithAtLeast32Bytes!";
-var jwtIssuer = "yourIssuer";
-var jwtAudience = "yourAudience";
+builder.Configuration.AddEnvironmentVariables();
+var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+var jwtKey = jwtSettings["Key"];
+var jwtIssuer = jwtSettings["Issuer"];
+var jwtAudience = jwtSettings["Audience"];
+var ConnectionStrings = builder.Configuration.GetSection("ConnectionStrings");
+var defaultConnection = ConnectionStrings["DefaultConnection"];
 
-// --- Database ---
 var isTest = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Testing";
 
 if (isTest)
@@ -32,16 +35,14 @@ if (isTest)
 else
 {
     builder.Services.AddDbContext<ApplicationDbContext>(
-        options => options.UseSqlite("Data Source=infrastructure/data/app.db"));
+        options => options.UseSqlite($"Data Source={defaultConnection}"));
 
 }
 
-// --- Identity ---
 builder.Services.AddIdentity<IdentityUser, IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-// --- JWT Authentication ---
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -67,7 +68,6 @@ builder.Services.AddAuthentication(options =>
 
             if (TokenBlacklist.Contains(jti))
             {
-                // If token is revoked, fail authentication
                 context.Fail("Token has been revoked.");
             }
 
@@ -78,10 +78,8 @@ builder.Services.AddAuthentication(options =>
 
 
 
-// --- Authorization ---
 builder.Services.AddAuthorization();
 
-// --- Services ---
 builder.Services.AddScoped<IReservation, ReservationService>();
 builder.Services.AddScoped<IVehicles, VehicleService>();
 builder.Services.AddScoped<IParkingLots, ParkingLotService>();
@@ -89,7 +87,6 @@ builder.Services.AddScoped<IPayment, PaymentService>();
 builder.Services.AddScoped<IBilling, BillingService>();
 
 
-// --- Controllers & Swagger ---
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c => {
@@ -115,10 +112,8 @@ builder.Services.AddSwaggerGen(c => {
 });
 
 builder.Services.AddScoped<IDiscounts, DiscountService>();
-// --- App ---
 var app = builder.Build();
 
-// Swagger
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -129,41 +124,6 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// --- Login endpoint returning JWT ---
-// app.MapPost("/login", async (UserManager<IdentityUser> userManager,
-//                               [FromBody] LoginDto login) =>
-// {
-//     var user = await userManager.FindByNameAsync(login.username);
-//     if (user == null) return Results.Unauthorized();
-
-//     var passwordValid = await userManager.CheckPasswordAsync(user, login.password);
-//     if (!passwordValid) return Results.Unauthorized();
-
-//     var claims = new[]
-//     {
-//         new Claim(ClaimTypes.NameIdentifier, user.Id),
-//         new Claim(ClaimTypes.Name, user.UserName), 
-//     };
-
-//     var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
-//     var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-//     var token = new System.IdentityModel.Tokens.Jwt.JwtSecurityToken(
-//         issuer: jwtIssuer,
-//         audience: jwtAudience,
-//         claims: claims,
-//         expires: DateTime.UtcNow.AddHours(1),
-//         signingCredentials: creds
-//     );
-
-//     return Results.Ok(new
-//     {
-//         tokentype = "Bearer",
-//         accesstoken = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler().WriteToken(token)
-//     });
-// });
-
-// --- Map controllers ---
 app.MapControllers();
 
 app.MapGet("/health", () => Results.Ok("Healthy"));

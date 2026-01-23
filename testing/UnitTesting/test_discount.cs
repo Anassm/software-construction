@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using v2.Core.DTOs;
-using v2.Core.Interfaces;
 using v2.Core.Models;
 using v2.Infrastructure.Data;
 using v2.Infrastructure.Services;
@@ -18,32 +17,31 @@ namespace UnitTesting
         private ApplicationDbContext CreateContext()
         {
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseInMemoryDatabase("PaymentDiscountTests_" + Guid.NewGuid())
+                .UseInMemoryDatabase("DiscountServiceTests_" + Guid.NewGuid())
                 .Options;
 
             return new ApplicationDbContext(options);
         }
 
-        private (ApplicationDbContext ctx, User user, string identityUserId) SeedUser(ApplicationDbContext ctx)
+        private (ApplicationDbContext ctx, User user, string identityUserId) SeedUser(ApplicationDbContext ctx, string role)
         {
             var identityUserId = Guid.NewGuid().ToString();
             var identityUser = new IdentityUser
             {
                 Id = identityUserId,
-                UserName = "testuser"
+                UserName = "user_" + role
             };
 
             var user = new User
             {
                 ID = Guid.NewGuid(),
-                OldID = "",
                 IdentityUserId = identityUserId,
                 IdentityUser = identityUser,
-                Username = "testuser",
-                Name = "Test User",
+                Username = identityUser.UserName,
+                Name = "Test " + role,
                 Email = "test@example.com",
                 PhoneNumber = "0000000000",
-                Role = "user",
+                Role = role,
                 CreatedAt = DateTime.UtcNow,
                 BirthYear = 2000,
                 IsActive = true,
@@ -59,213 +57,514 @@ namespace UnitTesting
             return (ctx, user, identityUserId);
         }
 
-        [Fact]
-        public async Task CreatePayment_WithoutDiscount_UsesOriginalAmount()
+        private DiscountCode SeedDiscount(ApplicationDbContext ctx,
+            string code,
+            bool isActive = true,
+            DateTime? start = null,
+            DateTime? expiry = null,
+            int? maxUsage = null,
+            int usageCount = 0,
+            decimal percentage = 0m,
+            decimal? fixedAmount = null,
+            string? allowedLocation = null)
         {
-            var ctx = CreateContext();
-            var (context, user, identityUserId) = SeedUser(ctx);
-
-            var fakeDiscount = new FakeDiscountService
+            var d = new DiscountCode
             {
-                Mode = FakeDiscountMode.NeverCalled
+                ID = Guid.NewGuid(),
+                Code = code,
+                IsActive = isActive,
+                StartDate = start,
+                ExpiryDate = expiry,
+                MaxUsage = maxUsage,
+                UsageCount = usageCount,
+                Percentage = percentage,
+                FixedAmount = fixedAmount,
+                AllowedLocation = allowedLocation,
+                SavedAmount = 0m
             };
 
-            var service = new PaymentService(context, fakeDiscount);
-
-            var request = new CreatePaymentRequestDTO
-            {
-                Amount = 100m,
-                SessionID = Guid.NewGuid(),
-                Transaction = null,
-                TransactionAmount = null,
-                TransactionDate = null,
-                TransactionMethod = "ideal",
-                TransactionIssuer = "bank",
-                TransactionBank = "ING",
-                DiscountCode = null,
-                Location = null
-            };
-
-            var result = await service.CreatePaymentAsync(request, identityUserId);
-
-            Assert.Equal(201, result.statusCode);
-            Assert.False(fakeDiscount.WasValidateCalled);
-
-            var paymentsInDb = context.Payments.ToList();
-            Assert.Single(paymentsInDb);
-            Assert.Equal(100m, paymentsInDb[0].Amount);
+            ctx.DiscountCodes.Add(d);
+            ctx.SaveChanges();
+            return d;
         }
 
         [Fact]
-        public async Task CreatePayment_WithValidDiscount_AppliesDiscount()
+        public async Task CreateAsync_UserNotFound_Returns404()
         {
-            var ctx = CreateContext();
-            var (context, user, identityUserId) = SeedUser(ctx);
+            using var ctx = CreateContext();
+            var service = new DiscountService(ctx);
 
-            var fakeDiscount = new FakeDiscountService
-            {
-                Mode = FakeDiscountMode.Success,
-                ConfiguredDiscountAmount = 10m
-            };
+            var dto = new DiscountCreateRequest { Code = "TEST" };
+            var result = await service.CreateAsync(dto, adminIdentityUserId: "missing");
 
-            var service = new PaymentService(context, fakeDiscount);
-
-            var request = new CreatePaymentRequestDTO
-            {
-                Amount = 100m,
-                SessionID = Guid.NewGuid(),
-                Transaction = null,
-                TransactionAmount = null,
-                TransactionDate = null,
-                TransactionMethod = "ideal",
-                TransactionIssuer = "bank",
-                TransactionBank = "ING",
-                DiscountCode = "TEST10",
-                Location = "Rotterdam"
-            };
-
-            var result = await service.CreatePaymentAsync(request, identityUserId);
-
-            Assert.Equal(201, result.statusCode);
-            Assert.True(fakeDiscount.WasValidateCalled);
-            Assert.NotNull(fakeDiscount.LastApplyRequest);
-            Assert.Equal("TEST10", fakeDiscount.LastApplyRequest.Code);
-            Assert.Equal(100m, fakeDiscount.LastApplyRequest.OriginalAmount);
-            Assert.Equal("Rotterdam", fakeDiscount.LastApplyRequest.Location);
-
-            var paymentsInDb = context.Payments.ToList();
-            Assert.Single(paymentsInDb);
-            Assert.Equal(90m, paymentsInDb[0].Amount);
+            Assert.Equal(404, result.statusCode);
         }
 
         [Fact]
-        public async Task CreatePayment_WithDiscountError_ReturnsErrorAndNoPaymentCreated()
+        public async Task CreateAsync_NotAdmin_Returns403()
         {
-            var ctx = CreateContext();
-            var (context, user, identityUserId) = SeedUser(ctx);
+            using var ctx = CreateContext();
+            var (_, _, nonAdminId) = SeedUser(ctx, role: "user");
 
-            var fakeDiscount = new FakeDiscountService
-            {
-                Mode = FakeDiscountMode.Error,
-                ErrorStatusCode = 400,
-                ErrorMessage = "Discount code has expired"
-            };
+            var service = new DiscountService(ctx);
+            var dto = new DiscountCreateRequest { Code = "TEST" };
 
-            var service = new PaymentService(context, fakeDiscount);
+            var result = await service.CreateAsync(dto, nonAdminId);
 
-            var request = new CreatePaymentRequestDTO
-            {
-                Amount = 100m,
-                SessionID = Guid.NewGuid(),
-                Transaction = null,
-                TransactionAmount = null,
-                TransactionDate = null,
-                TransactionMethod = "ideal",
-                TransactionIssuer = "bank",
-                TransactionBank = "ING",
-                DiscountCode = "OLD",
-                Location = "Rotterdam"
-            };
+            Assert.Equal(403, result.statusCode);
+        }
 
-            var result = await service.CreatePaymentAsync(request, identityUserId);
+        [Fact]
+        public async Task CreateAsync_EmptyCode_Returns400()
+        {
+            using var ctx = CreateContext();
+            var (_, _, adminId) = SeedUser(ctx, role: "admin");
+
+            var service = new DiscountService(ctx);
+            var dto = new DiscountCreateRequest { Code = "   " };
+
+            var result = await service.CreateAsync(dto, adminId);
 
             Assert.Equal(400, result.statusCode);
-            Assert.True(fakeDiscount.WasValidateCalled);
-            Assert.Contains("expired", result.data.ToString(), StringComparison.OrdinalIgnoreCase);
-
-            var paymentsInDb = context.Payments.ToList();
-            Assert.Empty(paymentsInDb);
         }
 
-        private enum FakeDiscountMode
+        [Fact]
+        public async Task CreateAsync_DuplicateCode_Returns409()
         {
-            NeverCalled,
-            Success,
-            Error
+            using var ctx = CreateContext();
+            var (_, _, adminId) = SeedUser(ctx, role: "admin");
+
+            SeedDiscount(ctx, code: "DUPLICATE");
+
+            var service = new DiscountService(ctx);
+            var dto = new DiscountCreateRequest { Code = "duplicate" }; 
+
+            var result = await service.CreateAsync(dto, adminId);
+
+            Assert.Equal(409, result.statusCode);
         }
 
-        private class FakeDiscountService : IDiscounts
+        [Fact]
+        public async Task CreateAsync_Success_NormalizesCode_ToUpperTrim()
         {
-            public FakeDiscountMode Mode { get; set; } = FakeDiscountMode.NeverCalled;
-            public bool WasValidateCalled { get; private set; }
-            public DiscountApplyRequest? LastApplyRequest { get; private set; }
-            public decimal ConfiguredDiscountAmount { get; set; } = 0m;
-            public int ErrorStatusCode { get; set; } = 400;
-            public string ErrorMessage { get; set; } = "Discount error";
+            using var ctx = CreateContext();
+            var (_, _, adminId) = SeedUser(ctx, role: "admin");
 
-            public Task<(int statusCode, object data)> CreateAsync(DiscountCreateRequest dto, string adminIdentityUserId)
+            var service = new DiscountService(ctx);
+            var dto = new DiscountCreateRequest { Code = "  teSt10  ", Percentage = 10m };
+
+            var result = await service.CreateAsync(dto, adminId);
+
+            Assert.Equal(201, result.statusCode);
+
+            var inDb = ctx.DiscountCodes.Single();
+            Assert.Equal("TEST10", inDb.Code);
+            Assert.Equal(10m, inDb.Percentage);
+        }
+
+        [Fact]
+        public async Task DeactivateAsync_NotAdmin_Returns403()
+        {
+            using var ctx = CreateContext();
+            var (_, _, nonAdminId) = SeedUser(ctx, role: "user");
+            var discount = SeedDiscount(ctx, "CODE");
+
+            var service = new DiscountService(ctx);
+            var result = await service.DeactivateAsync(discount.ID, nonAdminId);
+
+            Assert.Equal(403, result.statusCode);
+        }
+
+        [Fact]
+        public async Task DeactivateAsync_NotFound_Returns404()
+        {
+            using var ctx = CreateContext();
+            var (_, _, adminId) = SeedUser(ctx, role: "admin");
+
+            var service = new DiscountService(ctx);
+            var result = await service.DeactivateAsync(Guid.NewGuid(), adminId);
+
+            Assert.Equal(404, result.statusCode);
+        }
+
+        [Fact]
+        public async Task DeactivateAsync_AlreadyInactive_Returns409()
+        {
+            using var ctx = CreateContext();
+            var (_, _, adminId) = SeedUser(ctx, role: "admin");
+            var discount = SeedDiscount(ctx, "CODE", isActive: false);
+
+            var service = new DiscountService(ctx);
+            var result = await service.DeactivateAsync(discount.ID, adminId);
+
+            Assert.Equal(409, result.statusCode);
+        }
+
+        [Fact]
+        public async Task DeactivateAsync_Success_SetsInactive()
+        {
+            using var ctx = CreateContext();
+            var (_, _, adminId) = SeedUser(ctx, role: "admin");
+            var discount = SeedDiscount(ctx, "CODE", isActive: true);
+
+            var service = new DiscountService(ctx);
+            var result = await service.DeactivateAsync(discount.ID, adminId);
+
+            Assert.Equal(200, result.statusCode);
+
+            var inDb = ctx.DiscountCodes.Single(d => d.ID == discount.ID);
+            Assert.False(inDb.IsActive);
+        }
+
+        [Fact]
+        public async Task UpdateExpiryAsync_NotFound_Returns404()
+        {
+            using var ctx = CreateContext();
+            var (_, _, adminId) = SeedUser(ctx, role: "admin");
+
+            var service = new DiscountService(ctx);
+            var result = await service.UpdateExpiryAsync(Guid.NewGuid(), DateTime.UtcNow.AddDays(10), adminId);
+
+            Assert.Equal(404, result.statusCode);
+        }
+
+        [Fact]
+        public async Task UpdateExpiryAsync_Success_UpdatesDate()
+        {
+            using var ctx = CreateContext();
+            var (_, _, adminId) = SeedUser(ctx, role: "admin");
+            var discount = SeedDiscount(ctx, "CODE");
+
+            var service = new DiscountService(ctx);
+            var newExpiry = DateTime.UtcNow.AddDays(7);
+
+            var result = await service.UpdateExpiryAsync(discount.ID, newExpiry, adminId);
+
+            Assert.Equal(200, result.statusCode);
+
+            var inDb = ctx.DiscountCodes.Single(d => d.ID == discount.ID);
+            Assert.Equal(newExpiry, inDb.ExpiryDate);
+        }
+
+        [Fact]
+        public async Task LinkUsersAsync_NotFound_Returns404()
+        {
+            using var ctx = CreateContext();
+            var (_, _, adminId) = SeedUser(ctx, role: "admin");
+
+            var service = new DiscountService(ctx);
+            var dto = new DiscountLinkUsersRequest
             {
-                throw new NotImplementedException();
-            }
+                UserIds = new List<Guid> { Guid.NewGuid() },
+                Groups = new List<string> { "Business" }
+            };
 
-            public Task<(int statusCode, object data)> UpdateAsync(Guid id, DiscountUpdateRequest dto, string adminIdentityUserId)
-            {
-                throw new NotImplementedException();
-            }
+            var result = await service.LinkUsersAsync(Guid.NewGuid(), dto, adminId);
 
-            public Task<(int statusCode, object data)> DeactivateAsync(Guid id, string adminIdentityUserId)
-            {
-                throw new NotImplementedException();
-            }
+            Assert.Equal(404, result.statusCode);
+        }
 
-            public Task<(int statusCode, object data)> UpdateExpiryAsync(Guid id, DateTime? expiryDate, string adminIdentityUserId)
-            {
-                throw new NotImplementedException();
-            }
+        [Fact]
+        public async Task UpdateAsync_UserNotFound_Returns404()
+        {
+            using var ctx = CreateContext();
+            var service = new DiscountService(ctx);
 
-            public Task<(int statusCode, object data)> LinkUsersAsync(Guid id, DiscountLinkUsersRequest dto, string adminIdentityUserId)
-            {
-                throw new NotImplementedException();
-            }
+            var result = await service.UpdateAsync(Guid.NewGuid(), new DiscountUpdateRequest(), "missing");
 
-            public Task<(int statusCode, object data)> ValidateAndApplyAsync(DiscountApplyRequest dto, string identityUserId)
-            {
-                WasValidateCalled = true;
-                LastApplyRequest = dto;
+            Assert.Equal(404, result.statusCode);
+        }
 
-                if (Mode == FakeDiscountMode.Error)
-                {
-                    return Task.FromResult<(int, object)>((ErrorStatusCode, new { error = ErrorMessage }));
-                }
+        [Fact]
+        public async Task UpdateAsync_NotAdmin_Returns403()
+        {
+            using var ctx = CreateContext();
+            var (_, _, userId) = SeedUser(ctx, "user");
+            var discount = SeedDiscount(ctx, "CODE");
 
-                if (Mode == FakeDiscountMode.Success)
-                {
-                    var result = new DiscountApplyResult
-                    {
-                        Code = dto.Code,
-                        OriginalAmount = dto.OriginalAmount,
-                        DiscountAmount = ConfiguredDiscountAmount,
-                        FinalAmount = dto.OriginalAmount - ConfiguredDiscountAmount
-                    };
+            var service = new DiscountService(ctx);
+            var result = await service.UpdateAsync(discount.ID, new DiscountUpdateRequest(), userId);
 
-                    var payload = new
-                    {
-                        status = "Success",
-                        discount = result
-                    };
+            Assert.Equal(403, result.statusCode);
+        }
 
-                    return Task.FromResult<(int, object)>((200, payload));
-                }
+        [Fact]
+        public async Task UpdateAsync_DiscountNotFound_Returns404()
+        {
+            using var ctx = CreateContext();
+            var (_, _, adminId) = SeedUser(ctx, "admin");
 
-                throw new InvalidOperationException("ValidateAndApplyAsync should not be called in this mode.");
-            }
+            var service = new DiscountService(ctx);
+            var result = await service.UpdateAsync(Guid.NewGuid(), new DiscountUpdateRequest(), adminId);
 
-            public Task<( DiscountStatistieksResponse data, int statusCode,  object message)> GetStatisticsAsync(string? filter = null, string? orderBy = null)
-            {
-                throw new NotImplementedException();
-            }
+            Assert.Equal(404, result.statusCode);
+        }
 
-            
+        [Fact]
+        public async Task ValidateAndApplyAsync_MissingCode_Returns400()
+        {
+            using var ctx = CreateContext();
+            var (_, _, userIdentityId) = SeedUser(ctx, role: "user");
 
-            public Task<(int statusCode, object data)> GetAllActiveCodesAsync(string adminIdentityUserId)
-            {
-                throw new NotImplementedException();
-            }
+            var service = new DiscountService(ctx);
+            var dto = new DiscountApplyRequest { Code = "  ", OriginalAmount = 100m, Location = "Rotterdam" };
 
-            public Task<(int statusCode, object data)> GetUsedCodesAsync(Guid? discountCodeId, string adminIdentityUserId)
-            {
-                throw new NotImplementedException();
-            }
+            var result = await service.ValidateAndApplyAsync(dto, userIdentityId);
+
+            Assert.Equal(400, result.statusCode);
+        }
+
+        [Fact]
+        public async Task ValidateAndApplyAsync_UserNotFound_Returns404()
+        {
+            using var ctx = CreateContext();
+            var service = new DiscountService(ctx);
+            var dto = new DiscountApplyRequest { Code = "TEST", OriginalAmount = 100m, Location = "Rotterdam" };
+
+            var result = await service.ValidateAndApplyAsync(dto, "missing");
+
+            Assert.Equal(404, result.statusCode);
+        }
+
+        [Fact]
+        public async Task ValidateAndApplyAsync_DiscountNotFound_Returns404()
+        {
+            using var ctx = CreateContext();
+            var (_, _, userIdentityId) = SeedUser(ctx, role: "user");
+
+            var service = new DiscountService(ctx);
+            var dto = new DiscountApplyRequest { Code = "NOTEXIST", OriginalAmount = 100m, Location = "Rotterdam" };
+
+            var result = await service.ValidateAndApplyAsync(dto, userIdentityId);
+
+            Assert.Equal(404, result.statusCode);
+        }
+
+        [Fact]
+        public async Task ValidateAndApplyAsync_Inactive_Returns400()
+        {
+            using var ctx = CreateContext();
+            var (_, _, userIdentityId) = SeedUser(ctx, role: "user");
+            SeedDiscount(ctx, "INACTIVE", isActive: false, percentage: 10m);
+
+            var service = new DiscountService(ctx);
+            var dto = new DiscountApplyRequest { Code = "inactive", OriginalAmount = 100m, Location = "Rotterdam" };
+
+            var result = await service.ValidateAndApplyAsync(dto, userIdentityId);
+
+            Assert.Equal(400, result.statusCode);
+        }
+
+        [Fact]
+        public async Task ValidateAndApplyAsync_NotYetValid_Returns400()
+        {
+            using var ctx = CreateContext();
+            var (_, _, userIdentityId) = SeedUser(ctx, role: "user");
+            SeedDiscount(ctx, "FUTURE", isActive: true, start: DateTime.UtcNow.AddDays(1), percentage: 10m);
+
+            var service = new DiscountService(ctx);
+            var dto = new DiscountApplyRequest { Code = "FUTURE", OriginalAmount = 100m, Location = "Rotterdam" };
+
+            var result = await service.ValidateAndApplyAsync(dto, userIdentityId);
+
+            Assert.Equal(400, result.statusCode);
+        }
+
+        [Fact]
+        public async Task ValidateAndApplyAsync_Expired_Returns400()
+        {
+            using var ctx = CreateContext();
+            var (_, _, userIdentityId) = SeedUser(ctx, role: "user");
+            SeedDiscount(ctx, "OLD", isActive: true, expiry: DateTime.UtcNow.AddDays(-1), percentage: 10m);
+
+            var service = new DiscountService(ctx);
+            var dto = new DiscountApplyRequest { Code = "OLD", OriginalAmount = 100m, Location = "Rotterdam" };
+
+            var result = await service.ValidateAndApplyAsync(dto, userIdentityId);
+
+            Assert.Equal(400, result.statusCode);
+        }
+
+        [Fact]
+        public async Task ValidateAndApplyAsync_UsageLimitReached_Returns400()
+        {
+            using var ctx = CreateContext();
+            var (_, _, userIdentityId) = SeedUser(ctx, role: "user");
+            SeedDiscount(ctx, "LIMIT", isActive: true, maxUsage: 2, usageCount: 2, percentage: 10m);
+
+            var service = new DiscountService(ctx);
+            var dto = new DiscountApplyRequest { Code = "LIMIT", OriginalAmount = 100m, Location = "Rotterdam" };
+
+            var result = await service.ValidateAndApplyAsync(dto, userIdentityId);
+
+            Assert.Equal(400, result.statusCode);
+        }
+
+        [Fact]
+        public async Task ValidateAndApplyAsync_LocationMismatch_Returns400()
+        {
+            using var ctx = CreateContext();
+            var (_, _, userIdentityId) = SeedUser(ctx, role: "user");
+            SeedDiscount(ctx, "LOC", isActive: true, percentage: 10m, allowedLocation: "Amsterdam");
+
+            var service = new DiscountService(ctx);
+            var dto = new DiscountApplyRequest { Code = "LOC", OriginalAmount = 100m, Location = "Rotterdam" };
+
+            var result = await service.ValidateAndApplyAsync(dto, userIdentityId);
+
+            Assert.Equal(400, result.statusCode);
+        }
+
+        [Fact]
+        public async Task ValidateAndApplyAsync_UserNotAuthorized_WhenLinksExist_Returns403()
+        {
+            using var ctx = CreateContext();
+            var (_, user, userIdentityId) = SeedUser(ctx, role: "user");
+            var discount = SeedDiscount(ctx, "AUTH", isActive: true, percentage: 10m);
+
+            ctx.DiscountCodeUsers.Add(new DiscountCodeUser { DiscountCodeId = discount.ID, UserId = Guid.NewGuid() });
+            ctx.SaveChanges();
+
+            var service = new DiscountService(ctx);
+            var dto = new DiscountApplyRequest { Code = "AUTH", OriginalAmount = 100m, Location = "Rotterdam" };
+
+            var result = await service.ValidateAndApplyAsync(dto, userIdentityId);
+
+            Assert.Equal(403, result.statusCode);
+        }
+
+        [Fact]
+        public async Task ValidateAndApplyAsync_Success_Percentage_IncrementsUsageAndSavedAmount()
+        {
+            using var ctx = CreateContext();
+            var (_, user, userIdentityId) = SeedUser(ctx, role: "user");
+            var discount = SeedDiscount(ctx, "PERC", isActive: true, percentage: 10m);
+
+            var service = new DiscountService(ctx);
+            var dto = new DiscountApplyRequest { Code = "perc", OriginalAmount = 100m, Location = "Rotterdam" };
+
+            var result = await service.ValidateAndApplyAsync(dto, userIdentityId);
+
+            Assert.Equal(200, result.statusCode);
+
+            var inDb = ctx.DiscountCodes.Single(d => d.ID == discount.ID);
+            Assert.Equal(1, inDb.UsageCount);
+            Assert.True(inDb.SavedAmount > 0m);
+        }
+
+        [Fact]
+        public async Task ValidateAndApplyAsync_InvalidConfig_ZeroDiscount_Returns400()
+        {
+            using var ctx = CreateContext();
+            var (_, _, userIdentityId) = SeedUser(ctx, role: "user");
+            SeedDiscount(ctx, "ZERO", isActive: true, percentage: 0m, fixedAmount: 0m);
+
+            var service = new DiscountService(ctx);
+            var dto = new DiscountApplyRequest { Code = "ZERO", OriginalAmount = 100m, Location = "Rotterdam" };
+
+            var result = await service.ValidateAndApplyAsync(dto, userIdentityId);
+
+            Assert.Equal(400, result.statusCode);
+        }
+
+        [Fact]
+        public async Task GetAllActiveCodesAsync_NotAdmin_Returns403()
+        {
+            using var ctx = CreateContext();
+            var (_, _, nonAdminId) = SeedUser(ctx, role: "user");
+            var service = new DiscountService(ctx);
+
+            var result = await service.GetAllActiveCodesAsync(nonAdminId);
+
+            Assert.Equal(403, result.statusCode);
+        }
+
+        [Fact]
+        public async Task GetAllActiveCodesAsync_ReturnsOnlyCurrentlyActive()
+        {
+            using var ctx = CreateContext();
+            var (_, _, adminId) = SeedUser(ctx, role: "admin");
+
+            SeedDiscount(ctx, "ACTIVE_NOW", isActive: true, start: DateTime.UtcNow.AddDays(-1), expiry: DateTime.UtcNow.AddDays(1), percentage: 10m);
+            SeedDiscount(ctx, "INACTIVE", isActive: false, percentage: 10m);
+            SeedDiscount(ctx, "FUTURE", isActive: true, start: DateTime.UtcNow.AddDays(3), percentage: 10m);
+            SeedDiscount(ctx, "EXPIRED", isActive: true, expiry: DateTime.UtcNow.AddDays(-2), percentage: 10m);
+
+            var service = new DiscountService(ctx);
+            var result = await service.GetAllActiveCodesAsync(adminId);
+
+            Assert.Equal(200, result.statusCode);
+
+            var activeCountExpected = ctx.DiscountCodes.Count(d =>
+                d.IsActive &&
+                (d.StartDate == null || d.StartDate <= DateTime.UtcNow) &&
+                (d.ExpiryDate == null || d.ExpiryDate >= DateTime.UtcNow));
+
+            Assert.Equal(1, activeCountExpected);
+        }
+
+        [Fact]
+        public async Task GetUsedCodesAsync_FilterIdNotExists_Returns404()
+        {
+            using var ctx = CreateContext();
+            var (_, _, adminId) = SeedUser(ctx, role: "admin");
+
+            var service = new DiscountService(ctx);
+            var result = await service.GetUsedCodesAsync(Guid.NewGuid(), adminId);
+
+            Assert.Equal(404, result.statusCode);
+        }
+
+        [Fact]
+        public async Task GetUsedCodesAsync_ReturnsUses()
+        {
+            using var ctx = CreateContext();
+            var (_, _, adminId) = SeedUser(ctx, role: "admin");
+            var discount = SeedDiscount(ctx, "USED", percentage: 10m);
+
+            ctx.DiscountCodeUsers.Add(new DiscountCodeUser { DiscountCodeId = discount.ID, UserId = Guid.NewGuid() });
+            ctx.DiscountCodeUsers.Add(new DiscountCodeUser { DiscountCodeId = discount.ID, GroupName = "Business" });
+            ctx.SaveChanges();
+
+            var service = new DiscountService(ctx);
+            var result = await service.GetUsedCodesAsync(discount.ID, adminId);
+
+            Assert.Equal(200, result.statusCode);
+
+            var count = ctx.DiscountCodeUsers.Count(x => x.DiscountCodeId == discount.ID);
+            Assert.Equal(2, count);
+        }
+
+        [Fact]
+        public async Task GetStatisticsAsync_Default_Returns200()
+        {
+            using var ctx = CreateContext();
+            SeedDiscount(ctx, "A", usageCount: 5);
+            SeedDiscount(ctx, "B", usageCount: 1);
+
+            var service = new DiscountService(ctx);
+            var result = await service.GetStatisticsAsync();
+
+            Assert.Equal(200, result.statusCode);
+            Assert.NotNull(result.data);
+            Assert.True(result.data.Discounts.Count >= 2);
+        }
+
+        [Fact]
+        public async Task GetStatisticsAsync_FilterTotalUsesAsc_Sorts()
+        {
+            using var ctx = CreateContext();
+            SeedDiscount(ctx, "A", usageCount: 5);
+            SeedDiscount(ctx, "B", usageCount: 1);
+
+            var service = new DiscountService(ctx);
+            var result = await service.GetStatisticsAsync(filter: "totalUses", orderBy: "asc");
+
+            Assert.Equal(200, result.statusCode);
+
+            var list = result.data.Discounts;
+            Assert.True(list.Count >= 2);
+            Assert.True(list[0].TotalUses <= list[1].TotalUses);
         }
     }
 }

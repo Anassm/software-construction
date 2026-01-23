@@ -3,9 +3,8 @@ name: MobiParkV2_push
 on:
   pull_request:
     branches: ["development", "main"]
-
-# permissions:
-#   contents: read
+  push:
+    branches: ["development, main"]
 
 jobs:
   Dependency-check:
@@ -87,50 +86,176 @@ jobs:
               tail -n 50 server.log
               exit 1
           fi
+        env:
+          JWT_KEY: ${{ secrets.JWT_KEY }}
+          JWT_ISSUER: ${{ secrets.JWT_ISSUER }}
+          JWT_AUDIENCE: ${{ secrets.JWT_AUDIENCE }}
+          CONNECTION_STRING: ${{ secrets.CONNECTION_STRING }}
+
+
 
       - name: Test vehicles
         run: |
           cd testing/integratieTesting
           pytest test_vehicles.py
+        env: 
+          BASE_URL: ${{ secrets.BASE_URL }}
+          USER_A_EMAIL: ${{ secrets.USER_A_EMAIL }}
+          USER_A_PASSWORD: ${{ secrets.USER_A_PASSWORD }}
+          USER_A_USERNAME: ${{ secrets.USER_A_USERNAME }}
+          USER_A_NAME: ${{ secrets.USER_A_NAME }}
+          USER_B_EMAIL: ${{ secrets.USER_B_EMAIL }}
+          USER_B_PASSWORD: ${{ secrets.USER_B_PASSWORD }}
+          USER_B_USERNAME: ${{ secrets.USER_B_USERNAME }}
+          USER_B_NAME: ${{ secrets.USER_B_NAME }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+          ADMIN_NAME: ${{ secrets.ADMIN_NAME }}
 
       - name: Test payments
         run: |
           cd testing/integratieTesting
           pytest test_payments.py
+        env: 
+          BASE_URL: ${{ secrets.BASE_URL }}
+          USER_A_EMAIL: ${{ secrets.USER_A_EMAIL }}
+          USER_A_PASSWORD: ${{ secrets.USER_A_PASSWORD }}
+          USER_A_USERNAME: ${{ secrets.USER_A_USERNAME }}
+          USER_A_NAME: ${{ secrets.USER_A_NAME }}
+          USER_B_EMAIL: ${{ secrets.USER_B_EMAIL }}
+          USER_B_PASSWORD: ${{ secrets.USER_B_PASSWORD }}
+          USER_B_USERNAME: ${{ secrets.USER_B_USERNAME }}
+          USER_B_NAME: ${{ secrets.USER_B_NAME }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+          ADMIN_NAME: ${{ secrets.ADMIN_NAME }}
 
       - name: Test login
         run: |
           cd testing/integratieTesting
           pytest test_login.py
+        env: 
+          BASE_URL: ${{ secrets.BASE_URL }}
+          USER_A_EMAIL: ${{ secrets.USER_A_EMAIL }}
+          USER_A_PASSWORD: ${{ secrets.USER_A_PASSWORD }}
+          USER_A_USERNAME: ${{ secrets.USER_A_USERNAME }}
+          USER_A_NAME: ${{ secrets.USER_A_NAME }}
+          USER_B_EMAIL: ${{ secrets.USER_B_EMAIL }}
+          USER_B_PASSWORD: ${{ secrets.USER_B_PASSWORD }}
+          USER_B_USERNAME: ${{ secrets.USER_B_USERNAME }}
+          USER_B_NAME: ${{ secrets.USER_B_NAME }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+          ADMIN_NAME: ${{ secrets.ADMIN_NAME }}
+
       - name: Test profile
         run: |
           cd testing/integratieTesting
           pytest test_profile.py
+        env: 
+          BASE_URL: ${{ secrets.BASE_URL }}
+          USER_A_EMAIL: ${{ secrets.USER_A_EMAIL }}
+          USER_A_PASSWORD: ${{ secrets.USER_A_PASSWORD }}
+          USER_A_USERNAME: ${{ secrets.USER_A_USERNAME }}
+          USER_A_NAME: ${{ secrets.USER_A_NAME }}
+          USER_B_EMAIL: ${{ secrets.USER_B_EMAIL }}
+          USER_B_PASSWORD: ${{ secrets.USER_B_PASSWORD }}
+          USER_B_USERNAME: ${{ secrets.USER_B_USERNAME }}
+          USER_B_NAME: ${{ secrets.USER_B_NAME }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+          ADMIN_NAME: ${{ secrets.ADMIN_NAME }}
 
       - name: Test register
         run: |
           cd testing/integratieTesting
           pytest test_register.py
+        env: 
+          BASE_URL: ${{ secrets.BASE_URL }}
+          USER_A_EMAIL: ${{ secrets.USER_A_EMAIL }}
+          USER_A_PASSWORD: ${{ secrets.USER_A_PASSWORD }}
+          USER_A_USERNAME: ${{ secrets.USER_A_USERNAME }}
+          USER_A_NAME: ${{ secrets.USER_A_NAME }}
+          USER_B_EMAIL: ${{ secrets.USER_B_EMAIL }}
+          USER_B_PASSWORD: ${{ secrets.USER_B_PASSWORD }}
+          USER_B_USERNAME: ${{ secrets.USER_B_USERNAME }}
+          USER_B_NAME: ${{ secrets.USER_B_NAME }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+          ADMIN_NAME: ${{ secrets.ADMIN_NAME }}
 
       - name: Test parkinglots
         run: |
           cd testing/integratieTesting
           pytest test_parkinglots.py
+        env: 
+          BASE_URL: ${{ secrets.BASE_URL }}
+          PARKINGLOTS_USER_EMAIL: ${{ secrets.PARKINGLOTS_USER_EMAIL }}
+          PARKINGLOTS_USER_PASSWORD: ${{ secrets.PARKINGLOTS_USER_PASSWORD }}
+          PARKINGLOTS_USER_USERNAME: ${{ secrets.PARKINGLOTS_USER_USERNAME }}
+          PARKINGLOTS_USER_NAME: ${{ secrets.PARKINGLOTS_USER_NAME }}
+          PARKINGLOTS_ADMIN_EMAIL: ${{ secrets.PARKINGLOTS_ADMIN_EMAIL }}
+          PARKINGLOTS_ADMIN_PASSWORD: ${{ secrets.PARKINGLOTS_ADMIN_PASSWORD }}
+          PARKINGLOTS_ADMIN_USERNAME: ${{ secrets.PARKINGLOTS_ADMIN_USERNAME }}
+          PARKINGLOTS_ADMIN_NAME: ${{ secrets.PARKINGLOTS_ADMIN_NAME }}
 
       - name: Test reservations
         run: |
           cd testing/integratieTesting
           pytest test_reservations.py
+        env: 
+          BASE_URL: ${{ secrets.BASE_URL }}
+          USER_A_EMAIL: ${{ secrets.USER_A_EMAIL }}
+          USER_A_PASSWORD: ${{ secrets.USER_A_PASSWORD }}
+          USER_A_USERNAME: ${{ secrets.USER_A_USERNAME }}
+          USER_A_NAME: ${{ secrets.USER_A_NAME }}
+          USER_B_EMAIL: ${{ secrets.USER_B_EMAIL }}
+          USER_B_PASSWORD: ${{ secrets.USER_B_PASSWORD }}
+          USER_B_USERNAME: ${{ secrets.USER_B_USERNAME }}
+          USER_B_NAME: ${{ secrets.USER_B_NAME }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+          ADMIN_NAME: ${{ secrets.ADMIN_NAME }}
 
       - name: Test billing
         run: |
           cd testing/integratieTesting
           pytest test_billing.py
+        env: 
+          BASE_URL: ${{ secrets.BASE_URL }}
+          BILLING_USER_EMAIL: ${{ secrets.BILLING_USER_EMAIL }}
+          BILLING_USER_PASSWORD: ${{ secrets.BILLING_USER_PASSWORD }}
+          BILLING_USER_USERNAME: ${{ secrets.BILLING_USER_USERNAME }}
+          BILLING_USER_NAME: ${{ secrets.BILLING_USER_NAME }}
+          BILLING_ADMIN_EMAIL: ${{ secrets.BILLING_ADMIN_EMAIL }}
+          BILLING_ADMIN_PASSWORD: ${{ secrets.BILLING_ADMIN_PASSWORD }}
+          BILLING_ADMIN_USERNAME: ${{ secrets.BILLING_ADMIN_USERNAME }}
+          BILLING_ADMIN_NAME: ${{ secrets.BILLING_ADMIN_NAME }}
 
       - name: Test Discounts
         run: |
           cd testing/integratieTesting
           pytest test_discount.py
+        env: 
+          BASE_URL: ${{ secrets.BASE_URL }}
+          USER_A_EMAIL: ${{ secrets.USER_A_EMAIL }}
+          USER_A_PASSWORD: ${{ secrets.USER_A_PASSWORD }}
+          USER_A_USERNAME: ${{ secrets.USER_A_USERNAME }}
+          USER_A_NAME: ${{ secrets.USER_A_NAME }}
+          USER_B_EMAIL: ${{ secrets.USER_B_EMAIL }}
+          USER_B_PASSWORD: ${{ secrets.USER_B_PASSWORD }}
+          USER_B_USERNAME: ${{ secrets.USER_B_USERNAME }}
+          USER_B_NAME: ${{ secrets.USER_B_NAME }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+          ADMIN_NAME: ${{ secrets.ADMIN_NAME }}
 
       - name: Debug server log if tests fail
         if: failure()
@@ -162,17 +287,26 @@ jobs:
       - name: Run unit tests with coverage
         run: |
           cd testing/UnitTesting
-          dotnet test --collect:"XPlat Code Coverage"
+          dotnet test \
+            --settings coverlet.runsettings \
+            --collect:"XPlat Code Coverage"
 
-      - name: Create coverage summary
+      - name: Create coverage summary and enforce 70% line coverage
         run: |
           cd testing/UnitTesting
           reportgenerator \
-            -reports:"TestResults/*/coverage.cobertura.xml" \
+            -reports:"TestResults/**/coverage.cobertura.xml" \
             -targetdir:"coveragereport" \
-            -reporttypes:"MarkdownSummary"
+            -reporttypes:"MarkdownSummary" \
+            minimumCoverageThresholds:lineCoverage=70
 
       - name: Display coverage summary
+        run: |
+          echo "### Code Coverage Summary" >> $GITHUB_STEP_SUMMARY
+          cat testing/UnitTesting/coveragereport/Summary.md >> $GITHUB_STEP_SUMMARY
+
+      - name: Display coverage summary on failure
+        if: failure()
         run: |
           echo "### Code Coverage Summary" >> $GITHUB_STEP_SUMMARY
           cat testing/UnitTesting/coveragereport/Summary.md >> $GITHUB_STEP_SUMMARY

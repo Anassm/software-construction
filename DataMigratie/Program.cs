@@ -10,16 +10,13 @@ internal class Program
     {
         var builder = Host.CreateApplicationBuilder(args);
 
-        // Configureer DbContext (SQLite voor dev, past op elke machine)
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
         {
-            // Pad naar de bestaande database in je API project
             var dbPath = Path.Combine(Directory.GetCurrentDirectory(), "v2", "infrastructure", "data", "app.db");
             options.UseSqlite($"Data Source={dbPath}");
         });
 
 
-        // Voeg ImportService toe
         builder.Services.AddScoped<ImportService>();    
 
         var app = builder.Build();
@@ -27,10 +24,9 @@ internal class Program
         using var scope = app.Services.CreateScope();
         var importer = scope.ServiceProvider.GetRequiredService<ImportService>();
 
-        // Base path van de data map (relatief tov deze console-app)
         string basePath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "v1", "data"));
-        string sessionPath = Path.Combine(basePath, "pdata"); // folder met alle session jsons
-// 
+        string sessionPath = Path.Combine(basePath, "pdata");
+
         try
         {
             System.Console.WriteLine("Starting data import...\n");

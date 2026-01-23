@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using v2.Core.DTOs;
 using v2.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using v2.Core.Validators;
 
 namespace v2.Controllers
 {
@@ -34,6 +35,14 @@ namespace v2.Controllers
             if (dto == null)
                 return StatusCode(StatusCodes.Status400BadRequest, new { error = "Request must contain a body." });
 
+            var (isValid, errorMessage) = ValidationHelper.ValidateDiscountCreateRequest(dto);
+            if (!isValid)
+                return StatusCode(StatusCodes.Status400BadRequest, new { error = errorMessage });
+
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var result = await _discountService.CreateAsync(dto, identityUserId);
 
             return result.statusCode switch
@@ -53,6 +62,9 @@ namespace v2.Controllers
             var identityUserId = GetIdentityUserId();
             if (identityUserId == null)
                 return StatusCode(StatusCodes.Status401Unauthorized, new { error = "Unauthorized: Invalid or missing session token" });
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
             var result = await _discountService.UpdateAsync(id, dto, identityUserId);
 
@@ -113,6 +125,8 @@ namespace v2.Controllers
             if (dto == null)
                 return StatusCode(StatusCodes.Status400BadRequest, new { error = "Request must contain a body." });
 
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
             var result = await _discountService.LinkUsersAsync(id, dto, identityUserId);
 
             return result.statusCode switch
@@ -132,6 +146,8 @@ namespace v2.Controllers
             if (identityUserId == null)
                 return StatusCode(StatusCodes.Status401Unauthorized, new { error = "Unauthorized: Invalid or missing session token" });
 
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
             var result = await _discountService.ValidateAndApplyAsync(dto, identityUserId);
 
             return result.statusCode switch
@@ -159,7 +175,7 @@ namespace v2.Controllers
                 _ => StatusCode(StatusCodes.Status500InternalServerError, result.data)
             };
         }
-        
+
         [HttpGet("active")]
         public async Task<IActionResult> GetAllActiveCodes()
         {
@@ -220,7 +236,7 @@ namespace v2.Controllers
                 _ => StatusCode(StatusCodes.Status500InternalServerError, result.data)
             };
         }
-        
+
         [HttpGet("used")]
         public async Task<IActionResult> GetUsedCodes([FromQuery] Guid? discountCodeId)
         {
@@ -228,10 +244,7 @@ namespace v2.Controllers
             if (identityUserId == null)
                 return StatusCode(StatusCodes.Status401Unauthorized, new { error = "Unauthorized: Invalid or missing session token" });
 
-            var result = await _discountService.GetUsedCodesAsync(
-                discountCodeId,
-                identityUserId
-            );
+            var result = await _discountService.GetUsedCodesAsync(discountCodeId, identityUserId);
 
             return result.statusCode switch
             {
@@ -241,6 +254,5 @@ namespace v2.Controllers
                 _ => StatusCode(StatusCodes.Status500InternalServerError, result.data)
             };
         }
-
     }
 }

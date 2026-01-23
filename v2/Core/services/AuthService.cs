@@ -91,7 +91,6 @@ public class AuthService : IAuth
             var appUser = await _dbContext.Users
             .FirstOrDefaultAsync(u => u.IdentityUserId == user.Id);
 
-            // Generate JWT
             var claimsList = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id),
@@ -177,7 +176,6 @@ public class AuthService : IAuth
 
 
             var verify = _userManager.PasswordHasher.VerifyHashedPassword(userASP, userASP.PasswordHash, dto.Password);
-            // If password has changed, update it
             if (verify != PasswordVerificationResult.Success)
             {
                 var token = await _userManager.GeneratePasswordResetTokenAsync(userASP);
@@ -185,7 +183,6 @@ public class AuthService : IAuth
 
             }
 
-            // Update Email
             if (!string.Equals(userASP.Email, dto.Email, StringComparison.OrdinalIgnoreCase))
             {
                 var setEmailResult = await _userManager.SetEmailAsync(userASP, dto.Email);
@@ -196,7 +193,6 @@ public class AuthService : IAuth
                 }
             }
 
-            // Update Username
             if (!string.Equals(userASP.UserName, dto.Username, StringComparison.OrdinalIgnoreCase))
             {
                 var setUserNameResult = await _userManager.SetUserNameAsync(userASP, dto.Username);
