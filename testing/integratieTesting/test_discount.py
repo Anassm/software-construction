@@ -124,7 +124,7 @@ def test_post_discount_success(admin_token, _data):
         "code": "DIS" + uuid.uuid4().hex[:5].upper(),  
         "isActive": True,
         "percentage": 15.0
-    } 
+    }
 
     response = requests.post(discount_url(_data), headers=admin_token, json=payload)
     assert response.status_code == 201
