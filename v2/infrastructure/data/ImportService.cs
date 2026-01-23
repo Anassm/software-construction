@@ -193,7 +193,7 @@ namespace v2.Infrastructure.Data
         public async Task ImportAllSessionsAsync(string folderPath)
         {
             var files = Directory.GetFiles(folderPath, "*.json");
-            const int batchSize = 5000; // adjust to your memory
+            const int batchSize = 5000; 
 
             foreach (var file in files)
             {
@@ -226,7 +226,6 @@ namespace v2.Infrastructure.Data
                             : PaymentStatus.Unpaid
                     });
 
-                    // Insert batch if it reaches the batch size
                     if (batch.Count >= batchSize)
                     {
                         _db.Sessions.AddRange(batch);
@@ -235,7 +234,6 @@ namespace v2.Infrastructure.Data
                     }
                 }
 
-                // Save any remaining sessions
                 if (batch.Count > 0)
                 {
                     _db.Sessions.AddRange(batch);

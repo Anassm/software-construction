@@ -208,7 +208,6 @@ namespace v2.Tests.Services
         [Fact]
         public async Task UpdateProfile_Success_PasswordAndProfile()
         {
-            // Arrange
             Guid id = Guid.NewGuid();
             var identityUser = new IdentityUser { Id = "123", UserName = "olduser", Email = "old@example.com", PasswordHash = "oldhash" };
             var user = new User {
@@ -249,10 +248,8 @@ namespace v2.Tests.Services
             _userManagerMock.Setup(x => x.SetEmailAsync(identityUser, dto.Email)).ReturnsAsync(IdentityResult.Success);
             _userManagerMock.Setup(x => x.SetUserNameAsync(identityUser, dto.Username)).ReturnsAsync(IdentityResult.Success);
 
-            // Act
             var result = await _authService.UpdateProfile(dto, "123");
 
-            // Assert
             Assert.Equal(200, result.statusCode);
             Assert.Contains("Profile updated successfully", result.message.ToString());
             
