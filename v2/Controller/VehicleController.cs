@@ -4,7 +4,7 @@ using v2.core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Specialized;
 using System.Security.Claims;
-
+using v2.Core.Validators;
 
 namespace v2.Controller;
 
@@ -31,6 +31,11 @@ public class VehicleController : ControllerBase
 
         if (dto.LicensePlate == null || dto.LicensePlate == string.Empty)
             return StatusCode(StatusCodes.Status400BadRequest, new { error = "Required field missing, field: LicensePlate" });
+
+        var (isValid, errorMessage) = ValidationHelper.ValidateCreateVehicleDto(dto);
+        if (!isValid)
+            return StatusCode(StatusCodes.Status400BadRequest, new { error = errorMessage });
+
 
         dto.LicensePlate = dto.LicensePlate.Replace("-", "");
         var result = await _vehicleService.CreateVehicleAsync(dto, identityUserId);
@@ -61,6 +66,19 @@ public class VehicleController : ControllerBase
 
         if (dto.LicensePlate == null || dto.LicensePlate == string.Empty)
             return StatusCode(StatusCodes.Status400BadRequest, new { error = "Require field missing, field: LicensePlate" });
+
+        var createDto = new CreateVehicleDto
+        {
+            LicensePlate = dto.LicensePlate,
+            Make = dto.Make,
+            Model = dto.Model,
+            Color = dto.Color,
+            Year = dto.Year
+        };
+        var (isValid, errorMessage) = ValidationHelper.ValidateCreateVehicleDto(createDto);
+        if (!isValid)
+            return StatusCode(StatusCodes.Status400BadRequest, new { error = errorMessage });
+
 
         var result = await _vehicleService.UpdateVehicleAsync(lid, dto, identityUserId);
 

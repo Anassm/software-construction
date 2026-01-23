@@ -75,12 +75,16 @@ def discount_url(_data):
 
 def create_discount(admin_token, _data, code=None):
     if code is None:
-        code = "UPD" + uuid.uuid4().hex[:6]
+        code = "UPD" + uuid.uuid4().hex[:6].upper()
 
     r = requests.post(
         discount_url(_data),
         headers=admin_token,
-        json={"code": code}
+        json={
+            "code": code,
+            "percentage": 10,  # ✅ ADD required field
+            "isActive": True
+        }
     )
 
     return r.json()["discount"]["id"]
@@ -117,7 +121,7 @@ def test_post_discount_missing_code(admin_token, _data):
 
 def test_post_discount_success(admin_token, _data):
     payload = {
-        "code": "DIS" + uuid.uuid4().hex[:5],
+        "code": "DIS" + uuid.uuid4().hex[:5].upper(),  
         "isActive": True,
         "percentage": 15.0
     }

@@ -56,7 +56,7 @@ LICENSE_PLATES = [
     "XY999",
     "ZZ-999",
     "ZZ999",
-    "nonexistent_id"
+    "NONEXIST"  
 ]
 
 @pytest.fixture(autouse=True)
