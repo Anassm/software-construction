@@ -248,7 +248,7 @@ public class VehicleService : IVehicles
             if (parkingLot == null)
                 return (404, new { error = "Parkinglot not found" });
 
-            Session session = new Session
+            Session session = new Session 
             {
                 LicensePlate = vehicle.LicensePlate,
                 UserID = user.ID,
