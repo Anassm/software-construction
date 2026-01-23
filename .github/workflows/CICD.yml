@@ -162,17 +162,27 @@ jobs:
       - name: Run unit tests with coverage
         run: |
           cd testing/UnitTesting
-          dotnet test --collect:"XPlat Code Coverage"
+          dotnet test \
+            --settings coverlet.runsettings \
+            --collect:"XPlat Code Coverage" \
+            -v:d
 
-      - name: Create coverage summary
+      - name: Create coverage summary and enforce 80%
         run: |
           cd testing/UnitTesting
           reportgenerator \
-            -reports:"TestResults/*/coverage.cobertura.xml" \
+            -reports:"TestResults/**/coverage.cobertura.xml" \
             -targetdir:"coveragereport" \
-            -reporttypes:"MarkdownSummary"
+            -reporttypes:"MarkdownSummary" \
+            minimumCoverageThresholds:lineCoverage=70
 
       - name: Display coverage summary
+        run: |
+          echo "### Code Coverage Summary" >> $GITHUB_STEP_SUMMARY
+          cat testing/UnitTesting/coveragereport/Summary.md >> $GITHUB_STEP_SUMMARY
+
+      - name: Display coverage summary on failure
+        if: failure()
         run: |
           echo "### Code Coverage Summary" >> $GITHUB_STEP_SUMMARY
           cat testing/UnitTesting/coveragereport/Summary.md >> $GITHUB_STEP_SUMMARY

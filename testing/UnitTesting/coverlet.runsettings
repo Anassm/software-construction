@@ -1,0 +1,26 @@
+<RunSettings>
+    <DataCollectionRunSettings>
+        <DataCollectors>
+            <DataCollector friendlyName="XPlat Code Coverage">
+                <Configuration>
+                    <ExcludeByFile>
+                        **/Program.cs,
+                        **/Core/DTOs/**/*.cs,
+                        **/Migrations/**/*.cs,
+                        **/obj/**,
+                        **/bin/**,
+                        **/Controller/**/*.cs,
+
+                        **/infrastructure/data/**/ImportService.cs,
+                        **/Core/services/**/TokenBlacklist.cs,
+                    </ExcludeByFile>
+                    <ExcludeByAttribute>
+                        GeneratedCodeAttribute
+                        CompilerGeneratedAttribute
+                        ExcludeFromCodeCoverageAttribute
+                    </ExcludeByAttribute>
+                </Configuration>
+            </DataCollector>
+        </DataCollectors>
+    </DataCollectionRunSettings>
+</RunSettings>
