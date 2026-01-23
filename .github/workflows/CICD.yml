@@ -146,6 +146,16 @@ jobs:
         run: |
           cd testing/integratieTesting
           pytest test_billing.py
+        env: 
+          BASE_URL: ${{ secrets.BASE_URL }}
+          BILLING_USER_EMAIL: ${{ secrets.BILLING_USER_EMAIL }}
+          BILLING_USER_PASSWORD: ${{ secrets.BILLING_USER_PASSWORD }}
+          BILLING_USER_USERNAME: ${{ secrets.BILLING_USER_USERNAME }}
+          BILLING_USER_NAME: ${{ secrets.BILLING_USER_NAME }}
+          BILLING_ADMIN_EMAIL: ${{ secrets.BILLING_ADMIN_EMAIL }}
+          BILLING_ADMIN_PASSWORD: ${{ secrets.BILLING_ADMIN_PASSWORD }}
+          BILLING_ADMIN_USERNAME: ${{ secrets.BILLING_ADMIN_USERNAME }}
+          BILLING_ADMIN_NAME: ${{ secrets.BILLING_ADMIN_NAME }}
 
       - name: Test Discounts
         run: |
