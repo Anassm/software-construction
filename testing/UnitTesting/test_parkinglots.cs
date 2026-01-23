@@ -24,6 +24,30 @@ public class ParkingLotServiceTests
         _service = new ParkingLotService(_context);
     }
 
+    private async Task<ParkingLot> CreateParkingLotAsync(int capacity = 2)
+    {
+        var lot = new ParkingLot
+        {
+            ID = Guid.NewGuid(),
+            Name = "Test Lot",
+            Address = "123 Test St",
+            Location = "Test City",
+            Capacity = capacity,
+            Reserved = 0,
+            Tariff = 10,
+            DayTariff = 100,
+            CreatedAt = DateTime.UtcNow,
+            latitude = 1,
+            longitude = 1,
+            Reservations = new List<Reservation>(),
+            Sessions = new List<Session>()
+        };
+
+        _context.ParkingLots.Add(lot);
+        await _context.SaveChangesAsync();
+        return lot;
+    }
+
     [Fact]
     public async Task CreateParkingLotAsync_WithUniqueData_ShouldSucceedAndReturn201()
     {
@@ -49,6 +73,183 @@ public class ParkingLotServiceTests
         var savedLot = await _context.ParkingLots.FirstOrDefaultAsync();
         Assert.NotNull(savedLot);
         Assert.Equal("Unit Test Lot", savedLot!.Name);
+    }
+
+    [Fact]
+    public async Task StartSessionAsync_WhenParkingLotDoesNotExist_ShouldReturn404()
+    {
+        var result = await _service.StartSessionAsync(Guid.NewGuid(), "ABC123", Guid.Empty);
+        Assert.Equal(404, result.statusCode);
+    }
+
+    [Fact]
+    public async Task StartSessionAsync_WhenParkingLotIsFull_ShouldReturn409()
+    {
+        var lot = await CreateParkingLotAsync(capacity: 1);
+
+        _context.Sessions.Add(new Session
+        {
+            ID = Guid.NewGuid(),
+            ParkingLotID = lot.ID,
+            LicensePlate = "FULL1",
+            StartTime = DateTime.UtcNow,
+            PaymentStatus = PaymentStatus.Unpaid
+        });
+        await _context.SaveChangesAsync();
+
+        var result = await _service.StartSessionAsync(lot.ID, "FULL2", Guid.Empty);
+        Assert.Equal(409, result.statusCode);
+    }
+
+    [Fact]
+    public async Task StartSessionAsync_WhenDuplicateActiveSessionExists_ShouldReturn409()
+    {
+        var lot = await CreateParkingLotAsync();
+
+        _context.Sessions.Add(new Session
+        {
+            ID = Guid.NewGuid(),
+            ParkingLotID = lot.ID,
+            LicensePlate = "DUP123",
+            StartTime = DateTime.UtcNow,
+            PaymentStatus = PaymentStatus.Unpaid
+        });
+        await _context.SaveChangesAsync();
+
+        var result = await _service.StartSessionAsync(lot.ID, "DUP123", Guid.Empty);
+        Assert.Equal(409, result.statusCode);
+    }
+
+    [Fact]
+    public async Task StartSessionAsync_WithValidData_ShouldReturn201()
+    {
+        var lot = await CreateParkingLotAsync();
+
+        var result = await _service.StartSessionAsync(lot.ID, "OK123", Guid.Empty);
+
+        Assert.Equal(201, result.statusCode);
+        Assert.Single(_context.Sessions);
+    }
+
+    [Fact]
+    public async Task StopSessionAsync_WhenNoActiveSession_ShouldReturn404()
+    {
+        var lot = await CreateParkingLotAsync();
+
+        var result = await _service.StopSessionAsync(lot.ID, "NOPE", Guid.Empty);
+        Assert.Equal(404, result.statusCode);
+    }
+
+    [Fact]
+    public async Task StopSessionAsync_WithActiveSession_ShouldReturn200()
+    {
+        var lot = await CreateParkingLotAsync();
+
+        var session = new Session
+        {
+            ID = Guid.NewGuid(),
+            ParkingLotID = lot.ID,
+            ParkingLot = lot,
+            LicensePlate = "STOP123",
+            StartTime = DateTime.UtcNow.AddHours(-2),
+            PaymentStatus = PaymentStatus.Unpaid
+        };
+
+        _context.Sessions.Add(session);
+        await _context.SaveChangesAsync();
+
+        var result = await _service.StopSessionAsync(lot.ID, "STOP123", Guid.Empty);
+
+        Assert.Equal(200, result.statusCode);
+
+        var updated = await _context.Sessions.FindAsync(session.ID);
+        Assert.NotNull(updated!.EndTime);
+    }
+
+    [Fact]
+    public async Task GetAllSessionsForLotAsync_WhenLotDoesNotExist_ShouldReturn404()
+    {
+        var result = await _service.GetAllSessionsForLotAsync(Guid.NewGuid());
+        Assert.Equal(404, result.statusCode);
+    }
+
+    [Fact]
+    public async Task GetAllSessionsForLotAsync_WhenSessionsExist_ShouldReturn200()
+    {
+        var lot = await CreateParkingLotAsync();
+
+        _context.Sessions.Add(new Session
+        {
+            ID = Guid.NewGuid(),
+            ParkingLotID = lot.ID,
+            LicensePlate = "A1",
+            StartTime = DateTime.UtcNow
+        });
+
+        await _context.SaveChangesAsync();
+
+        var result = await _service.GetAllSessionsForLotAsync(lot.ID);
+        Assert.Equal(200, result.statusCode);
+    }
+
+    [Fact]
+    public async Task GetSessionByIdAsync_WhenNotFound_ShouldReturn404()
+    {
+        var lot = await CreateParkingLotAsync();
+
+        var result = await _service.GetSessionByIdAsync(lot.ID, Guid.NewGuid());
+        Assert.Equal(404, result.statusCode);
+    }
+
+    [Fact]
+    public async Task GetSessionByIdAsync_WhenFound_ShouldReturn200()
+    {
+        var lot = await CreateParkingLotAsync();
+
+        var session = new Session
+        {
+            ID = Guid.NewGuid(),
+            ParkingLotID = lot.ID,
+            LicensePlate = "FIND123",
+            StartTime = DateTime.UtcNow
+        };
+
+        _context.Sessions.Add(session);
+        await _context.SaveChangesAsync();
+
+        var result = await _service.GetSessionByIdAsync(lot.ID, session.ID);
+        Assert.Equal(200, result.statusCode);
+    }
+
+    [Fact]
+    public async Task DeleteSessionAsync_WhenNotFound_ShouldReturn404()
+    {
+        var lot = await CreateParkingLotAsync();
+
+        var result = await _service.DeleteSessionAsync(lot.ID, Guid.NewGuid());
+        Assert.Equal(404, result.statusCode);
+    }
+
+    [Fact]
+    public async Task DeleteSessionAsync_WhenFound_ShouldReturn200()
+    {
+        var lot = await CreateParkingLotAsync();
+
+        var session = new Session
+        {
+            ID = Guid.NewGuid(),
+            ParkingLotID = lot.ID,
+            LicensePlate = "DEL123",
+            StartTime = DateTime.UtcNow
+        };
+
+        _context.Sessions.Add(session);
+        await _context.SaveChangesAsync();
+
+        var result = await _service.DeleteSessionAsync(lot.ID, session.ID);
+
+        Assert.Equal(200, result.statusCode);
+        Assert.Empty(_context.Sessions);
     }
 
     [Fact]
