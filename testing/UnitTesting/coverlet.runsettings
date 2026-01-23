@@ -10,7 +10,16 @@
                         **/obj/**,
                         **/bin/**,
                         **/Controller/**/*.cs,
-                        **/infrastructure/data/**/ImportService.cs
+
+                        **/infrastructure/data/**/ImportService.cs,
+                        **/infrastructure/data/**/Coordinates.cs,
+                        **/infrastructure/data/**/ParkingLotJson.cs,
+                        **/infrastructure/data/**/PaymentJson.cs,
+                        **/infrastructure/data/**/PaymentTransactionData.cs,
+                        **/infrastructure/data/**/ReservationJson.cs,
+                        **/infrastructure/data/**/SessionJson.cs,
+                        **/infrastructure/data/**/UserJson.cs,
+                        **/infrastructure/data/**/VehicleJson.cs
                     </ExcludeByFile>
                     <ExcludeByAttribute>
                         GeneratedCodeAttribute
