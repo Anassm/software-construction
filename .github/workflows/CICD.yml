@@ -118,6 +118,20 @@ jobs:
         run: |
           cd testing/integratieTesting
           pytest test_payments.py
+        env: 
+          BASE_URL: ${{ secrets.BASE_URL }}
+          USER_A_EMAIL: ${{ secrets.USER_A_EMAIL }}
+          USER_A_PASSWORD: ${{ secrets.USER_A_PASSWORD }}
+          USER_A_USERNAME: ${{ secrets.USER_A_USERNAME }}
+          USER_A_NAME: ${{ secrets.USER_A_NAME }}
+          USER_B_EMAIL: ${{ secrets.USER_B_EMAIL }}
+          USER_B_PASSWORD: ${{ secrets.USER_B_PASSWORD }}
+          USER_B_USERNAME: ${{ secrets.USER_B_USERNAME }}
+          USER_B_NAME: ${{ secrets.USER_B_NAME }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+          ADMIN_NAME: ${{ secrets.ADMIN_NAME }}
 
       - name: Test login
         run: |

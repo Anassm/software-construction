@@ -1,37 +1,43 @@
 import pytest
 import requests
 import uuid
-
+import os
 
 @pytest.fixture
 def _data():
     return {
-        "base": "http://localhost:8000",
-        "url": "http://localhost:8000/payments",
+        "base": os.environ["BASE_URL"],
         "users": {
             "user_a": {
-                "email": "user@example.com",
-                "password": "UserPass123!",
-                "username": "regular.user",
-                "name": "Regular User",
-                "role": "user",
+                "email": os.environ["USER_A_EMAIL"],
+                "password": os.environ["USER_A_PASSWORD"],
+                "username": os.environ["USER_A_USERNAME"],
+                "name": os.environ["USER_A_NAME"],
+                "role": "user"
+            },
+            "user_b": {
+                "email": os.environ["USER_B_EMAIL"],
+                "password": os.environ["USER_B_PASSWORD"],
+                "username": os.environ["USER_B_USERNAME"],
+                "name": os.environ["USER_B_NAME"],
+                "role": "user"
             },
             "admin": {
-                "email": "admin@example.com",
-                "password": "AdminPass123!",
-                "username": "admin.user",
-                "name": "Admin User",
-                "role": "admin",
-            },
-        },
+                "email": os.environ["ADMIN_EMAIL"],
+                "password": os.environ["ADMIN_PASSWORD"],
+                "username": os.environ["ADMIN_USERNAME"],
+                "name": os.environ["ADMIN_NAME"],
+                "role": "admin"
+            }
+        }
     }
 
 
-def register_and_login(base_url, user):
-    requests.post(f"{base_url}/register", json=user)
+def register_and_login(_data):
+    requests.post(f"{_data['base']}/register", json=_data["users"]["user_a"])
     r = requests.post(
-        f"{base_url}/login",
-        json={"username": user["username"], "password": user["password"]},
+        f"{_data['base']}/login",
+        json={"username": _data["users"]["user_a"]["username"], "password": _data["users"]["user_a"]["password"]},
     )
     if r.status_code != 200 or "accesstoken" not in r.json():
         pytest.fail(f"Fout bij inloggen (401): {r.status_code} - {r.text}")
@@ -114,20 +120,14 @@ def created_discount_code(_data, discount_url, admin_headers):
 
 
 def test_get_payments_no_auth(_data):
-    response = requests.get(_data["url"])
+    response = requests.get(_data["base"] + "/payments")
     assert response.status_code == 401
     assert "Unauthorized" in response.json()["error"]
 
 
-# def test_get_payments_user(_data, user_headers):
-#     response = requests.get(_data["url"], headers=user_headers)
-#     assert response.status_code == 200
-#     assert isinstance(response.json(), list)
-
-
 def test_get_payments_invalid_token(_data):
     response = requests.get(
-        _data["url"], headers={"Authorization": "Bearer invalid_token"}
+        _data["base"] + "/payments", headers={"Authorization": "Bearer invalid_token"}
     )
     assert response.status_code == 401
     assert "Unauthorized" in response.json()["error"]
@@ -135,30 +135,30 @@ def test_get_payments_invalid_token(_data):
 
 def test_get_payments_by_username_admin(_data, admin_headers, user_headers):
     requests.post(
-        _data["url"],
+        _data["base"] + "/payments",
         headers=user_headers,
         json=get_v1_post_payload(_data["users"]["user_a"]["username"]),
     )
     response = requests.get(
-        f"{_data['url']}/{_data['users']['user_a']['username']}", headers=admin_headers
+        f"{_data['base']}/payments/{_data['users']['user_a']['username']}", headers=admin_headers
     )
     assert response.status_code in [200, 403, 404]
 
 
 def test_get_payments_by_username_user_forbidden(_data, user_headers):
-    response = requests.get(f"{_data['url']}/someoneelse", headers=user_headers)
+    response = requests.get(f"{_data['base']}/payments/someoneelse", headers=user_headers)
     assert response.status_code == 403
 
 
 def test_post_payment_no_auth(_data):
     data = get_v1_post_payload("guest")
-    response = requests.post(_data["url"], json=data)
+    response = requests.post(_data["base"] + "/payments", json=data)
     assert response.status_code == 401
 
 
 def test_post_payment_missing_field(_data, user_headers):
     data = {"transaction": "tx_missing_amount"}
-    response = requests.post(_data["url"], headers=user_headers, json=data)
+    response = requests.post(_data["base"] + "/payments", headers=user_headers, json=data)
     assert response.status_code == 400
     body = response.json()
     assert "error" in body
@@ -167,7 +167,7 @@ def test_post_payment_missing_field(_data, user_headers):
 
 def test_post_payment_success(_data, user_headers):
     data = get_v1_post_payload(_data["users"]["user_a"]["username"])
-    response = requests.post(_data["url"], headers=user_headers, json=data)
+    response = requests.post(_data["base"] + "/payments", headers=user_headers, json=data)
     assert response.status_code == 201
     data = response.json()
     assert data["status"] == "Success"
@@ -176,14 +176,14 @@ def test_post_payment_success(_data, user_headers):
 
 def test_post_refund_no_auth(_data):
     refund_data = {"paymentId": str(uuid.uuid4()), "reason": "Test"}
-    response = requests.post(f"{_data['url']}/refund", json=refund_data)
+    response = requests.post(f"{_data['base']}/payments/refund", json=refund_data)
     assert response.status_code == 401
 
 
 def test_post_refund_user_forbidden(_data, user_headers):
     refund_data = {"paymentId": str(uuid.uuid4()), "reason": "Test"}
     response = requests.post(
-        f"{_data['url']}/refund", headers=user_headers, json=refund_data
+        f"{_data['base']}/payments/refund", headers=user_headers, json=refund_data
     )
     assert response.status_code == 403
 
@@ -202,13 +202,13 @@ def test_post_refund_user_forbidden(_data, user_headers):
 
 
 def test_put_payment_no_auth(_data, setup_payment):
-    url = f"{_data['url']}/{setup_payment}"
+    url = f"{_data['base']}/payments/{setup_payment}"
     response = requests.put(url, json={"t_data": {"info": "ok"}, "validation": "hash"})
     assert response.status_code == 401
 
 
 def test_put_payment_missing_field(_data, user_headers, setup_payment):
-    url = f"{_data['url']}/{setup_payment}"
+    url = f"{_data['base']}/payments/{setup_payment}"
     data = {"t_data": {"info": "ok"}}
     response = requests.put(url, headers=user_headers, json=data)
     assert response.status_code == 400
@@ -217,7 +217,7 @@ def test_put_payment_missing_field(_data, user_headers, setup_payment):
 
 
 def test_put_payment_invalid_hash(_data, user_headers, setup_payment):
-    url = f"{_data['url']}/{setup_payment}"
+    url = f"{_data['base']}/payments/{setup_payment}"
     data = {"t_data": {"info": "ok"}, "validation": "invalid_hash"}
     response = requests.put(url, headers=user_headers, json=data)
 
@@ -226,7 +226,7 @@ def test_put_payment_invalid_hash(_data, user_headers, setup_payment):
 
 
 def test_put_payment_success(_data, user_headers, setup_payment):
-    url = f"{_data['url']}/{setup_payment}"
+    url = f"{_data['base']}/payments/{setup_payment}"
     data = {"t_data": {"info": "complete"}, "validation": "hash123"}
     response = requests.put(url, headers=user_headers, json=data)
 
@@ -239,7 +239,6 @@ def test_put_payment_success(_data, user_headers, setup_payment):
 
 # Discount codes
 def get_post_payload_with_discount(username, discount_code):
-    """Hulpmethode om payment payload met discount code te maken"""
     payload = get_v1_post_payload(username)
     payload["discountCode"] = discount_code
     return payload
@@ -250,7 +249,7 @@ def test_post_payment_with_valid_discount(_data, user_headers, created_discount_
         _data["users"]["user_a"]["username"], created_discount_code
     )
 
-    response = requests.post(_data["url"], headers=user_headers, json=payload)
+    response = requests.post(_data["base"] + "/payments", headers=user_headers, json=payload)
 
     if response.status_code != 201:
         pytest.fail(
