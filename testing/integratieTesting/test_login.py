@@ -31,7 +31,7 @@ def _data():
                 "role": "admin"
             }
         }
-    }
+    } 
 
 
 @pytest.fixture(scope="session", autouse=True)
