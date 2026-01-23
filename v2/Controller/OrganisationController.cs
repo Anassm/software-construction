@@ -58,6 +58,8 @@ namespace v2.Controllers
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] OrganizationUpdateRequest dto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
             var (statusCode, data) = await _organizationService.UpdateAsync(id, dto);
 
             return statusCode switch
