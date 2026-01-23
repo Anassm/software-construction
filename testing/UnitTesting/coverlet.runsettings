@@ -5,9 +5,9 @@
                 <Configuration>
 
                     <ExcludeByFile>
-                        <File>**/Program.cs</File>
-                        <File>**/*DTO*.cs</File>
-                        <File>**/Migrations/*.cs</File>
+                        **/Program.cs
+                        **/*DTO*.cs
+                        **/Migrations/*.cs
                     </ExcludeByFile>
 
                     <ExcludeByAttribute>
