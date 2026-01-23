@@ -4,7 +4,13 @@
             <DataCollector friendlyName="XPlat Code Coverage">
                 <Configuration>
 
-                    <!-- Exclude boilerplate -->
+                    <Exclude>
+                        <ModulePath>.*Migrations.*</ModulePath>
+                        <ModulePath>.*DTO.*</ModulePath>
+                        <ModulePath>.*Program.*</ModulePath>
+                        <ModulePath>.*Startup.*</ModulePath>
+                    </Exclude>
+
                     <ExcludeByFile>
                         <File>**/Program.cs</File>
                         <File>**/*Dto.cs</File>
@@ -12,10 +18,10 @@
                         <File>**/Migrations/*.cs</File>
                     </ExcludeByFile>
 
-                    <!-- Optional but recommended -->
                     <ExcludeByAttribute>
                         <Attribute>GeneratedCodeAttribute</Attribute>
                         <Attribute>CompilerGeneratedAttribute</Attribute>
+                        <Attribute>ExcludeFromCodeCoverageAttribute</Attribute>
                     </ExcludeByAttribute>
 
                 </Configuration>
