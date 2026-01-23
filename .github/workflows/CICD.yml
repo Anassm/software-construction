@@ -87,6 +87,12 @@ jobs:
               tail -n 50 server.log
               exit 1
           fi
+        env:
+          JWT_KEY: ${{ secrets.JWT_KEY }}
+          JWT_ISSUER: ${{ secrets.JWT_ISSUER }}
+          JWT_AUDIENCE: ${{ secrets.JWT_AUDIENCE }}
+
+
 
       - name: Test vehicles
         run: |

@@ -17,9 +17,11 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var jwtKey = "thisIsASuperSecretKeyWithAtLeast32Bytes!";
-var jwtIssuer = "yourIssuer";
-var jwtAudience = "yourAudience";
+builder.Configuration.AddEnvironmentVariables();
+var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+var jwtKey = jwtSettings["Key"];
+var jwtIssuer = jwtSettings["Issuer"];
+var jwtAudience = jwtSettings["Audience"];
 
 // --- Database ---
 var isTest = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Testing";
