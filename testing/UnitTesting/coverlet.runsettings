@@ -5,11 +5,11 @@
                 <Configuration>
 
                     <ExcludeByFile>
-                        **/*DTO*.cs
-                        **/Migrations/*.cs
-                        **/Data/*.cs
-                        **/Infrastructure/
+                        v2/Program.cs
+                        v2/Core/DTOs/*.cs
+                        v2/Migrations/*.cs
                     </ExcludeByFile>
+
 
                     <ExcludeByAttribute>
                         <Attribute>GeneratedCodeAttribute</Attribute>
