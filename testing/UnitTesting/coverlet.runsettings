@@ -5,9 +5,10 @@
                 <Configuration>
 
                     <ExcludeByFile>
-                        **/Program.cs
                         **/*DTO*.cs
                         **/Migrations/*.cs
+                        **/Data/*.cs
+                        **/Infrastructure/
                     </ExcludeByFile>
 
                     <ExcludeByAttribute>
