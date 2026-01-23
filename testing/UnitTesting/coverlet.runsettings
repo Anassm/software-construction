@@ -8,7 +8,8 @@
                         **/Core/DTOs/**/*.cs,
                         **/Migrations/**/*.cs,
                         **/obj/**,
-                        **/bin/**
+                        **/bin/**,
+                        **/Controller/**/*.cs
                     </ExcludeByFile>
                     <ExcludeByAttribute>
                         GeneratedCodeAttribute
