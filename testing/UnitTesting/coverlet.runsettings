@@ -11,15 +11,8 @@
                         **/bin/**,
                         **/Controller/**/*.cs,
 
-                        **/infrastructure/data/**/ImportService.*,
-                        **/infrastructure/data/**/Coordinates.*,
-                        **/infrastructure/data/**/ParkingLotJson.*,
-                        **/infrastructure/data/**/PaymentJson.*,
-                        **/infrastructure/data/**/PaymentTransactionData.*,
-                        **/infrastructure/data/**/ReservationJson.*,
-                        **/infrastructure/data/**/SessionJson.*,
-                        **/infrastructure/data/**/UserJson.*,
-                        **/infrastructure/data/**/VehicleJson.*
+                        **/infrastructure/data/**/ImportService.cs,
+                        **/Core/services/**/TokenBlacklist.cs
                     </ExcludeByFile>
                     <ExcludeByAttribute>
                         GeneratedCodeAttribute
