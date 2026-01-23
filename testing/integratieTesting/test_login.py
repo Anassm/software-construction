@@ -4,8 +4,8 @@ import os
 
 BASE = "http://localhost:8000"
 
-@pytest.fixture
-def _data(scope="session"):
+@pytest.fixture(scope="session")
+def _data():
     return {
         "base": os.environ["BASE_URL"],
         "users": {
