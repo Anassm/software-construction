@@ -248,7 +248,6 @@ public class VehicleServiceTests
     {
         var result = await _service.DeleteVehicleAsync(_vehicle.ID.ToString(), _user.IdentityUserId);
         var vehicleCountInDb = await _context.Vehicles.CountAsync();
-        Console.WriteLine($"Vehicle count in DB after deletion: {vehicleCountInDb}");
         Assert.Equal(200, result.statusCode);
         Assert.Equal(0, vehicleCountInDb);
     }
