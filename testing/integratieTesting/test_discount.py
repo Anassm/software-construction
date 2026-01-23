@@ -65,12 +65,16 @@ def discount_url(_data):
 
 def create_discount(admin_token, _data, code=None):
     if code is None:
-        code = "UPD" + uuid.uuid4().hex[:6]
+        code = "UPD" + uuid.uuid4().hex[:6].upper()
 
     r = requests.post(
         discount_url(_data),
         headers=admin_token,
-        json={"code": code}
+        json={
+            "code": code,
+            "percentage": 10,  # ✅ ADD required field
+            "isActive": True
+        }
     )
 
     return r.json()["discount"]["id"]
@@ -82,11 +86,10 @@ def test_post_discount_no_auth(_data):
 
 
 def test_post_discount_non_admin(user_token, _data):
-    payload = {"code": "USERTRY"}
-    response = requests.post(discount_url(
-        _data), headers=user_token, json=payload)
+    payload = {"code": "USERTRY", "percentage": 5}
+    response = requests.post(discount_url(_data), headers=user_token, json=payload)
     assert response.status_code == 403
-
+    
     body = response.json()
     assert "Access denied" in body["error"]
 
@@ -99,12 +102,12 @@ def test_post_discount_missing_code(admin_token, _data):
     assert response.status_code == 400
 
     body = response.json()
-    assert "Code" in body["error"]
+    assert "code" in body["error"]
 
 
 def test_post_discount_success(admin_token, _data):
     payload = {
-        "code": "DIS" + uuid.uuid4().hex[:5],
+        "code": "DIS" + uuid.uuid4().hex[:5].upper(),  
         "isActive": True,
         "percentage": 15.0
     }
@@ -119,8 +122,8 @@ def test_post_discount_success(admin_token, _data):
 
 
 def test_post_discount_duplicate(admin_token, _data):
-    code = "DUP" + uuid.uuid4().hex[:4]
-    payload = {"code": code}
+    code = "DUP" + uuid.uuid4().hex[:4].upper()
+    payload = {"code": code, "percentage": 5}
 
     requests.post(discount_url(_data), headers=admin_token, json=payload)
 
