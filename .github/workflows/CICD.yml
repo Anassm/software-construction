@@ -162,7 +162,9 @@ jobs:
       - name: Run unit tests with coverage
         run: |
           cd testing/UnitTesting
-          dotnet test --collect:"XPlat Code Coverage"
+          dotnet test \
+            --settings coverlet.runsettings \
+            --collect:"XPlat Code Coverage"
 
       - name: Create coverage summary
         run: |

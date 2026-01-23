@@ -1,0 +1,25 @@
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat Code Coverage">
+        <Configuration>
+
+          <!-- Exclude boilerplate -->
+          <Exclude>
+            <ModulePath>.*Migrations.*</ModulePath>
+            <ModulePath>.*DTO.*</ModulePath>
+            <ModulePath>.*Program.*</ModulePath>
+            <ModulePath>.*Startup.*</ModulePath>
+          </Exclude>
+
+          <!-- Optional but recommended -->
+          <ExcludeByAttribute>
+            <Attribute>GeneratedCodeAttribute</Attribute>
+            <Attribute>CompilerGeneratedAttribute</Attribute>
+          </ExcludeByAttribute>
+
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>
