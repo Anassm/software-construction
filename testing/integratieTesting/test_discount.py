@@ -101,10 +101,10 @@ def test_post_discount_no_auth(_data):
 
 
 def test_post_discount_non_admin(user_token, _data):
-    payload = {"code": "USERTRY"}
+    payload = {"code": "USERTRY", "percentage": 5}
     response = requests.post(discount_url(_data), headers=user_token, json=payload)
     assert response.status_code == 403
-
+    
     body = response.json()
     assert "Access denied" in body["error"]
 
@@ -116,7 +116,7 @@ def test_post_discount_missing_code(admin_token, _data):
     assert response.status_code == 400
 
     body = response.json()
-    assert "Code" in body["error"]
+    assert "code" in body["error"]
 
 
 def test_post_discount_success(admin_token, _data):
@@ -135,8 +135,8 @@ def test_post_discount_success(admin_token, _data):
 
 
 def test_post_discount_duplicate(admin_token, _data):
-    code = "DUP" + uuid.uuid4().hex[:4]
-    payload = {"code": code}
+    code = "DUP" + uuid.uuid4().hex[:4].upper()
+    payload = {"code": code, "percentage": 5}
 
     # first creation
     requests.post(discount_url(_data), headers=admin_token, json=payload)
