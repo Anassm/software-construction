@@ -170,7 +170,7 @@ jobs:
         run: |
           cd testing/UnitTesting
           reportgenerator \
-            -reports:"TestResults/*/coverage.cobertura.xml" \
+            -reports:"TestResults/**/coverage.cobertura.xml" \
             -targetdir:"coveragereport" \
             -reporttypes:"MarkdownSummary" \
             -threshold: 80 \
