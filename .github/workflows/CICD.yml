@@ -90,6 +90,9 @@ jobs:
 
       - name: Test vehicles
         run: |
+          cd testing/integratieTesting
+          pytest test_vehicles.py
+        env: 
           BASE_URL: ${{ secrets.BASE_URL }}
           USER_A_EMAIL: ${{ secrets.USER_A_EMAIL }}
           USER_A_PASSWORD: ${{ secrets.USER_A_PASSWORD }}
@@ -103,8 +106,6 @@ jobs:
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
           ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
           ADMIN_NAME: ${{ secrets.ADMIN_NAME }}
-          cd testing/integratieTesting
-          pytest test_vehicles.py
 
       - name: Test payments
         run: |
