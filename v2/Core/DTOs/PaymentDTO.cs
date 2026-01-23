@@ -50,7 +50,6 @@ public class ConfirmPaymentRequestDTO
 {
     [Required]
     public object T_Data { get; set; }
-    // Hash
     [Required]
     public string Validation { get; set; }
 }

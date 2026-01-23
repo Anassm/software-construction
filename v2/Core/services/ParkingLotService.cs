@@ -257,7 +257,6 @@ public class ParkingLotService : IParkingLots
                 LicensePlate = licensePlate,
                 ParkingLotID = parkingLotId,
                 ParkingLot = lot,
-                // UserID = userId,
                 PaymentStatus = PaymentStatus.Unpaid
             };
             

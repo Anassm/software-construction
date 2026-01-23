@@ -88,10 +88,6 @@ namespace UnitTesting
             return d;
         }
 
-        // ----------------------------
-        // CreateAsync
-        // ----------------------------
-
         [Fact]
         public async Task CreateAsync_UserNotFound_Returns404()
         {
@@ -141,7 +137,7 @@ namespace UnitTesting
             SeedDiscount(ctx, code: "DUPLICATE");
 
             var service = new DiscountService(ctx);
-            var dto = new DiscountCreateRequest { Code = "duplicate" }; // should normalize to DUPLICATE
+            var dto = new DiscountCreateRequest { Code = "duplicate" }; 
 
             var result = await service.CreateAsync(dto, adminId);
 
@@ -165,10 +161,6 @@ namespace UnitTesting
             Assert.Equal("TEST10", inDb.Code);
             Assert.Equal(10m, inDb.Percentage);
         }
-
-        // ----------------------------
-        // DeactivateAsync
-        // ----------------------------
 
         [Fact]
         public async Task DeactivateAsync_NotAdmin_Returns403()
@@ -224,10 +216,6 @@ namespace UnitTesting
             Assert.False(inDb.IsActive);
         }
 
-        // ----------------------------
-        // UpdateExpiryAsync
-        // ----------------------------
-
         [Fact]
         public async Task UpdateExpiryAsync_NotFound_Returns404()
         {
@@ -257,10 +245,6 @@ namespace UnitTesting
             var inDb = ctx.DiscountCodes.Single(d => d.ID == discount.ID);
             Assert.Equal(newExpiry, inDb.ExpiryDate);
         }
-
-        // ----------------------------
-        // LinkUsersAsync
-        // ----------------------------
 
         [Fact]
         public async Task LinkUsersAsync_NotFound_Returns404()
@@ -315,9 +299,6 @@ namespace UnitTesting
 
             Assert.Equal(404, result.statusCode);
         }
-        // ----------------------------
-        // ValidateAndApplyAsync
-        // ----------------------------
 
         [Fact]
         public async Task ValidateAndApplyAsync_MissingCode_Returns400()
@@ -441,7 +422,6 @@ namespace UnitTesting
             var (_, user, userIdentityId) = SeedUser(ctx, role: "user");
             var discount = SeedDiscount(ctx, "AUTH", isActive: true, percentage: 10m);
 
-            // Link is for a different user
             ctx.DiscountCodeUsers.Add(new DiscountCodeUser { DiscountCodeId = discount.ID, UserId = Guid.NewGuid() });
             ctx.SaveChanges();
 
@@ -469,7 +449,7 @@ namespace UnitTesting
 
             var inDb = ctx.DiscountCodes.Single(d => d.ID == discount.ID);
             Assert.Equal(1, inDb.UsageCount);
-            Assert.True(inDb.SavedAmount > 0m); // should be 10
+            Assert.True(inDb.SavedAmount > 0m);
         }
 
         [Fact]
@@ -486,10 +466,6 @@ namespace UnitTesting
 
             Assert.Equal(400, result.statusCode);
         }
-
-        // ----------------------------
-        // GetAllActiveCodesAsync
-        // ----------------------------
 
         [Fact]
         public async Task GetAllActiveCodesAsync_NotAdmin_Returns403()
@@ -519,7 +495,6 @@ namespace UnitTesting
 
             Assert.Equal(200, result.statusCode);
 
-            // easiest check: db query should yield 1 valid; service returns list too but as anonymous object
             var activeCountExpected = ctx.DiscountCodes.Count(d =>
                 d.IsActive &&
                 (d.StartDate == null || d.StartDate <= DateTime.UtcNow) &&
@@ -527,10 +502,6 @@ namespace UnitTesting
 
             Assert.Equal(1, activeCountExpected);
         }
-
-        // ----------------------------
-        // GetUsedCodesAsync
-        // ----------------------------
 
         [Fact]
         public async Task GetUsedCodesAsync_FilterIdNotExists_Returns404()
@@ -563,10 +534,6 @@ namespace UnitTesting
             var count = ctx.DiscountCodeUsers.Count(x => x.DiscountCodeId == discount.ID);
             Assert.Equal(2, count);
         }
-
-        // ----------------------------
-        // GetStatisticsAsync
-        // ----------------------------
 
         [Fact]
         public async Task GetStatisticsAsync_Default_Returns200()
