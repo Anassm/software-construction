@@ -22,6 +22,8 @@ var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var jwtKey = jwtSettings["Key"];
 var jwtIssuer = jwtSettings["Issuer"];
 var jwtAudience = jwtSettings["Audience"];
+var ConnectionStrings = builder.Configuration.GetSection("ConnectionStrings");
+var defaultConnection = ConnectionStrings["DefaultConnection"];
 
 // --- Database ---
 var isTest = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Testing";
@@ -34,7 +36,7 @@ if (isTest)
 else
 {
     builder.Services.AddDbContext<ApplicationDbContext>(
-        options => options.UseSqlite("Data Source=infrastructure/data/app.db"));
+        options => options.UseSqlite($"Data Source={defaultConnection}"));
 
 }
 
