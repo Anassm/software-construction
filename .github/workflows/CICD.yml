@@ -159,26 +159,21 @@ jobs:
           cd testing/UnitTesting
           dotnet restore
 
-      - name: Run unit tests with coverage (fail under 80%)
+      - name: Run unit tests with coverage
         run: |
           cd testing/UnitTesting
           dotnet test \
             --settings coverlet.runsettings \
-            /p:CollectCoverage=true \
-            /p:CoverletOutput=TestResults/ \
-            /p:CoverletOutputFormat=cobertura \
-            /p:Threshold=80 \
-            /p:ThresholdType=line \
-            /p:ThresholdStat=total
+            --collect:"XPlat Code Coverage"
 
-      - name: Create coverage summary
+      - name: Create coverage summary and enforce 80%
         run: |
           cd testing/UnitTesting
           reportgenerator \
             -reports:"TestResults/**/coverage.cobertura.xml" \
             -targetdir:"coveragereport" \
             -reporttypes:"MarkdownSummary" \
-            -threshold: 80 \
+            -threshold:80 \
             -thresholdtype:line \
             -thresholdstatistic:total
 
