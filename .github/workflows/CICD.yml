@@ -172,7 +172,10 @@ jobs:
           reportgenerator \
             -reports:"TestResults/*/coverage.cobertura.xml" \
             -targetdir:"coveragereport" \
-            -reporttypes:"MarkdownSummary"
+            -reporttypes:"MarkdownSummary" \
+            -threshold: 80 \
+            -thresholdtype:line \
+            -thresholdstatistic:total
 
       - name: Display coverage summary
         run: |
