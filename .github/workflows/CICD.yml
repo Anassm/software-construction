@@ -165,7 +165,7 @@ jobs:
           dotnet test \
             --settings coverlet.runsettings \
             --collect:"XPlat Code Coverage" \
-            --logger: "console;verbosity=detailed"
+            -v:d
 
       - name: Create coverage summary and enforce 80%
         run: |

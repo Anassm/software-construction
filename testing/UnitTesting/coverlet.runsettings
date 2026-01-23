@@ -3,19 +3,16 @@
         <DataCollectors>
             <DataCollector friendlyName="XPlat Code Coverage">
                 <Configuration>
-
                     <ExcludeByFile>
                         **/Program.cs
-                        **/DTOs/*.cs
+                        **/Core/DTOs/*.cs
                         **/Migrations/*.cs
                     </ExcludeByFile>
-
                     <ExcludeByAttribute>
                         GeneratedCodeAttribute
                         CompilerGeneratedAttribute
                         ExcludeFromCodeCoverageAttribute
                     </ExcludeByAttribute>
-
                 </Configuration>
             </DataCollector>
         </DataCollectors>
