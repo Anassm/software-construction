@@ -1,3 +1,4 @@
+import os
 import pytest
 import requests
 import uuid
@@ -6,38 +7,32 @@ import uuid
 @pytest.fixture
 def _data():
     return {
-        "url": "http://localhost:8000/parkinglots",
-        "user_token": "userToken123",
-        "admin_token": "adminToken123"
-    }
-
-def _dataUsers():
-    return {
-        "base": "http://localhost:8000",
-        "url": "http://localhost:8000/payments",
+        "base": os.environ["BASE_URL"],
+        "url": f"{os.environ['BASE_URL']}/parkinglots",
         "users": {
             "user_a": {
-                "email": "user@example.com",
-                "password": "UserPass123!",
-                "username": "regular.user3",
-                "name": "Regular User",
+                "email": os.environ["PARKINGLOTS_USER_EMAIL"],
+                "password": os.environ["PARKINGLOTS_USER_PASSWORD"],
+                "username": os.environ["PARKINGLOTS_USER_USERNAME"],
+                "name": os.environ["PARKINGLOTS_USER_NAME"],
                 "role": "user",
             },
             "admin": {
-                "email": "admin@example.com",
-                "password": "AdminPass123!",
-                "username": "admin.user3",
-                "name": "Admin User",
+                "email": os.environ["PARKINGLOTS_ADMIN_EMAIL"],
+                "password": os.environ["PARKINGLOTS_ADMIN_PASSWORD"],
+                "username": os.environ["PARKINGLOTS_ADMIN_USERNAME"],
+                "name": os.environ["PARKINGLOTS_ADMIN_NAME"],
                 "role": "admin",
             },
         },
     }
 
+
 def register_and_login(base_url, user):
-    requests.post(f"{_dataUsers()['base']}/register", json=user)
+    requests.post(f"{base_url}/register", json=user)
 
     r = requests.post(
-        f"{_dataUsers()['base']}/login",
+        f"{base_url}/login",
         json={"username": user["username"], "password": user["password"]},
     )
 
@@ -47,13 +42,13 @@ def register_and_login(base_url, user):
         )
 
     body = r.json()
-    return f"Bearer {body['accesstoken']}"  # ✅ string
+    return f"Bearer {body['accesstoken']}"
 
 
 @pytest.fixture
 def user_headers(_data):
     return {
-        "Authorization": register_and_login(_data["url"], _dataUsers()["users"]["user_a"]),
+        "Authorization": register_and_login(_data["base"], _data["users"]["user_a"]),
         "Content-Type": "application/json"
     }
 
@@ -61,7 +56,7 @@ def user_headers(_data):
 @pytest.fixture
 def admin_headers(_data):
     return {
-        "Authorization": register_and_login(_data["url"], _dataUsers()["users"]["admin"]),
+        "Authorization": register_and_login(_data["base"], _data["users"]["admin"]),
         "Content-Type": "application/json"
     }
 
@@ -80,7 +75,6 @@ def parkinglot_payload(name=None):
 
 
 def test_get_parkinglots_no_auth(_data):
-    
     r = requests.get(_data["url"])
     assert r.status_code == 401
     body = r.json()
@@ -88,7 +82,6 @@ def test_get_parkinglots_no_auth(_data):
 
 
 def test_get_parkinglots_user(_data, user_headers):
-    
     r = requests.get(_data["url"], headers=user_headers)
     assert r.status_code == 200
 
@@ -126,7 +119,6 @@ def test_put_parkinglot_admin_success(_data, admin_headers):
     data = create.json()
     pid = data.get("id") or data.get("parkingLot", {}).get("id")
 
-   
     update_payload = parkinglot_payload("Updated Name")
     r = requests.put(f"{_data['url']}/{pid}", headers=admin_headers, json=update_payload)
 

@@ -137,6 +137,16 @@ jobs:
         run: |
           cd testing/integratieTesting
           pytest test_parkinglots.py
+        env: 
+          BASE_URL: ${{ secrets.BASE_URL }}
+          PARKINGLOTS_USER_EMAIL: ${{ secrets.PARKINGLOTS_USER_EMAIL }}
+          PARKINGLOTS_USER_PASSWORD: ${{ secrets.PARKINGLOTS_USER_PASSWORD }}
+          PARKINGLOTS_USER_USERNAME: ${{ secrets.PARKINGLOTS_USER_USERNAME }}
+          PARKINGLOTS_USER_NAME: ${{ secrets.PARKINGLOTS_USER_NAME }}
+          PARKINGLOTS_ADMIN_EMAIL: ${{ secrets.PARKINGLOTS_ADMIN_EMAIL }}
+          PARKINGLOTS_ADMIN_PASSWORD: ${{ secrets.PARKINGLOTS_ADMIN_PASSWORD }}
+          PARKINGLOTS_ADMIN_USERNAME: ${{ secrets.PARKINGLOTS_ADMIN_USERNAME }}
+          PARKINGLOTS_ADMIN_NAME: ${{ secrets.PARKINGLOTS_ADMIN_NAME }}
 
       - name: Test reservations
         run: |
@@ -147,6 +157,16 @@ jobs:
         run: |
           cd testing/integratieTesting
           pytest test_billing.py
+        env: 
+          BASE_URL: ${{ secrets.BASE_URL }}
+          BILLING_USER_EMAIL: ${{ secrets.BILLING_USER_EMAIL }}
+          BILLING_USER_PASSWORD: ${{ secrets.BILLING_USER_PASSWORD }}
+          BILLING_USER_USERNAME: ${{ secrets.BILLING_USER_USERNAME }}
+          BILLING_USER_NAME: ${{ secrets.BILLING_USER_NAME }}
+          BILLING_ADMIN_EMAIL: ${{ secrets.BILLING_ADMIN_EMAIL }}
+          BILLING_ADMIN_PASSWORD: ${{ secrets.BILLING_ADMIN_PASSWORD }}
+          BILLING_ADMIN_USERNAME: ${{ secrets.BILLING_ADMIN_USERNAME }}
+          BILLING_ADMIN_NAME: ${{ secrets.BILLING_ADMIN_NAME }}
 
       - name: Test Discounts
         run: |
