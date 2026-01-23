@@ -5,16 +5,15 @@
                 <Configuration>
 
                     <ExcludeByFile>
-                        v2/Program.cs
-                        v2/Core/DTOs/*.cs
-                        v2/Migrations/*.cs
+                        **/Program.cs
+                        **/DTOs/*.cs
+                        **/Migrations/*.cs
                     </ExcludeByFile>
 
-
                     <ExcludeByAttribute>
-                        <Attribute>GeneratedCodeAttribute</Attribute>
-                        <Attribute>CompilerGeneratedAttribute</Attribute>
-                        <Attribute>ExcludeFromCodeCoverageAttribute</Attribute>
+                        GeneratedCodeAttribute
+                        CompilerGeneratedAttribute
+                        ExcludeFromCodeCoverageAttribute
                     </ExcludeByAttribute>
 
                 </Configuration>

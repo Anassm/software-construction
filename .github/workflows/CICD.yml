@@ -164,7 +164,8 @@ jobs:
           cd testing/UnitTesting
           dotnet test \
             --settings coverlet.runsettings \
-            --collect:"XPlat Code Coverage"
+            --collect:"XPlat Code Coverage" \
+            --logger: "console;verbosity=detailed"
 
       - name: Create coverage summary and enforce 80%
         run: |
