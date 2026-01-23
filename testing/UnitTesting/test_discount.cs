@@ -279,6 +279,42 @@ namespace UnitTesting
 
             Assert.Equal(404, result.statusCode);
         }
+
+        [Fact]
+        public async Task UpdateAsync_UserNotFound_Returns404()
+        {
+            using var ctx = CreateContext();
+            var service = new DiscountService(ctx);
+
+            var result = await service.UpdateAsync(Guid.NewGuid(), new DiscountUpdateRequest(), "missing");
+
+            Assert.Equal(404, result.statusCode);
+        }
+
+        [Fact]
+        public async Task UpdateAsync_NotAdmin_Returns403()
+        {
+            using var ctx = CreateContext();
+            var (_, _, userId) = SeedUser(ctx, "user");
+            var discount = SeedDiscount(ctx, "CODE");
+
+            var service = new DiscountService(ctx);
+            var result = await service.UpdateAsync(discount.ID, new DiscountUpdateRequest(), userId);
+
+            Assert.Equal(403, result.statusCode);
+        }
+
+        [Fact]
+        public async Task UpdateAsync_DiscountNotFound_Returns404()
+        {
+            using var ctx = CreateContext();
+            var (_, _, adminId) = SeedUser(ctx, "admin");
+
+            var service = new DiscountService(ctx);
+            var result = await service.UpdateAsync(Guid.NewGuid(), new DiscountUpdateRequest(), adminId);
+
+            Assert.Equal(404, result.statusCode);
+        }
         // ----------------------------
         // ValidateAndApplyAsync
         // ----------------------------
