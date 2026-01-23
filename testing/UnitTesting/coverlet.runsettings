@@ -12,7 +12,9 @@
                         **/Controller/**/*.cs,
 
                         **/infrastructure/data/**/ImportService.cs,
-                        **/Core/services/**/TokenBlacklist.cs
+                        **/Core/services/**/TokenBlacklist.cs,
+
+                        **/infrastructure/data/**/UserJson
                     </ExcludeByFile>
                     <ExcludeByAttribute>
                         GeneratedCodeAttribute
