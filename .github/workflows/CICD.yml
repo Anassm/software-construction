@@ -71,6 +71,9 @@ jobs:
       - name: Start ASP.NET server and wait for it
         run: |
           cd v2
+          export JWT_SECRET=${{ secrets.JWT_SECRET }}
+          export JwtSettings__Issuer=ParkingManagementAPI
+          export JwtSettings__Audience=ParkingManagementAPI
           echo "Starting server..."
           dotnet run --urls "http://localhost:8000" --launch-profile Testing > server.log 2>&1 &
 
