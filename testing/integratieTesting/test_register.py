@@ -33,10 +33,10 @@ def _data():
 
 def test_register_success(_data):
     r = requests.post(_data["base"]+ "/register", json={
-        "username": _data["users"]["user_a"]["username"],
-        "password": _data["users"]["user_a"]["password"],
-        "name": _data["users"]["user_a"]["name"],
-        "email": _data["users"]["user_a"]["email"]
+        "username": _data["users"]["user_b"]["username"],
+        "password": _data["users"]["user_b"]["password"],
+        "name": _data["users"]["user_b"]["name"],
+        "email": _data["users"]["user_b"]["email"]
     })
     assert r.status_code in [200, 201]
 
