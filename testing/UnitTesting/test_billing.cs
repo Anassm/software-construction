@@ -20,8 +20,8 @@ public class BillingServiceTests
     private readonly Invoice _invoice1;
     private readonly Invoice _invoice2;
 
-    private readonly Session _session1;  
-    private readonly Session _session2;  
+    private readonly Session _session1;
+    private readonly Session _session2;
 
     public BillingServiceTests()
     {
@@ -123,7 +123,7 @@ public class BillingServiceTests
         _context.ParkingLots.Add(parkingLot);
         _context.SaveChanges();
 
-   
+
         var session1 = new Session
         {
             ID = Guid.NewGuid(),
@@ -182,7 +182,7 @@ public class BillingServiceTests
         var result = await _service.GetMyInvoiceHistoryAsync(_user.IdentityUserId);
         Assert.Equal(200, result.statusCode);
 
-        
+
         var dataType = result.data.GetType();
         var invoicesProperty = dataType.GetProperty("invoices");
         var invoices = invoicesProperty.GetValue(result.data) as List<InvoiceSummaryDto>;
@@ -196,12 +196,12 @@ public class BillingServiceTests
     [Fact]
     public async Task GetMyInvoiceHistory_EmptyList()
     {
-        var identityUser = new IdentityUser 
-        { 
+        var identityUser = new IdentityUser
+        {
             UserName = "noinvoices",
             Id = Guid.NewGuid().ToString()
         };
-        
+
         var newUser = new User
         {
             ID = Guid.NewGuid(),
@@ -244,8 +244,8 @@ public class BillingServiceTests
 
         Assert.NotNull(invoices);
         Assert.Equal(2, invoices.Count);
-        
-        
+
+
         Assert.Equal("INV-002", invoices[0].InvoiceNumber);
         Assert.Equal("INV-001", invoices[1].InvoiceNumber);
     }
@@ -269,452 +269,512 @@ public class BillingServiceTests
     }
 
     [Fact]
-public async Task GetMyInvoiceHistory_MultipleStatuses()
-{
-    var overdueInvoice = new Invoice
+    public async Task GetMyInvoiceHistory_MultipleStatuses()
     {
-        ID = Guid.NewGuid(),
-        InvoiceNumber = "INV-003",
-        TotalAmount = 100.00f,
-        CreatedAt = DateTime.UtcNow.AddDays(-30),
-        DueDate = DateTime.UtcNow.AddDays(-5),
-        Status = InvoiceStatus.Overdue,
-        UserID = _user.ID,
-        User = _user
-    };
+        var overdueInvoice = new Invoice
+        {
+            ID = Guid.NewGuid(),
+            InvoiceNumber = "INV-003",
+            TotalAmount = 100.00f,
+            CreatedAt = DateTime.UtcNow.AddDays(-30),
+            DueDate = DateTime.UtcNow.AddDays(-5),
+            Status = InvoiceStatus.Overdue,
+            UserID = _user.ID,
+            User = _user
+        };
 
-    var voidInvoice = new Invoice
+        var voidInvoice = new Invoice
+        {
+            ID = Guid.NewGuid(),
+            InvoiceNumber = "INV-004",
+            TotalAmount = 25.00f,
+            CreatedAt = DateTime.UtcNow.AddDays(-15),
+            DueDate = DateTime.UtcNow.AddDays(10),
+            Status = InvoiceStatus.Void,
+            UserID = _user.ID,
+            User = _user
+        };
+
+        _context.Invoices.Add(overdueInvoice);
+        _context.Invoices.Add(voidInvoice);
+        _context.SaveChanges();
+
+        var result = await _service.GetMyInvoiceHistoryAsync(_user.IdentityUserId);
+        Assert.Equal(200, result.statusCode);
+
+        var dataType = result.data.GetType();
+        var invoicesProperty = dataType.GetProperty("invoices");
+        var invoices = invoicesProperty.GetValue(result.data) as List<InvoiceSummaryDto>;
+
+        Assert.NotNull(invoices);
+        Assert.Equal(4, invoices.Count);
+        Assert.Contains(invoices, i => i.Status == "Paid");
+        Assert.Contains(invoices, i => i.Status == "Open");
+        Assert.Contains(invoices, i => i.Status == "Overdue");
+        Assert.Contains(invoices, i => i.Status == "Void");
+    }
+
+    [Fact]
+    public async Task GetMyInvoiceHistory_OnlyUserInvoices()
     {
-        ID = Guid.NewGuid(),
-        InvoiceNumber = "INV-004",
-        TotalAmount = 25.00f,
-        CreatedAt = DateTime.UtcNow.AddDays(-15),
-        DueDate = DateTime.UtcNow.AddDays(10),
-        Status = InvoiceStatus.Void,
-        UserID = _user.ID,
-        User = _user
-    };
+        var identityOther = new IdentityUser
+        {
+            UserName = "otheruser",
+            Id = Guid.NewGuid().ToString()
+        };
 
-    _context.Invoices.Add(overdueInvoice);
-    _context.Invoices.Add(voidInvoice);
-    _context.SaveChanges();
+        var otherUser = new User
+        {
+            ID = Guid.NewGuid(),
+            IdentityUserId = identityOther.Id,
+            IdentityUser = identityOther,
+            Username = "otheruser",
+            Name = "Other User",
+            Email = "other@example.com",
+            PhoneNumber = "1234567890",
+            Role = "user",
+            BirthYear = 1990,
+            IsActive = true,
+            Vehicles = new List<Vehicle>(),
+            Sessions = new List<Session>(),
+            Reservations = new List<Reservation>()
+        };
+        _context.Users.Add(otherUser);
 
-    var result = await _service.GetMyInvoiceHistoryAsync(_user.IdentityUserId);
-    Assert.Equal(200, result.statusCode);
+        var otherInvoice = new Invoice
+        {
+            ID = Guid.NewGuid(),
+            InvoiceNumber = "INV-OTHER",
+            TotalAmount = 25.00f,
+            CreatedAt = DateTime.UtcNow,
+            DueDate = DateTime.UtcNow.AddDays(14),
+            Status = InvoiceStatus.Open,
+            UserID = otherUser.ID,
+            User = otherUser
+        };
+        _context.Invoices.Add(otherInvoice);
+        _context.SaveChanges();
 
-    var dataType = result.data.GetType();
-    var invoicesProperty = dataType.GetProperty("invoices");
-    var invoices = invoicesProperty.GetValue(result.data) as List<InvoiceSummaryDto>;
+        var result = await _service.GetMyInvoiceHistoryAsync(_user.IdentityUserId);
+        Assert.Equal(200, result.statusCode);
 
-    Assert.NotNull(invoices);
-    Assert.Equal(4, invoices.Count);
-    Assert.Contains(invoices, i => i.Status == "Paid");
-    Assert.Contains(invoices, i => i.Status == "Open");
-    Assert.Contains(invoices, i => i.Status == "Overdue");
-    Assert.Contains(invoices, i => i.Status == "Void");
-}
+        var dataType = result.data.GetType();
+        var invoicesProperty = dataType.GetProperty("invoices");
+        var invoices = invoicesProperty.GetValue(result.data) as List<InvoiceSummaryDto>;
 
-[Fact]
-public async Task GetMyInvoiceHistory_OnlyUserInvoices()
-{
-    var identityOther = new IdentityUser 
-    { 
-        UserName = "otheruser",
-        Id = Guid.NewGuid().ToString()
-    };
-    
-    var otherUser = new User
+        Assert.NotNull(invoices);
+        Assert.Equal(2, invoices.Count);
+        Assert.DoesNotContain(invoices, i => i.InvoiceNumber == "INV-OTHER");
+    }
+
+
+    [Fact]
+    public async Task GetInvoiceDetails_AdminSuccess()
     {
-        ID = Guid.NewGuid(),
-        IdentityUserId = identityOther.Id,
-        IdentityUser = identityOther,
-        Username = "otheruser",
-        Name = "Other User",
-        Email = "other@example.com",
-        PhoneNumber = "1234567890",
-        Role = "user",
-        BirthYear = 1990,
-        IsActive = true,
-        Vehicles = new List<Vehicle>(),
-        Sessions = new List<Session>(),
-        Reservations = new List<Reservation>()
-    };
-    _context.Users.Add(otherUser);
+        var result = await _service.GetInvoiceDetailsAsync(_invoice1.ID, _admin.IdentityUserId);
+        Assert.Equal(200, result.statusCode);
 
-    var otherInvoice = new Invoice
+        var dataType = result.data.GetType();
+        var invoiceProperty = dataType.GetProperty("invoice");
+        var invoice = invoiceProperty.GetValue(result.data);
+
+        Assert.NotNull(invoice);
+    }
+
+    [Fact]
+    public async Task GetInvoiceDetails_NonAdminForbidden()
     {
-        ID = Guid.NewGuid(),
-        InvoiceNumber = "INV-OTHER",
-        TotalAmount = 25.00f,
-        CreatedAt = DateTime.UtcNow,
-        DueDate = DateTime.UtcNow.AddDays(14),
-        Status = InvoiceStatus.Open,
-        UserID = otherUser.ID,
-        User = otherUser
-    };
-    _context.Invoices.Add(otherInvoice);
-    _context.SaveChanges();
+        var result = await _service.GetInvoiceDetailsAsync(_invoice1.ID, _user.IdentityUserId);
+        Assert.Equal(403, result.statusCode);
 
-    var result = await _service.GetMyInvoiceHistoryAsync(_user.IdentityUserId);
-    Assert.Equal(200, result.statusCode);
-
-    var dataType = result.data.GetType();
-    var invoicesProperty = dataType.GetProperty("invoices");
-    var invoices = invoicesProperty.GetValue(result.data) as List<InvoiceSummaryDto>;
-
-    Assert.NotNull(invoices);
-    Assert.Equal(2, invoices.Count);
-    Assert.DoesNotContain(invoices, i => i.InvoiceNumber == "INV-OTHER");
-}
-
-
-[Fact]
-public async Task GetInvoiceDetails_AdminSuccess()
-{
-    var result = await _service.GetInvoiceDetailsAsync(_invoice1.ID, _admin.IdentityUserId);
-    Assert.Equal(200, result.statusCode);
-
-    var dataType = result.data.GetType();
-    var invoiceProperty = dataType.GetProperty("invoice");
-    var invoice = invoiceProperty.GetValue(result.data);
-
-    Assert.NotNull(invoice);
-}
-
-[Fact]
-public async Task GetInvoiceDetails_NonAdminForbidden()
-{
-    var result = await _service.GetInvoiceDetailsAsync(_invoice1.ID,_user.IdentityUserId);
-    Assert.Equal(403, result.statusCode);
-
-}
-[Fact]
-public async Task GetInvoiceDetails_UserNotFound()
-{
-    var result = await _service.GetInvoiceDetailsAsync(_invoice1.ID, Guid.NewGuid().ToString());
-    Assert.Equal(404, result.statusCode);
-}
-
-[Fact]
-public async Task GetInvoiceDetails_InvoiceNotFound()
-{
-    var result = await _service.GetInvoiceDetailsAsync(Guid.NewGuid(), _admin.IdentityUserId);
-    Assert.Equal(404, result.statusCode);
-}
-
-[Fact]
-public async Task GetInvoiceDetails_EmployeeSuccess()
-{
-    
-    var identityEmployee = new IdentityUser
+    }
+    [Fact]
+    public async Task GetInvoiceDetails_UserNotFound()
     {
-        UserName = "employee",
-        Id = Guid.NewGuid().ToString()
-    };
+        var result = await _service.GetInvoiceDetailsAsync(_invoice1.ID, Guid.NewGuid().ToString());
+        Assert.Equal(404, result.statusCode);
+    }
 
-    var employee = new User
+    [Fact]
+    public async Task GetInvoiceDetails_InvoiceNotFound()
     {
-        ID = Guid.NewGuid(),
-        IdentityUserId = identityEmployee.Id,
-        IdentityUser = identityEmployee,
-        Username = "employee",
-        Name = "Employee User",
-        Email = "employee@example.com",
-        PhoneNumber = "1234567890",
-        Role = "employee",
-        BirthYear = 1990,
-        IsActive = true,
-        Vehicles = new List<Vehicle>(),
-        Sessions = new List<Session>(),
-        Reservations = new List<Reservation>()
-    };
-    _context.Users.Add(employee);
-    _context.SaveChanges();
+        var result = await _service.GetInvoiceDetailsAsync(Guid.NewGuid(), _admin.IdentityUserId);
+        Assert.Equal(404, result.statusCode);
+    }
 
-    var result = await _service.GetInvoiceDetailsAsync(_invoice1.ID, employee.IdentityUserId);
-    Assert.Equal(200, result.statusCode);
-}
-
-[Fact]
-public async Task GetInvoiceDetails_CorrectInvoiceStructure()
-{
-    var result = await _service.GetInvoiceDetailsAsync(_invoice1.ID, _admin.IdentityUserId);
-    Assert.Equal(200, result.statusCode);
-
-    var dataType = result.data.GetType();
-    var invoiceProperty = dataType.GetProperty("invoice");
-    var invoice = invoiceProperty.GetValue(result.data);
-
-    var invoiceType = invoice.GetType();
-    Assert.NotNull(invoiceType.GetProperty("id").GetValue(invoice));
-    Assert.NotNull(invoiceType.GetProperty("invoiceNumber").GetValue(invoice));
-    Assert.NotNull(invoiceType.GetProperty("totalAmount").GetValue(invoice));
-    Assert.NotNull(invoiceType.GetProperty("status").GetValue(invoice));
-}
-
-[Fact]
-public async Task GetInvoiceDetails_IncludesCustomerDetails()
-{
-    var result = await _service.GetInvoiceDetailsAsync(_invoice1.ID, _admin.IdentityUserId);
-    Assert.Equal(200, result.statusCode);
-
-    var dataType = result.data.GetType();
-    var invoiceProperty = dataType.GetProperty("invoice");
-    var invoice = invoiceProperty.GetValue(result.data);
-
-    
-    var invoiceType = invoice.GetType();
-    var customer = invoiceType.GetProperty("customer").GetValue(invoice);
-    Assert.NotNull(customer);
-
-    var customerType = customer.GetType();
-    Assert.NotNull(customerType.GetProperty("id").GetValue(customer));
-    Assert.NotNull(customerType.GetProperty("username").GetValue(customer));
-    Assert.NotNull(customerType.GetProperty("name").GetValue(customer));
-    Assert.NotNull(customerType.GetProperty("email").GetValue(customer));
-}
-
-[Fact]
-public async Task CreateBundleInvoice_AdminSuccess()
-{
-    var dto = new CreateBundleInvoiceDto
+    [Fact]
+    public async Task GetInvoiceDetails_EmployeeSuccess()
     {
-        SessionIds = new List<Guid> { _session1.ID, _session2.ID },
-        CompanyName = "Test Company"
-    };
 
-    var result = await _service.CreateBundleInvoiceAsync(dto, _admin.IdentityUserId);
-    Assert.Equal(201, result.statusCode);
-}
+        var identityEmployee = new IdentityUser
+        {
+            UserName = "employee",
+            Id = Guid.NewGuid().ToString()
+        };
 
-[Fact]
-public async Task CreateBundleInvoice_EmployeeSuccess()
-{
+        var employee = new User
+        {
+            ID = Guid.NewGuid(),
+            IdentityUserId = identityEmployee.Id,
+            IdentityUser = identityEmployee,
+            Username = "employee",
+            Name = "Employee User",
+            Email = "employee@example.com",
+            PhoneNumber = "1234567890",
+            Role = "employee",
+            BirthYear = 1990,
+            IsActive = true,
+            Vehicles = new List<Vehicle>(),
+            Sessions = new List<Session>(),
+            Reservations = new List<Reservation>()
+        };
+        _context.Users.Add(employee);
+        _context.SaveChanges();
 
-    var identityEmployee = new IdentityUser
+        var result = await _service.GetInvoiceDetailsAsync(_invoice1.ID, employee.IdentityUserId);
+        Assert.Equal(200, result.statusCode);
+    }
+
+    [Fact]
+    public async Task GetInvoiceDetails_CorrectInvoiceStructure()
     {
-        UserName = "employee",
-        Id = Guid.NewGuid().ToString()
-    };
+        var result = await _service.GetInvoiceDetailsAsync(_invoice1.ID, _admin.IdentityUserId);
+        Assert.Equal(200, result.statusCode);
 
-    var employee = new User
+        var dataType = result.data.GetType();
+        var invoiceProperty = dataType.GetProperty("invoice");
+        var invoice = invoiceProperty.GetValue(result.data);
+
+        var invoiceType = invoice.GetType();
+        Assert.NotNull(invoiceType.GetProperty("id").GetValue(invoice));
+        Assert.NotNull(invoiceType.GetProperty("invoiceNumber").GetValue(invoice));
+        Assert.NotNull(invoiceType.GetProperty("totalAmount").GetValue(invoice));
+        Assert.NotNull(invoiceType.GetProperty("status").GetValue(invoice));
+    }
+
+    [Fact]
+    public async Task GetInvoiceDetails_IncludesCustomerDetails()
     {
-        ID = Guid.NewGuid(),
-        IdentityUserId = identityEmployee.Id,
-        IdentityUser = identityEmployee,
-        Username = "employee",
-        Name = "Employee User",
-        Email = "employee@example.com",
-        PhoneNumber = "1234567890",
-        Role = "employee",
-        BirthYear = 1990,
-        IsActive = true,
-        Vehicles = new List<Vehicle>(),
-        Sessions = new List<Session>(),
-        Reservations = new List<Reservation>()
-    };
-    _context.Users.Add(employee);
-    _context.SaveChanges();
+        var result = await _service.GetInvoiceDetailsAsync(_invoice1.ID, _admin.IdentityUserId);
+        Assert.Equal(200, result.statusCode);
 
-    var dto = new CreateBundleInvoiceDto
+        var dataType = result.data.GetType();
+        var invoiceProperty = dataType.GetProperty("invoice");
+        var invoice = invoiceProperty.GetValue(result.data);
+
+
+        var invoiceType = invoice.GetType();
+        var customer = invoiceType.GetProperty("customer").GetValue(invoice);
+        Assert.NotNull(customer);
+
+        var customerType = customer.GetType();
+        Assert.NotNull(customerType.GetProperty("id").GetValue(customer));
+        Assert.NotNull(customerType.GetProperty("username").GetValue(customer));
+        Assert.NotNull(customerType.GetProperty("name").GetValue(customer));
+        Assert.NotNull(customerType.GetProperty("email").GetValue(customer));
+    }
+
+    [Fact]
+    public async Task CreateBundleInvoice_AdminSuccess()
     {
-        SessionIds = new List<Guid> { _session1.ID, _session2.ID }
-    };
+        var dto = new CreateBundleInvoiceDto
+        {
+            SessionIds = new List<Guid> { _session1.ID, _session2.ID },
+            CompanyName = "Test Company"
+        };
 
-    var result = await _service.CreateBundleInvoiceAsync(dto, employee.IdentityUserId);
-    Assert.Equal(201, result.statusCode);
-}
+        var result = await _service.CreateBundleInvoiceAsync(dto, _admin.IdentityUserId);
+        Assert.Equal(201, result.statusCode);
+    }
 
-[Fact]
-public async Task CreateBundleInvoice_BusinessUserSuccess()
-{
-    
-    var identityBusiness = new IdentityUser
+    [Fact]
+    public async Task CreateBundleInvoice_EmployeeSuccess()
     {
-        UserName = "business",
-        Id = Guid.NewGuid().ToString()
-    };
 
-    var businessUser = new User
+        var identityEmployee = new IdentityUser
+        {
+            UserName = "employee",
+            Id = Guid.NewGuid().ToString()
+        };
+
+        var employee = new User
+        {
+            ID = Guid.NewGuid(),
+            IdentityUserId = identityEmployee.Id,
+            IdentityUser = identityEmployee,
+            Username = "employee",
+            Name = "Employee User",
+            Email = "employee@example.com",
+            PhoneNumber = "1234567890",
+            Role = "employee",
+            BirthYear = 1990,
+            IsActive = true,
+            Vehicles = new List<Vehicle>(),
+            Sessions = new List<Session>(),
+            Reservations = new List<Reservation>()
+        };
+        _context.Users.Add(employee);
+        _context.SaveChanges();
+
+        var dto = new CreateBundleInvoiceDto
+        {
+            SessionIds = new List<Guid> { _session1.ID, _session2.ID }
+        };
+
+        var result = await _service.CreateBundleInvoiceAsync(dto, employee.IdentityUserId);
+        Assert.Equal(201, result.statusCode);
+    }
+
+    [Fact]
+    public async Task CreateBundleInvoice_BusinessUserSuccess()
     {
-        ID = Guid.NewGuid(),
-        IdentityUserId = identityBusiness.Id,
-        IdentityUser = identityBusiness,
-        Username = "business",
-        Name = "Business User",
-        Email = "business@example.com",
-        PhoneNumber = "1234567890",
-        Role = "business",
-        BirthYear = 1990,
-        IsActive = true,
-        Vehicles = new List<Vehicle>(),
-        Sessions = new List<Session>(),
-        Reservations = new List<Reservation>()
-    };
-    _context.Users.Add(businessUser);
-    _context.SaveChanges();
 
-    var dto = new CreateBundleInvoiceDto
+        var identityBusiness = new IdentityUser
+        {
+            UserName = "business",
+            Id = Guid.NewGuid().ToString()
+        };
+
+        var businessUser = new User
+        {
+            ID = Guid.NewGuid(),
+            IdentityUserId = identityBusiness.Id,
+            IdentityUser = identityBusiness,
+            Username = "business",
+            Name = "Business User",
+            Email = "business@example.com",
+            PhoneNumber = "1234567890",
+            Role = "business",
+            BirthYear = 1990,
+            IsActive = true,
+            Vehicles = new List<Vehicle>(),
+            Sessions = new List<Session>(),
+            Reservations = new List<Reservation>()
+        };
+        _context.Users.Add(businessUser);
+        _context.SaveChanges();
+
+        var dto = new CreateBundleInvoiceDto
+        {
+            SessionIds = new List<Guid> { _session1.ID, _session2.ID }
+        };
+
+        var result = await _service.CreateBundleInvoiceAsync(dto, businessUser.IdentityUserId);
+        Assert.Equal(201, result.statusCode);
+    }
+
+    [Fact]
+    public async Task CreateBundleInvoice_SessionNotFound()
     {
-        SessionIds = new List<Guid> { _session1.ID, _session2.ID }
-    };
+        var dto = new CreateBundleInvoiceDto
+        {
+            SessionIds = new List<Guid> { _session1.ID, Guid.NewGuid() }
+        };
 
-    var result = await _service.CreateBundleInvoiceAsync(dto, businessUser.IdentityUserId);
-    Assert.Equal(201, result.statusCode);
-}
+        var result = await _service.CreateBundleInvoiceAsync(dto, _admin.IdentityUserId);
+        Assert.Equal(404, result.statusCode);
+    }
 
-[Fact]
-public async Task CreateBundleInvoice_SessionNotFound()
-{
-    var dto = new CreateBundleInvoiceDto
+    [Fact]
+    public async Task GetUserBillingSummary_AdminCanViewSummary()
     {
-        SessionIds = new List<Guid> { _session1.ID, Guid.NewGuid() }  
-    };
+        var result = await _service.GetUserBillingSummaryAsync(_user.Username, _admin.IdentityUserId);
+        Assert.Equal(200, result.statusCode);
+    }
 
-    var result = await _service.CreateBundleInvoiceAsync(dto, _admin.IdentityUserId);
-    Assert.Equal(404, result.statusCode);
-}
-
-[Fact]
-public async Task GetUserBillingSummary_AdminCanViewSummary()
-{
-    var result = await _service.GetUserBillingSummaryAsync(_user.Username, _admin.IdentityUserId);
-    Assert.Equal(200, result.statusCode);
-}
-
-[Fact]
-public async Task GetUserBillingSummary_EmployeeCanViewSummary()
-{
-  
-    var identityEmployee = new IdentityUser
+    [Fact]
+    public async Task GetUserBillingSummary_EmployeeCanViewSummary()
     {
-        UserName = "employee",
-        Id = Guid.NewGuid().ToString()
-    };
 
-    var employee = new User
+        var identityEmployee = new IdentityUser
+        {
+            UserName = "employee",
+            Id = Guid.NewGuid().ToString()
+        };
+
+        var employee = new User
+        {
+            ID = Guid.NewGuid(),
+            IdentityUserId = identityEmployee.Id,
+            IdentityUser = identityEmployee,
+            Username = "employee",
+            Name = "Employee User",
+            Email = "employee@example.com",
+            PhoneNumber = "1234567890",
+            Role = "employee",
+            BirthYear = 1990,
+            IsActive = true,
+            Vehicles = new List<Vehicle>(),
+            Sessions = new List<Session>(),
+            Reservations = new List<Reservation>()
+        };
+        _context.Users.Add(employee);
+        _context.SaveChanges();
+
+        var result = await _service.GetUserBillingSummaryAsync(_user.Username, employee.IdentityUserId);
+        Assert.Equal(200, result.statusCode);
+    }
+
+    [Fact]
+    public async Task GetUserBillingSummary_RegularUserForbidden()
     {
-        ID = Guid.NewGuid(),
-        IdentityUserId = identityEmployee.Id,
-        IdentityUser = identityEmployee,
-        Username = "employee",
-        Name = "Employee User",
-        Email = "employee@example.com",
-        PhoneNumber = "1234567890",
-        Role = "employee",
-        BirthYear = 1990,
-        IsActive = true,
-        Vehicles = new List<Vehicle>(),
-        Sessions = new List<Session>(),
-        Reservations = new List<Reservation>()
-    };
-    _context.Users.Add(employee);
-    _context.SaveChanges();
-
-    var result = await _service.GetUserBillingSummaryAsync(_user.Username, employee.IdentityUserId);
-    Assert.Equal(200, result.statusCode);
-}
-
-[Fact]
-public async Task GetUserBillingSummary_RegularUserForbidden()
-{
-    var result = await _service.GetUserBillingSummaryAsync(_admin.Username, _user.IdentityUserId);
-    Assert.Equal(403, result.statusCode);
-}
+        var result = await _service.GetUserBillingSummaryAsync(_admin.Username, _user.IdentityUserId);
+        Assert.Equal(403, result.statusCode);
+    }
 
 
-[Fact]
-public async Task GetUserBillingSummary_RequestingUserNotFound()
-{
-    var result = await _service.GetUserBillingSummaryAsync(_user.Username, Guid.NewGuid().ToString());
-    Assert.Equal(404, result.statusCode);
-}
+    [Fact]
+    public async Task GetUserBillingSummary_RequestingUserNotFound()
+    {
+        var result = await _service.GetUserBillingSummaryAsync(_user.Username, Guid.NewGuid().ToString());
+        Assert.Equal(404, result.statusCode);
+    }
 
-[Fact]
-public async Task GetUserBillingSummary_TargetUserNotFound()
-{
-    var result = await _service.GetUserBillingSummaryAsync("nonexistent", _admin.IdentityUserId);
-    Assert.Equal(404, result.statusCode);
-}
+    [Fact]
+    public async Task GetUserBillingSummary_TargetUserNotFound()
+    {
+        var result = await _service.GetUserBillingSummaryAsync("nonexistent", _admin.IdentityUserId);
+        Assert.Equal(404, result.statusCode);
+    }
 
-[Fact]
-public async Task GetUserBillingSummary_CorrectInvoiceCount()
-{
-    var result = await _service.GetUserBillingSummaryAsync(_user.Username, _admin.IdentityUserId);
-    Assert.Equal(200, result.statusCode);
+    [Fact]
+    public async Task GetUserBillingSummary_CorrectInvoiceCount()
+    {
+        var result = await _service.GetUserBillingSummaryAsync(_user.Username, _admin.IdentityUserId);
+        Assert.Equal(200, result.statusCode);
 
-    var dataType = result.data.GetType();
-    var dataProperty = dataType.GetProperty("data");
-    var data = dataProperty.GetValue(result.data);
+        var dataType = result.data.GetType();
+        var dataProperty = dataType.GetProperty("data");
+        var data = dataProperty.GetValue(result.data);
 
-    var dataObjType = data.GetType();
-    var summaryProperty = dataObjType.GetProperty("Summary");
-    var summary = summaryProperty.GetValue(data);
+        var dataObjType = data.GetType();
+        var summaryProperty = dataObjType.GetProperty("Summary");
+        var summary = summaryProperty.GetValue(data);
 
-    var summaryType = summary.GetType();
-    var invoiceCount = summaryType.GetProperty("TotalInvoices").GetValue(summary);
+        var summaryType = summary.GetType();
+        var invoiceCount = summaryType.GetProperty("TotalInvoices").GetValue(summary);
 
-    Assert.Equal(2, invoiceCount); 
-}
+        Assert.Equal(2, invoiceCount);
+    }
 
 
-[Fact]
-public async Task GetUserBillingSummary_CorrectTotalAmount()
-{
-    var result = await _service.GetUserBillingSummaryAsync(_user.Username, _admin.IdentityUserId);
-    Assert.Equal(200, result.statusCode);
+    [Fact]
+    public async Task GetUserBillingSummary_CorrectTotalAmount()
+    {
+        var result = await _service.GetUserBillingSummaryAsync(_user.Username, _admin.IdentityUserId);
+        Assert.Equal(200, result.statusCode);
 
-    var dataType = result.data.GetType();
-    var dataProperty = dataType.GetProperty("data");
-    var data = dataProperty.GetValue(result.data);
+        var dataType = result.data.GetType();
+        var dataProperty = dataType.GetProperty("data");
+        var data = dataProperty.GetValue(result.data);
 
-    var dataObjType = data.GetType();
-    var summaryProperty = dataObjType.GetProperty("Summary");
-    var summary = summaryProperty.GetValue(data);
+        var dataObjType = data.GetType();
+        var summaryProperty = dataObjType.GetProperty("Summary");
+        var summary = summaryProperty.GetValue(data);
 
-    var summaryType = summary.GetType();
-    var totalAmount = summaryType.GetProperty("TotalInvoicedAmount").GetValue(summary);
+        var summaryType = summary.GetType();
+        var totalAmount = summaryType.GetProperty("TotalInvoicedAmount").GetValue(summary);
 
-    Assert.Equal(125.00f, totalAmount);
-}
+        Assert.Equal(125.00f, totalAmount);
+    }
 
-[Fact]
-public async Task GetUserBillingSummary_CorrectPaidCount()
-{
-    var result = await _service.GetUserBillingSummaryAsync(_user.Username, _admin.IdentityUserId);
-    Assert.Equal(200, result.statusCode);
+    [Fact]
+    public async Task GetUserBillingSummary_CorrectPaidCount()
+    {
+        var result = await _service.GetUserBillingSummaryAsync(_user.Username, _admin.IdentityUserId);
+        Assert.Equal(200, result.statusCode);
 
-    var dataType = result.data.GetType();
-    var dataProperty = dataType.GetProperty("data");
-    var data = dataProperty.GetValue(result.data);
+        var dataType = result.data.GetType();
+        var dataProperty = dataType.GetProperty("data");
+        var data = dataProperty.GetValue(result.data);
 
-    var dataObjType = data.GetType();
-    var summaryProperty = dataObjType.GetProperty("Summary");
-    var summary = summaryProperty.GetValue(data);
+        var dataObjType = data.GetType();
+        var summaryProperty = dataObjType.GetProperty("Summary");
+        var summary = summaryProperty.GetValue(data);
 
-    var summaryType = summary.GetType();
-    var totalPaid = summaryType.GetProperty("TotalPaid").GetValue(summary);
+        var summaryType = summary.GetType();
+        var totalPaid = summaryType.GetProperty("TotalPaid").GetValue(summary);
 
-    Assert.Equal(1, totalPaid); 
-}
+        Assert.Equal(1, totalPaid);
+    }
 
-[Fact]
-public async Task GetUserBillingSummary_CorrectOpenCount()
-{
-    var result = await _service.GetUserBillingSummaryAsync(_user.Username, _admin.IdentityUserId);
-    Assert.Equal(200, result.statusCode);
+    [Fact]
+    public async Task GetUserBillingSummary_CorrectOpenCount()
+    {
+        var result = await _service.GetUserBillingSummaryAsync(_user.Username, _admin.IdentityUserId);
+        Assert.Equal(200, result.statusCode);
 
-    var dataType = result.data.GetType();
-    var dataProperty = dataType.GetProperty("data");
-    var data = dataProperty.GetValue(result.data);
+        var dataType = result.data.GetType();
+        var dataProperty = dataType.GetProperty("data");
+        var data = dataProperty.GetValue(result.data);
 
-    var dataObjType = data.GetType();
-    var summaryProperty = dataObjType.GetProperty("Summary");
-    var summary = summaryProperty.GetValue(data);
+        var dataObjType = data.GetType();
+        var summaryProperty = dataObjType.GetProperty("Summary");
+        var summary = summaryProperty.GetValue(data);
 
-    var summaryType = summary.GetType();
-    var totalOpen = summaryType.GetProperty("TotalOpen").GetValue(summary);
+        var summaryType = summary.GetType();
+        var totalOpen = summaryType.GetProperty("TotalOpen").GetValue(summary);
 
-    Assert.Equal(1, totalOpen); 
-}
+        Assert.Equal(1, totalOpen);
+    }
+
+    [Fact]
+    public async Task GetUserBillingSummary_CorrectInvoiceCount()
+    {
+        var result = await _service.GetUserBillingSummaryAsync(_user.Username, _admin.IdentityUserId);
+        Assert.Equal(200, result.statusCode);
+
+        var dataType = result.data.GetType();
+        var dataProperty = dataType.GetProperty("data");
+        var data = dataProperty.GetValue(result.data);
+
+        var dataObjType = data.GetType();
+        var summaryProperty = dataObjType.GetProperty("Summary");
+        var summary = summaryProperty.GetValue(data);
+
+        var summaryType = summary.GetType();
+        var invoiceCount = summaryType.GetProperty("TotalInvoices").GetValue(summary);
+
+        Assert.Equal(2, invoiceCount);
+    }
+
+    [Fact]
+    public async Task GetUserBillingSummary_NoInvoices()
+    {
+        var identityNoInvoices = new IdentityUser
+        {
+            UserName = "noinvoices",
+            Id = Guid.NewGuid().ToString()
+        };
+
+        var noInvoicesUser = new User
+        {
+            ID = Guid.NewGuid(),
+            IdentityUserId = identityNoInvoices.Id,
+            IdentityUser = identityNoInvoices,
+            Username = "noinvoices",
+            Name = "No Invoices User",
+            Email = "<EMAIL>",
+            PhoneNumber = "1234567890",
+            Role = "user",
+            BirthYear = 1990,
+            IsActive = true,
+            Vehicles = new List<Vehicle>(),
+            Sessions = new List<Session>(),
+            Reservations = new List<Reservation>()
+        };
+        _context.Users.Add(noInvoicesUser);
+        _context.SaveChanges();
+        var result = await _service.GetUserBillingSummaryAsync(noInvoicesUser.Username, _admin.IdentityUserId);
+        Assert.Equal(200, result.statusCode);
+        var dataType = result.data.GetType();
+        var dataProperty = dataType.GetProperty("data");
+        var data = dataProperty.GetValue(result.data);
+        var dataObjType = data.GetType();
+        var summaryProperty = dataObjType.GetProperty("Summary");
+        var summary = summaryProperty.GetValue(data);
+        var summaryType = summary.GetType();
+        var invoiceCount = summaryType.GetProperty("TotalInvoices").GetValue(summary);
+        Assert.Equal(0, invoiceCount);
+    }
 }
