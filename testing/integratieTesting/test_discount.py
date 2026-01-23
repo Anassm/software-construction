@@ -1,35 +1,32 @@
 import pytest
 import requests
 import uuid
-
-# -----------------------------
-#  Fixtures (reused from your structure)
-# -----------------------------
+import os
 
 @pytest.fixture
 def _data():
     return {
-        "base": "http://localhost:8000",
+        "base": os.environ["BASE_URL"],
         "users": {
             "user_a": {
-                "email": "user@example.com",
-                "password": "UserPass123!",
-                "username": "regular.user",
-                "name": "Regular User",
+                "email": os.environ["USER_A_EMAIL"],
+                "password": os.environ["USER_A_PASSWORD"],
+                "username": os.environ["USER_A_USERNAME"],
+                "name": os.environ["USER_A_NAME"],
                 "role": "user"
             },
             "user_b": {
-                "email": "user2@example.com",
-                "password": "User2Pass123!",
-                "username": "user.two",
-                "name": "Second User",
+                "email": os.environ["USER_B_EMAIL"],
+                "password": os.environ["USER_B_PASSWORD"],
+                "username": os.environ["USER_B_USERNAME"],
+                "name": os.environ["USER_B_NAME"],
                 "role": "user"
             },
             "admin": {
-                "email": "admin@example.com",
-                "password": "AdminPass123!",
-                "username": "admin.user",
-                "name": "Admin User",
+                "email": os.environ["ADMIN_EMAIL"],
+                "password": os.environ["ADMIN_PASSWORD"],
+                "username": os.environ["ADMIN_USERNAME"],
+                "name": os.environ["ADMIN_NAME"],
                 "role": "admin"
             }
         }
@@ -37,10 +34,8 @@ def _data():
 
 
 def register_and_login(base_url, user):
-    # Register first (ignored if exists)
     requests.post(f"{base_url}/register", json=user)
 
-    # Login
     r = requests.post(f"{base_url}/login", json={
         "username": user["username"],
         "password": user["password"]
@@ -64,11 +59,6 @@ def user_token_b(_data):
 def admin_token(_data):
     return register_and_login(_data["base"], _data["users"]["admin"])
 
-
-# -----------------------------
-# Helpers
-# -----------------------------
-
 def discount_url(_data):
     return f"{_data['base']}/discounts"
 
@@ -82,17 +72,12 @@ def create_discount(admin_token, _data, code=None):
         headers=admin_token,
         json={
             "code": code,
-            "percentage": 10,  # ✅ ADD required field
+            "percentage": 10,
             "isActive": True
         }
     )
 
     return r.json()["discount"]["id"]
-
-
-# ===================================================================
-#  POST /discounts — 5 TESTS
-# ===================================================================
 
 def test_post_discount_no_auth(_data):
     response = requests.post(discount_url(_data), json={"code": "NEWYEAR"})
@@ -112,7 +97,8 @@ def test_post_discount_non_admin(user_token, _data):
 def test_post_discount_missing_code(admin_token, _data):
     payload = {"percentage": 10}
 
-    response = requests.post(discount_url(_data), headers=admin_token, json=payload)
+    response = requests.post(discount_url(
+        _data), headers=admin_token, json=payload)
     assert response.status_code == 400
 
     body = response.json()
@@ -126,7 +112,8 @@ def test_post_discount_success(admin_token, _data):
         "percentage": 15.0
     }
 
-    response = requests.post(discount_url(_data), headers=admin_token, json=payload)
+    response = requests.post(discount_url(
+        _data), headers=admin_token, json=payload)
     assert response.status_code == 201
 
     body = response.json()
@@ -138,20 +125,14 @@ def test_post_discount_duplicate(admin_token, _data):
     code = "DUP" + uuid.uuid4().hex[:4].upper()
     payload = {"code": code, "percentage": 5}
 
-    # first creation
     requests.post(discount_url(_data), headers=admin_token, json=payload)
 
-    # duplicate
-    response = requests.post(discount_url(_data), headers=admin_token, json=payload)
+    response = requests.post(discount_url(
+        _data), headers=admin_token, json=payload)
     assert response.status_code == 409
 
     body = response.json()
     assert "already exists" in body["error"]
-
-
-# ===================================================================
-#  PUT /discounts/{id} — 5 TESTS
-# ===================================================================
 
 def test_put_discount_no_auth(_data):
     fake_id = uuid.uuid4()

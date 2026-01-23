@@ -2,34 +2,40 @@ import pytest
 import requests
 import uuid
 
+import os
+import pytest
+import requests
+import uuid
+
 @pytest.fixture
 def _data():
     return {
-        "base": "http://localhost:8000",
+        "base": os.environ["BASE_URL"],
         "users": {
             "user_a": {
-                "email": "user@example.com",
-                "password": "UserPass123!",
-                "username": "regular.user",
-                "name": "Regular User",
+                "email": os.environ["USER_A_EMAIL"],
+                "password": os.environ["USER_A_PASSWORD"],
+                "username": os.environ["USER_A_USERNAME"],
+                "name": os.environ["USER_A_NAME"],
                 "role": "user"
             },
             "user_b": {
-                "email": "user2@example.com",
-                "password": "User2Pass123!",
-                "username": "user.two",
-                "name": "Second User",
+                "email": os.environ["USER_B_EMAIL"],
+                "password": os.environ["USER_B_PASSWORD"],
+                "username": os.environ["USER_B_USERNAME"],
+                "name": os.environ["USER_B_NAME"],
                 "role": "user"
             },
             "admin": {
-                "email": "admin@example.com",
-                "password": "AdminPass123!",
-                "username": "admin.user",
-                "name": "Admin User",
+                "email": os.environ["ADMIN_EMAIL"],
+                "password": os.environ["ADMIN_PASSWORD"],
+                "username": os.environ["ADMIN_USERNAME"],
+                "name": os.environ["ADMIN_NAME"],
                 "role": "admin"
             }
         }
     }
+
 
 def register_and_login(base_url, user):
     requests.post(f"{base_url}/register", json=user)
