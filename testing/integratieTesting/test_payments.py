@@ -33,11 +33,11 @@ def _data():
     }
 
 
-def register_and_login(_data):
-    requests.post(f"{_data['base']}/register", json=_data["users"]["user_a"])
+def register_and_login(base_url, user):
+    requests.post(f"{base_url}/register", json=user)
     r = requests.post(
-        f"{_data['base']}/login",
-        json={"username": _data["users"]["user_a"]["username"], "password": _data["users"]["user_a"]["password"]},
+        f"{base_url}/login",
+        json={"username": user["username"], "password": user["password"]},
     )
     if r.status_code != 200 or "accesstoken" not in r.json():
         pytest.fail(f"Fout bij inloggen (401): {r.status_code} - {r.text}")
