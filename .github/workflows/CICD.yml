@@ -180,7 +180,7 @@ jobs:
           echo "### Code Coverage Summary" >> $GITHUB_STEP_SUMMARY
           cat testing/UnitTesting/coveragereport/Summary.md >> $GITHUB_STEP_SUMMARY
 
-      - name: Display coverage summary with failure
+      - name: Display coverage summary on failure
         if: failure()
         run: |
           echo "### Code Coverage Summary" >> $GITHUB_STEP_SUMMARY
