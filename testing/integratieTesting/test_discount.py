@@ -72,7 +72,7 @@ def create_discount(admin_token, _data, code=None):
         headers=admin_token,
         json={
             "code": code,
-            "percentage": 10,  # ✅ ADD required field
+            "percentage": 10,
             "isActive": True
         }
     )
