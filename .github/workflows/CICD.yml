@@ -173,9 +173,7 @@ jobs:
             -reports:"TestResults/**/coverage.cobertura.xml" \
             -targetdir:"coveragereport" \
             -reporttypes:"MarkdownSummary" \
-            -threshold:80 \
-            -thresholdtype:line \
-            -thresholdstatistic:total
+            minimumCoverageThresholds:lineCoverage=80
 
       - name: Display coverage summary
         run: |
